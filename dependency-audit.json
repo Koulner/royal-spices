@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-09-24T16:43:24.572Z",
+  "source": "https://registry.npmjs.org/-/npm/v1/security/advisories/bulk",
+  "dependencies": {
+    "three": [
+      "0.180.0"
+    ],
+    "lucide": [
+      "1.8.0"
+    ],
+    "cannon-es": [
+      "0.20.0"
+    ]
+  },
+  "advisories": {}
+}

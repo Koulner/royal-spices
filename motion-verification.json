@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-09-24T16:43:13.950Z",
+  "bodies": 2200,
+  "visibleStrands": 11000,
+  "frames": 481,
+  "compressedBytes": 7771388,
+  "decodedBytes": 14814800,
+  "finalHeight95": 0.3635,
+  "finalHeightMax": 0.4795,
+  "rimHeight": 0.45,
+  "finalRadiusMax": 1.1787342787922983,
+  "stats": {
+    "count": 2200,
+    "visibleStrands": 11000,
+    "duration": 16,
+    "fps": 30,
+    "stepHz": 240,
+    "frames": 481,
+    "collisionGuards": 63,
+    "escaped": 0,
+    "minY": -0.4650639127861874,
+    "medianY": 0.003043234082625642,
+    "maxY": 0.4793865723027638,
+    "rimY": 0.45,
+    "maxSpeed": 0,
+    "sleeping": 2200
+  }
+}

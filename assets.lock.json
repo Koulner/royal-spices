@@ -1,0 +1,135 @@
+{
+  "dependencies": {
+    "three": [
+      "0.180.0"
+    ],
+    "lucide": [
+      "1.8.0"
+    ],
+    "cannon-es": [
+      "0.20.0"
+    ]
+  },
+  "files": {
+    "brass-engraving.webp": {
+      "bytes": 914862,
+      "gzipBytes": 908285,
+      "sha256": "bc4dceae038465add52dd3ad40f5daa666bf31d7f82a631b435c51fc19c58075"
+    },
+    "BufferGeometryUtils.js": {
+      "bytes": 35551,
+      "gzipBytes": 8025,
+      "sha256": "248b3e8420bd3de805ca01845c1b0cc62aa2766f3c56bdcead265e306f8e715c"
+    },
+    "CANNON-LICENSE.txt": {
+      "bytes": 1125,
+      "gzipBytes": 665,
+      "sha256": "4714d0272f50cb21fe46fe29333c7c600d3c85b5ebd2a80f4db07e8cfccbf5b2"
+    },
+    "catering.webp": {
+      "bytes": 231988,
+      "gzipBytes": 232081,
+      "sha256": "e1df872d0d5ad5a5f27d6c272c3917eecd9d6a569af82749abb55f3b88a03ab2"
+    },
+    "cormorant-italic.woff2": {
+      "bytes": 39260,
+      "gzipBytes": 39293,
+      "sha256": "6f2f5c3b1abc3d0bb035a927f66a90ca873f94fc31c4966c8d024142c2036e55"
+    },
+    "CORMORANT-LICENSE.txt": {
+      "bytes": 4387,
+      "gzipBytes": 1972,
+      "sha256": "60700d351cac4650c51f3f9db318d2a420f8b45052dba2715eb5fec41f0f6956"
+    },
+    "cormorant.woff2": {
+      "bytes": 37640,
+      "gzipBytes": 37673,
+      "sha256": "d80df8ff5aecd299a61549f9e29ab1ed0b9b05f4ea71d50fe978e07d5240b235"
+    },
+    "display.webp": {
+      "bytes": 240032,
+      "gzipBytes": 240125,
+      "sha256": "bce3661fe59ebb16a7c818c49cc1ee9865eed1ce06163ca32a64f18292cf8bbe"
+    },
+    "favicon.svg": {
+      "bytes": 226,
+      "gzipBytes": 195,
+      "sha256": "9f9283bec4ea6ab87b3b29ceb185d5746e77aa23d4f03de193432dc8238cba48"
+    },
+    "hero-mobile.webp": {
+      "bytes": 74802,
+      "gzipBytes": 74845,
+      "sha256": "4860f358108a37727b02b8a90ca5852757a3707ad76406aa38e16cfbbfb236a3"
+    },
+    "hero.webp": {
+      "bytes": 220262,
+      "gzipBytes": 220350,
+      "sha256": "0d13d6520d59e51a3d0916fd45f89c2d3d337527fd3eaa2afd8f3a1428a42d8d"
+    },
+    "icons.js": {
+      "bytes": 720,
+      "gzipBytes": 268,
+      "sha256": "45ac2796b33c5481d7c95e1bdef25ee632b4a4ee9acdea15a78e81c049d222d3"
+    },
+    "jars.webp": {
+      "bytes": 103650,
+      "gzipBytes": 103703,
+      "sha256": "3959648435b98eaf406b107ce9a3bd183af827266988d518e4db31d84fc55993"
+    },
+    "LUCIDE-LICENSE.txt": {
+      "bytes": 3208,
+      "gzipBytes": 1504,
+      "sha256": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57"
+    },
+    "MANROPE-LICENSE.txt": {
+      "bytes": 4387,
+      "gzipBytes": 1974,
+      "sha256": "58172e0c0fac2cda8a37b348164bb55e44b0e69051e557e92b1d3f6910141f7b"
+    },
+    "manrope.woff2": {
+      "bytes": 24836,
+      "gzipBytes": 24864,
+      "sha256": "a30ddcd349703aff7464c34bef3fffdff405ee50c113440d7c8693c02d210972"
+    },
+    "mountains-mobile.webp": {
+      "bytes": 69092,
+      "gzipBytes": 69135,
+      "sha256": "4a3a1b3f37893d43c80d5195d8b5647c7300a8a788b0b304e5a5dac07d524eed"
+    },
+    "mountains.webp": {
+      "bytes": 320958,
+      "gzipBytes": 321076,
+      "sha256": "81101fe59dd1647ed3b37f5df40bd48ce7740abd084e23d7ff139cbc857cae53"
+    },
+    "RoomEnvironment.js": {
+      "bytes": 4911,
+      "gzipBytes": 1663,
+      "sha256": "faf5469bea1b9961e4b82d1da6a1671ec16137b6cc5b482a6d75a64a05bdc903"
+    },
+    "saffron-motion.bin.gz": {
+      "bytes": 7771388,
+      "gzipBytes": 7720325,
+      "sha256": "95e7fd162bc3bae02ccacc7b1d320d369a2f904cbd098aafe58b46743f86e2ba"
+    },
+    "saffron-motion.json": {
+      "bytes": 65488,
+      "gzipBytes": 16129,
+      "sha256": "bb3a171995ae30f3d6128f6fc11ac658cc724d28958103b1cda453c48aaac349"
+    },
+    "THREE-LICENSE.txt": {
+      "bytes": 1081,
+      "gzipBytes": 667,
+      "sha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601"
+    },
+    "three.core.js": {
+      "bytes": 1403455,
+      "gzipBytes": 278298,
+      "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20"
+    },
+    "three.module.js": {
+      "bytes": 603113,
+      "gzipBytes": 118207,
+      "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a"
+    }
+  }
+}
