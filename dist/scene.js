@@ -27,8 +27,9 @@ export async function createSaffronScene(host,{paused=false,onProgress=()=>{}}={
   renderer.setClearColor(0xf7f8f5,1);renderer.outputColorSpace=THREE.SRGBColorSpace;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.92;
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.VSMShadowMap;
+  renderer.shadowMap.autoUpdate=false;renderer.info.autoReset=false;
   renderer.domElement.setAttribute('aria-hidden','true');renderer.domElement.dataset.testid='saffron-canvas';host.appendChild(renderer.domElement);
-  const world=new THREE.Scene(),camera=new THREE.PerspectiveCamera(32,1,.1,60),group=new THREE.Group();
+  const world=new THREE.Scene(),camera=new THREE.PerspectiveCamera(32,1,.025,60),group=new THREE.Group();
   world.add(group);
   const environmentScene=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer);
   const environment=pmrem.fromScene(environmentScene,.025);
@@ -39,6 +40,22 @@ export async function createSaffronScene(host,{paused=false,onProgress=()=>{}}={
   Object.assign(key.shadow.camera,{left:-2.4,right:2.4,top:2.4,bottom:-2.4,near:.1,far:16});
   key.shadow.bias=-.00015;key.shadow.normalBias=.004;key.shadow.radius=12;key.shadow.blurSamples=16;world.add(key);
   const fill=new THREE.DirectionalLight(0xe5edff,.85);fill.position.set(4,3,-2);world.add(fill);
+
+  let composer=null,depthOfField=null;
+  if(!compact){
+    try{
+      const [{EffectComposer},{RenderPass},{BokehPass},{OutputPass}]=await Promise.all([
+        import('./assets/addons/postprocessing/EffectComposer.js'),
+        import('./assets/addons/postprocessing/RenderPass.js'),
+        import('./assets/addons/postprocessing/BokehPass.js'),
+        import('./assets/addons/postprocessing/OutputPass.js')
+      ]);
+      composer=new EffectComposer(renderer);composer.setPixelRatio(Math.min(renderer.getPixelRatio(),1.25));
+      composer.addPass(new RenderPass(world,camera));
+      depthOfField=new BokehPass(world,camera,{focus:3,aperture:0,maxblur:.012});
+      composer.addPass(depthOfField);composer.addPass(new OutputPass());
+    }catch{composer=null;depthOfField=null;}
+  }
 
   const profile=[[0,-.53],[.38,-.53],[.62,-.48],[.93,-.32],[1.17,-.06],[1.34,.21],[1.39,.35],[1.43,.4],[1.42,.45],[1.38,.45],[1.34,.36],[1.29,.22],[1.11,-.03],[.87,-.27],[.58,-.43],[.33,-.48],[0,-.48]].map(p=>new THREE.Vector2(...p));
   const geometry=new THREE.LatheGeometry(profile,128);
@@ -107,23 +124,32 @@ export async function createSaffronScene(host,{paused=false,onProgress=()=>{}}={
   let target=paused?1:0,current=target,raf=0,visible=true,destroyed=false,lastParticleProgress=-1;
   function resize(){
     renderer.setSize(host.clientWidth,host.clientHeight,false);camera.aspect=host.clientWidth/host.clientHeight;camera.updateProjectionMatrix();
+    composer?.setSize(host.clientWidth,host.clientHeight);
     group.scale.setScalar(host.clientWidth<560?.94:host.clientWidth<1000?1:1.14);requestDraw();
   }
   function draw(){
     raf=0;if(destroyed||!visible||document.hidden)return;
     if(!paused)current=target;
     const narrow=host.clientWidth<560,mobile=host.clientWidth<800;
+    const immersion=smooth(.10,.36,current)*(1-smooth(.57,.85,current));
     const orbit=smooth(.61,.97,current),descent=smooth(0,.58,current);
     const endDistance=narrow?13.22:mobile?9.58:7.65;
     const overheadDistance=THREE.MathUtils.lerp(narrow?12.8:12.5,narrow?11.8:8.7,descent);
-    const distance=THREE.MathUtils.lerp(overheadDistance,endDistance,orbit);
-    const theta=THREE.MathUtils.lerp(.43,1.03,orbit);
+    const distance=THREE.MathUtils.lerp(THREE.MathUtils.lerp(overheadDistance,endDistance,orbit),narrow?4.3:2.9,immersion);
+    const theta=THREE.MathUtils.lerp(THREE.MathUtils.lerp(.43,1.03,orbit),.30,immersion);
     const aimY=THREE.MathUtils.lerp(-.12,mobile?-.6:-.05,orbit);
-    camera.position.set(Math.sin(orbit*Math.PI)*.4,aimY+Math.cos(theta)*distance,Math.sin(theta)*distance);
+    camera.position.set(Math.sin(orbit*Math.PI)*.4+Math.sin(current*Math.PI*2)*.12*immersion,aimY+Math.cos(theta)*distance,Math.sin(theta)*distance);
     camera.up.set(0,Math.sin(theta),-Math.cos(theta));camera.lookAt(0,aimY,0);
     group.rotation.y=smooth(.75,1,current)*.22;
     if(Math.abs(lastParticleProgress-current)>.00001){updateParticles(current);lastParticleProgress=current;}
-    renderer.render(world,camera);onProgress(current);
+    host.parentElement.style.setProperty('--immersion',immersion.toFixed(4));
+    renderer.info.reset();renderer.shadowMap.needsUpdate=true;
+    if(composer&&immersion>.01){
+      depthOfField.uniforms.focus.value=distance*(1-.26*immersion);
+      depthOfField.uniforms.aperture.value=.004*immersion;
+      composer.render(0);
+    }else renderer.render(world,camera);
+    onProgress(current);
     if(qa){
       const gl=renderer.getContext(),pixel=new Uint8Array(4);let signature=0,nonBackground=0;
       for(let y=3;y<8;y++)for(let x=3;x<8;x++){
@@ -132,7 +158,7 @@ export async function createSaffronScene(host,{paused=false,onProgress=()=>{}}={
         if(Math.abs(pixel[0]-247)+Math.abs(pixel[1]-248)+Math.abs(pixel[2]-245)>30)nonBackground++;
       }
       qaPosition.set(0,7,0).applyMatrix4(group.matrixWorld).project(camera);
-      renderer.domElement.dataset.pixels=JSON.stringify({signature,nonBackground,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,progress:Number(current.toFixed(5)),target:Number(target.toFixed(5)),camera:camera.position.toArray().map(v=>Number(v.toFixed(2))),emitterNdcY:Number(qaPosition.y.toFixed(2)),scrollSynchronous:true,strands:meta.stats.visibleStrands});
+      renderer.domElement.dataset.pixels=JSON.stringify({signature,nonBackground,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,progress:Number(current.toFixed(5)),target:Number(target.toFixed(5)),camera:camera.position.toArray().map(v=>Number(v.toFixed(2))),emitterNdcY:Number(qaPosition.y.toFixed(2)),scrollSynchronous:true,strands:meta.stats.visibleStrands,immersion:Number(immersion.toFixed(3)),depthOfField:!!composer&&immersion>.01});
     }
   }
   function requestDraw(){if(!raf&&!destroyed)raf=requestAnimationFrame(draw);}

@@ -14,6 +14,8 @@
 .scene-story:not(.scene-enabled){height:auto;min-height:0}.scene-story:not(.scene-enabled) .scene-sticky{position:relative}
 .js-ready .scene-story:not(.scene-failed){height:520svh;min-height:3000px;overflow-anchor:none}
 .scene-word{display:none}.scene-heading{text-align:left;left:56px;width:auto;top:34px}
+.scene-heading,.scene-notes,.scene-caption{opacity:calc(1 - var(--immersion,0)*2.5)}
+.motion-toggle{background:rgba(247,248,245,.9);backdrop-filter:blur(6px)}
 .hero .hero-picture{inset:0;height:auto;background:#151e1b}.hero .hero-picture img{object-fit:cover;object-position:center 50%}.hero .hero-picture::after{display:none}.hero::after{background:linear-gradient(90deg,rgba(9,27,23,.83),rgba(9,27,23,.38) 52%,rgba(9,27,23,.06))}.hero-bottom{background:none}.photo-credit{font-size:12px;color:#b6c1ae;line-height:1.8;padding:0 0 28px}.photo-credit a{text-decoration:underline}
 @media(max-width:560px){.hero .hero-picture{inset:0;height:auto}.hero .hero-picture img{object-fit:cover;object-position:59% center}.hero .hero-picture::after{display:none}.hero::after{background:linear-gradient(90deg,rgba(9,27,23,.84),rgba(9,27,23,.4))}.hero .hero-bottom{background:none}.scene-story.scene-enabled{height:480svh;min-height:2600px}.scene-heading{left:20px}.photo-credit{font-size:11px}}
 @media(max-width:560px){.js-ready .scene-story:not(.scene-failed){height:480svh;min-height:2600px}}

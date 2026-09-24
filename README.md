@@ -11,6 +11,8 @@ No build step, backend, tracking service, or third-party runtime CDN is required
 - Reference-site mountain photograph in the hero, with attribution in the footer.
 - Scroll-controlled Three.js saffron sequence in an engraved, Afghan-inspired brass bowl.
 - The same scroll position produces the same camera pose and particle state.
+- The camera descends into the falling saffron for an edge-to-edge macro moment, then returns to the full bowl.
+- Desktop depth of field provides foreground separation; mobile omits that extra rendering pass.
 - A long scroll section provides fine control without a timer, smoothing delay, or scroll lock.
 - The pause control freezes the scene. Reduced-motion preferences start with a static pose.
 - The contact form prepares an email locally; the visitor sends it in their own mail application.
