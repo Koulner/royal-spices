@@ -82,12 +82,16 @@ let paused = reducedMotion.matches;
 let currentNote = -1;
 function updateScroll() {
   const rect = story.getBoundingClientRect();
-  const progress = reducedMotion.matches ? 0 : Math.max(0, Math.min(1, -rect.top / Math.max(1, story.offsetHeight-innerHeight)));
+  const progress = reducedMotion.matches && paused ? 1 : Math.max(0, Math.min(1, -rect.top / Math.max(1, story.offsetHeight-innerHeight)));
   if(scene && !paused) scene.setProgress(progress);
   if(!scene) updateNotes(0);
 }
 function updateNotes(progress) {
-  const index = Math.min(2, Math.floor(progress*3));
+  const index = progress < .3 ? 0 : progress < .8 ? 1 : 2;
+  story.style.setProperty('--journey-progress',progress);
+  story.dataset.phase = progress < .12 ? 'Glas neigen' : progress < .30 ? 'Der erste Fall' : progress < .43 ? 'An der Linse' : progress < .67 ? 'Mit den Fäden' : progress < .86 ? 'In der Schale' : 'Die volle Essenz';
+  document.querySelector('.journey-phase').textContent = story.dataset.phase;
+  document.querySelector('.journey-percent').textContent = Math.round(progress*100)+' %';
   if(index !== currentNote) {
     currentNote = index;
     const note = document.querySelector('#scene-note');
@@ -111,21 +115,58 @@ function updateMotion() {
   scheduleScroll();
 }
 toggle.addEventListener('click',()=>{paused=!paused;updateMotion();});
-reducedMotion.addEventListener('change',()=>{paused=reducedMotion.matches;updateMotion();});
+reducedMotion.addEventListener('change',()=>{
+  paused=reducedMotion.matches;
+  if(paused){stopPlayback();scene?.setPaused(true,1);updateNotes(1);}
+  else if(!scene){story.classList.remove('scene-failed');loader.observe(story);}
+  updateMotion();
+});
 updateMotion();
 updateScroll();
+function sceneFailure(){
+  story.classList.add('scene-failed');story.classList.remove('scene-enabled');
+  document.querySelector('#scene-stage').dataset.ready='false';
+  toggle.hidden=true;document.querySelector('.journey-controls').hidden=true;
+  document.querySelector('.scene-caption').textContent='Safran in seiner ganzen Schönheit.';
+}
 const loader = new IntersectionObserver(async entries => {
   if(!entries.some(e=>e.isIntersecting)) return;
   loader.disconnect();
+  if(reducedMotion.matches||navigator.connection?.saveData){
+    sceneFailure();updateNotes(1);return;
+  }
   try {
     const { createSaffronScene } = await import('./scene.js');
-    scene = await createSaffronScene(document.querySelector('#scene-stage'), { paused, onProgress:updateNotes });
+    scene = await createSaffronScene(document.querySelector('#scene-stage'), { paused, onProgress:updateNotes,onFailure:sceneFailure });
     story.classList.add('scene-enabled');
     updateScroll();
   } catch {
-    story.classList.add('scene-failed');
-    toggle.hidden = true;
-    document.querySelector('.scene-caption').textContent='Safran in seiner ganzen Schönheit.';
+    sceneFailure();
   }
 }, {rootMargin:'350px'});
 loader.observe(story);
+
+const playButton=document.querySelector('.journey-play');
+let playback=0,playStart=0,playFrom=0;
+function stopPlayback(){cancelAnimationFrame(playback);playback=0;playButton.textContent='Abspielen';playButton.setAttribute('aria-pressed','false');}
+function playFrame(now){
+  if(!playback||document.hidden||paused){stopPlayback();return;}
+  const progress=Math.min(1,playFrom+(now-playStart)/32000);
+  const start=window.scrollY+story.getBoundingClientRect().top;
+  window.scrollTo({top:start+progress*(story.offsetHeight-innerHeight),behavior:'instant'});
+  if(progress>=1){stopPlayback();return;}playback=requestAnimationFrame(playFrame);
+}
+playButton.addEventListener('click',()=>{
+  if(playback){stopPlayback();return;}
+  if(!scene)return;
+  paused=false;updateMotion();
+  playFrom=Math.max(0,Math.min(1,-story.getBoundingClientRect().top/(story.offsetHeight-innerHeight)));
+  if(playFrom>.98)playFrom=0;
+  playStart=performance.now();playback=requestAnimationFrame(playFrame);
+  playButton.textContent='Anhalten';playButton.setAttribute('aria-pressed','true');
+});
+for(const event of ['wheel','touchstart','pointerdown','keydown'])window.addEventListener(event,e=>{
+  if(event==='pointerdown'&&e.target.closest('.journey-play'))return;
+  if(playback)stopPlayback();
+},{passive:true});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopPlayback();});
