@@ -1,50 +1,45 @@
 import * as THREE from './assets/three.module.js';
-import {SHAPE,clamp,ease,phase,lensPosition,lensDetachTime} from './physics-shape.js';
-export {phase};
-export const mouth=new THREE.Vector3(...SHAPE.mouth);
+export const clamp=value=>Math.max(0,Math.min(1,value));
+export const ease=value=>{const t=clamp(value);return t*t*(3-2*t);};
+export const phase=(a,b,p)=>ease((p-a)/(b-a));
+export const openingCamera=new THREE.Vector3(0,5.1,.3);
+export const openingAim=new THREE.Vector3(-.55,7.2,0);
+export const mouth=new THREE.Vector3(0,7,0);
+export const lensCenter=openingCamera.clone().add(new THREE.Vector3(0,.28,0));
+const axis=new THREE.Vector3(0,0,1);
+export function jarRotation(time,out=new THREE.Quaternion()){return out.setFromAxisAngle(axis,1.52-1.24*ease(time/1.1));}
 let knots=[],tangents=[];
+function configureClock(meta){
+  const contact=meta.lensContacts[0].time,landing=meta.bowlContacts[0].time;
+  const lastExit=Math.max(...meta.births.filter(t=>t!==null));
+  knots=[[0,0],[.12,contact*.38],[.30,contact],[.43,contact+.45],[.67,Math.max(landing+.12,contact+.75)],[.86,Math.min(meta.duration-.6,Math.max(lastExit+2.3,contact+3.7))],[.98,meta.duration],[1,meta.duration]];
+  const slopes=knots.slice(1).map((k,i)=>(k[1]-knots[i][1])/(k[0]-knots[i][0]));
+  tangents=knots.map((_,i)=>i===0||i===knots.length-1?0:slopes[i-1]*slopes[i]<=0?0:2/(1/slopes[i-1]+1/slopes[i]));
+}
 export function journeyTime(p){
   const i=Math.min(knots.length-2,Math.max(0,knots.findIndex((k,j)=>j<knots.length-1&&p<=knots[j+1][0])));
   const [x,y]=knots[i],h=knots[i+1][0]-x,t=clamp((p-x)/h),t2=t*t,t3=t2*t;
   return (2*t3-3*t2+1)*y+(t3-2*t2+t)*h*tangents[i]+(-2*t3+3*t2)*knots[i+1][1]+(t3-t2)*h*tangents[i+1];
 }
 export function createJourney(meta,data){
-  if(meta.source!=='flexible-fibers-v1'||meta.stats.landed!==meta.count)throw new Error('Unverified motion.');
-  const first=meta.firstLens,contactEnd=lensDetachTime,landing=meta.firstBowl;
-  knots=[[0,0],[.15,first*.26],[.30,first*.82],[.45,contactEnd],
-    [.70,Math.max(contactEnd+.13,landing-.04)],[.88,meta.lastBowl+.8],[1,meta.duration]];
-  const slopes=knots.slice(1).map((k,i)=>(k[1]-knots[i][1])/(k[0]-knots[i][0]));
-  tangents=knots.map((_,i)=>i===0||i===knots.length-1?0:slopes[i-1]*slopes[i]<=0?0:2/(1/slopes[i-1]+1/slopes[i]));
-  const stride=meta.count*meta.nodes*3;
-  function sample(time,out){
-    const f=clamp(time/meta.duration)*(meta.frames-1),a=Math.min(meta.frames-2,Math.floor(f)),mix=f-a,base=a*stride;
-    for(let i=0;i<stride;i++)out[i]=(data[base+i]+(data[base+stride+i]-data[base+i])*mix)/meta.positionScale;
+  if(meta.source!=='gravity-jar-lens-bowl'||!meta.lensContacts.length)throw new Error('A validated jar and lens simulation is required.');
+  configureClock(meta);
+  const stride=meta.count*7,qa=new THREE.Quaternion(),qb=new THREE.Quaternion(),tracked=new THREE.Vector3(),rotation=new THREE.Quaternion();
+  const impact=new Map(meta.lensContacts.map(c=>[c.id,{at:c.time,off:c.time+.18}]));
+  const trackId=meta.lensContacts[0].id;
+  function pose(id,time,pos,rot){
+    const f=clamp(time/meta.duration)*(meta.frames-1),frame=Math.min(meta.frames-2,Math.floor(f)),mix=f-frame,a=frame*stride+id*7,b=a+stride;
+    pos.set(THREE.MathUtils.lerp(data[a],data[b],mix)/meta.positionScale,THREE.MathUtils.lerp(data[a+1],data[b+1],mix)/meta.positionScale,THREE.MathUtils.lerp(data[a+2],data[b+2],mix)/meta.positionScale);
+    qa.set(data[a+3],data[a+4],data[a+5],data[a+6]).normalize();qb.set(data[b+3],data[b+4],data[b+5],data[b+6]).normalize();rot.copy(qa).slerp(qb,mix);
   }
-  // One continuous camera, no cuts. The early view is aligned with the physical
-  // lens collider; withdrawal starts after the macro contact, then a 30° orbit.
-  const lens=new THREE.Vector3(...SHAPE.lens),nearPosition=new THREE.Vector3(.02,4.43,.35);
-  const nearAim=new THREE.Vector3(-.22,5.93,0);
-  const center=new THREE.Vector3(),offset=new THREE.Vector3();
-  function cameraPose(p,aspect,position,target){
-    const portrait=clamp((1.05-aspect)/.6),approach=phase(.27,.33,p);
-    const start=new THREE.Vector3(.75-portrait*.4,4.48,3.5+portrait*3.4);
-    const startAim=new THREE.Vector3(-.42,6.16,.02);
-    position.copy(start).lerp(nearPosition,approach);target.copy(startAim).lerp(nearAim,approach);
-    if(p>.45){
-      const follow=phase(.45,.70,p),arrival=phase(.70,.88,p),reveal=phase(.88,1,p);
-      const angle=-.15+phase(.45,.85,p)*.52;
-      const y=THREE.MathUtils.lerp(4.36,.48,follow);
-      const distance=THREE.MathUtils.lerp(.24,2.45,phase(.45,.59,p));
-      center.set(-.05,y,0);offset.set(Math.sin(angle)*distance,.26+arrival*.55,Math.cos(angle)*distance);
-      position.fromArray(lensPosition(journeyTime(p))).add(new THREE.Vector3(.01,-.20,.13));target.copy(center);
-      target.lerp(new THREE.Vector3(0,-.08,0),arrival);
-      position.lerp(new THREE.Vector3(.10,3.65,4.9+portrait*3.5),reveal);
-      target.lerp(new THREE.Vector3(0,-.06,0),reveal);
-      position.z+=portrait*1.05*follow*(1-reveal);
-      // Begin from the same pose as the lens phase, with zero initial derivative.
-      const detach=phase(.45,.51,p);position.lerp(nearPosition,1-detach);target.lerp(nearAim,1-detach);
-    }
-    return {roll:Math.sin(phase(.45,.88,p)*Math.PI)*-.052};
+  function cameraPose(progress,aspect,position,target){
+    const time=journeyTime(progress),f=clamp(time/meta.duration)*(meta.frames-1),frame=Math.min(meta.frames-2,Math.floor(f)),mix=f-frame;
+    position.fromArray(meta.cameraFrames[frame]).lerp(new THREE.Vector3().fromArray(meta.cameraFrames[frame+1]),mix);
+    const portrait=clamp((1.15-aspect)/.65),reveal=phase(.67,.98,progress);
+    position.z+=portrait*1.7*reveal;position.y+=portrait*.5*reveal;
+    pose(trackId,time,tracked,rotation);tracked.y=Math.max(.05,tracked.y);
+    target.copy(openingAim).lerp(tracked,phase(.43,.62,progress));
+    target.lerp(new THREE.Vector3(0,.22,0),phase(.66,.86,progress));
   }
-  return {sample,cameraPose,meta,knots};
+  return {pose,sampleCache:pose,cameraPose,impact,births:meta.births,meta,knots};
 }

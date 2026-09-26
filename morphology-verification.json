@@ -1,9 +1,0 @@
-{
-  "date": "2026-09-26T00:20:59.534Z",
-  "version": "dried-stigma-v2",
-  "fibers": 2400,
-  "samples": 18585600,
-  "maxOffset": 0.007872902347661003,
-  "collisionAuditEnvelope": 0.0085,
-  "passed": true
-}

@@ -26,13 +26,6 @@
 @media(min-width:561px) and (max-height:760px){.hero{min-height:590px}.hero-content{padding-top:35px}.hero h1{font-size:84px}.hero-description{margin-top:20px}.scene-sticky{min-height:610px}}
 
 /* The narrative remains native scrolling; controls never move with the camera. */
-.scene-enabled .scene-notes{display:none}
-.scene-stage>picture{display:contents}
-.scene-enabled .scene-heading{color:#f5f0e8;text-shadow:0 1px 8px #0008}
-.scene-toolbar .scene-caption{color:#f5f0e8;text-shadow:0 1px 8px #0008}
-.scene-enabled .journey-phase,.scene-enabled .journey-percent{color:#fff;text-shadow:0 1px 5px #000}
-.scene-enabled .journey-percent{opacity:1}
-.scene-enabled .journey-play,.scene-enabled .journey-skip{font-size:14px;color:#242c24}
 .js-ready .scene-story:not(.scene-failed){height:640svh;min-height:3600px}
 .js-ready .scene-story:not(.scene-failed) .scene-sticky{position:sticky;top:0}
 .scene-sticky{min-height:0;max-height:none;height:100svh;background:#e9dfce}
@@ -48,4 +41,3 @@
 @media(max-width:800px){.scene-notes{bottom:150px}.scene-heading{left:24px}.journey-controls{left:24px;right:24px;bottom:20px;gap:10px}.scene-toolbar{bottom:83px}.journey-phase{min-width:98px;font-size:11px}.journey-skip{font-size:11px;padding:12px}.journey-percent{display:none}.journey-play{padding:12px}.scene-note{max-width:260px}.scene-caption{max-width:175px}}
 @media(max-width:380px){.journey-controls{left:16px;right:16px;gap:8px}.journey-phase{min-width:88px;font-size:10px}.journey-skip{padding:12px 9px}.journey-play{padding:12px 9px}}
 @media(prefers-reduced-motion:reduce){.js-ready .scene-story:not(.scene-failed){height:auto;min-height:0}.js-ready .scene-story:not(.scene-failed) .scene-sticky{position:relative}.journey-play,.journey-phase,.journey-percent,.scene-toolbar{display:none}.scene-notes{bottom:110px}.scene-heading{opacity:1}.journey-controls{justify-content:flex-end}}
-@media(max-width:560px){.journey-phase{position:absolute;left:0;bottom:54px;font-size:13px}.journey-controls{left:20px;right:20px}.scene-toolbar{bottom:87px}.scene-enabled .journey-skip{font-size:13px}.scene-enabled .scene-heading{font-size:12px}}
