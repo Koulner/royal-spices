@@ -1,33 +1,10 @@
 {
-  "date": "2026-09-24T21:44:59.179Z",
-  "bundles": 2200,
-  "strands": 11000,
-  "assertions": "PASS",
-  "bowlGeometryAndMaterialsUnchanged": true,
-  "maxBirthStep": 0.00005197394068066777,
-  "maxJoinStep": 0.00006990077335504369,
-  "maxFinalDelta": 0,
-  "maxCameraStep": 0.004488097884113098,
-  "nonFinite": 0,
-  "contact": [
-    {
-      "id": 0,
-      "contactError": 0,
-      "slideDistance": 0.0800499843847579,
-      "lensDistance": 0.05666725256667775
-    },
-    {
-      "id": 16,
-      "contactError": 0,
-      "slideDistance": 0.0800499843847579,
-      "lensDistance": 0.02250051257228658
-    },
-    {
-      "id": 32,
-      "contactError": 0,
-      "slideDistance": 0.0800499843847579,
-      "lensDistance": 0.05666725256667776
-    }
-  ],
-  "scope": "Deterministic pose continuity, fixed opening camera, lens proxy contact, final cache identity. This is not a flexible-fiber physical solver validation."
+  "date": "2026-09-25T23:48:47.523Z",
+  "bowlSourceUnchanged": true,
+  "bowlGeometryAndMaterialSha256": "a69a0ba1477c08f81a17a2a9f9425cd105294892e204b1ce717254d26a695faa",
+  "allFibersMovingByPointTwoSeconds": 800,
+  "initialCount": 800,
+  "identicalFinalFrames": true,
+  "noRenderProjection": true,
+  "lensContactsMoveWithCamera": true
 }

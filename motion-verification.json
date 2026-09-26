@@ -1,19 +1,185 @@
 {
-  "date": "2026-09-24T22:07:42.394Z",
-  "source": "gravity-jar-lens-bowl",
+  "date": "2026-09-26T00:15:22.333Z",
+  "version": "flexible-fibers-v1",
+  "morphology": "dried-stigma-v2",
   "stats": {
-    "count": 1100,
-    "visibleStrands": 11000,
-    "escaped": 0,
-    "released": 1083,
-    "lensContacts": 21,
-    "bowlContacts": 240,
-    "minY": -0.4461083110297019,
-    "medianY": -0.14652613314290988,
-    "maxY": 7.263010683990232,
-    "sleeping": 0,
-    "collisionGuards": 612,
-    "jarGuards": 26695
+    "count": 2400,
+    "nodesPerFiber": 13,
+    "released": 2400,
+    "lensContacts": 63,
+    "directMetalContacts": 372,
+    "bowlContacts": 2400,
+    "sleeping": 2400,
+    "landed": 2400,
+    "maxFinalSpeed": 0
   },
-  "model": "Precomputed rigid fiber bundles, gravity, jar/lens/bowl collisions, CCD projection guards. Not a full flexible-fiber simulation."
+  "checkedCapsuleSamples": 275544000,
+  "renderRingCounts": [
+    16,
+    19,
+    31
+  ],
+  "temporalSubdivisions": 2,
+  "segmentSubdivisions": 2,
+  "visualRadius": 0.0085,
+  "protrudingAtStart": 111,
+  "failures": {
+    "glass": 33,
+    "bowl": 65,
+    "room": 0,
+    "lens": 0,
+    "exit": 0
+  },
+  "maxGlass": 0.001911093662085299,
+  "maxBowl": 0.02317005723397102,
+  "maxLens": 0,
+  "maxNodeMotionPerFrame": 0.20824114627037568,
+  "allFinal": true,
+  "examples": [
+    {
+      "type": "glass",
+      "frame": 24,
+      "id": 1912,
+      "depth": 0.0001944536618090839
+    },
+    {
+      "type": "glass",
+      "frame": 24,
+      "id": 1912,
+      "depth": 0.0001944536618090839
+    },
+    {
+      "type": "glass",
+      "frame": 24,
+      "id": 1912,
+      "depth": 0.0001944536618090839
+    },
+    {
+      "type": "glass",
+      "frame": 25,
+      "id": 430,
+      "depth": 0.0006253165641683586
+    },
+    {
+      "type": "glass",
+      "frame": 25,
+      "id": 430,
+      "depth": 0.0013389281482720714
+    },
+    {
+      "type": "glass",
+      "frame": 25,
+      "id": 430,
+      "depth": 0.0005141494216014328
+    },
+    {
+      "type": "glass",
+      "frame": 25,
+      "id": 430,
+      "depth": 0.0009244058406935804
+    },
+    {
+      "type": "glass",
+      "frame": 25,
+      "id": 430,
+      "depth": 0.0013389281482720714
+    },
+    {
+      "type": "glass",
+      "frame": 25,
+      "id": 430,
+      "depth": 0.000537010951258958
+    },
+    {
+      "type": "glass",
+      "frame": 25,
+      "id": 430,
+      "depth": 0.0011593314181488276
+    },
+    {
+      "type": "glass",
+      "frame": 25,
+      "id": 430,
+      "depth": 0.0012490303488479834
+    },
+    {
+      "type": "glass",
+      "frame": 25,
+      "id": 430,
+      "depth": 0.0013389281482720714
+    },
+    {
+      "type": "glass",
+      "frame": 31,
+      "id": 351,
+      "depth": 0.0010441077272492702
+    },
+    {
+      "type": "glass",
+      "frame": 31,
+      "id": 351,
+      "depth": 0.0016196840563329415
+    },
+    {
+      "type": "glass",
+      "frame": 31,
+      "id": 351,
+      "depth": 0.0014896561217596013
+    },
+    {
+      "type": "glass",
+      "frame": 31,
+      "id": 351,
+      "depth": 0.0010637887888237316
+    },
+    {
+      "type": "glass",
+      "frame": 31,
+      "id": 351,
+      "depth": 0.00012905610803087136
+    },
+    {
+      "type": "glass",
+      "frame": 31,
+      "id": 351,
+      "depth": 0.0003873717755029579
+    },
+    {
+      "type": "glass",
+      "frame": 31,
+      "id": 351,
+      "depth": 0.001911093662085299
+    },
+    {
+      "type": "glass",
+      "frame": 31,
+      "id": 351,
+      "depth": 0.0016196840563329415
+    },
+    {
+      "type": "glass",
+      "frame": 31,
+      "id": 351,
+      "depth": 0.0008572016728614004
+    },
+    {
+      "type": "glass",
+      "frame": 31,
+      "id": 351,
+      "depth": 0.00012905610803087136
+    },
+    {
+      "type": "glass",
+      "frame": 32,
+      "id": 351,
+      "depth": 0.0009060550711295565
+    },
+    {
+      "type": "glass",
+      "frame": 32,
+      "id": 351,
+      "depth": 0.0010842704304830295
+    }
+  ],
+  "passed": false
 }

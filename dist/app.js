@@ -58,8 +58,8 @@ form.addEventListener('submit', event => {
     empty.addEventListener('input', () => empty.setCustomValidity(''), {once:true});
     return;
   }
-  preparedText = `Guten Tag [Unternehmen],\n\n${message}\n\nBereich: ${topic.selectedOptions[0].text}\nName: ${name}\nUnternehmen: ${String(data.get('company')).trim() || '-'}\nE-Mail: ${data.get('email')}\n${data.get('evidence') ? '\nBitte senden Sie mir Herkunfts- und Qualitätsnachweise.\n' : ''}\nFreundliche Grüße\n${name}`;
-  const mailto = `mailto:info@[unternehmen].de?subject=${encodeURIComponent('Anfrage: ' + topic.selectedOptions[0].text)}&body=${encodeURIComponent(preparedText)}`;
+  preparedText = `Guten Tag Royal Spices,\n\n${message}\n\nBereich: ${topic.selectedOptions[0].text}\nName: ${name}\nUnternehmen: ${String(data.get('company')).trim() || '-'}\nE-Mail: ${data.get('email')}\n${data.get('evidence') ? '\nBitte senden Sie mir Herkunfts- und Qualitätsnachweise.\n' : ''}\nFreundliche Grüße\n${name}`;
+  const mailto = `mailto:info@royalspices.de?subject=${encodeURIComponent('Anfrage: ' + topic.selectedOptions[0].text)}&body=${encodeURIComponent(preparedText)}`;
   document.querySelector('#mail-retry').href = mailto;
   document.querySelector('#form-status').hidden = false;
   document.querySelector('#copy-fallback').value = preparedText;
@@ -73,8 +73,8 @@ document.querySelector('#copy-request').addEventListener('click', async event =>
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const story = document.querySelector('#scene-story');
 const notes = [
-  ['01','Der ganze Faden.','Charakter beginnt im Detail. Unser [Premium-Produkt] besteht aus ganzen, tiefroten [Produkt]fäden.'],
-  ['02','Ein besonderer Ursprung.','Unser [Produkt] stammt aus [Region] in [Land]. Herkunftsunterlagen erhalten Sie auf Anfrage.'],
+  ['01','Der ganze Faden.','Charakter beginnt im Detail. Unser Negin-Safran besteht aus ganzen, tiefroten Safranfäden.'],
+  ['02','Ein besonderer Ursprung.','Unser Safran stammt aus Herat in Afghanistan. Herkunftsunterlagen erhalten Sie auf Anfrage.'],
   ['03','Raum für Geschmack.','Für Ihre Getränke, Ihre Küche und Ihr Sortiment. Im 1-g-Glas oder als lose Ware für den Großhandel.']
 ];
 let scene = null;
@@ -89,7 +89,7 @@ function updateScroll() {
 function updateNotes(progress) {
   const index = progress < .3 ? 0 : progress < .8 ? 1 : 2;
   story.style.setProperty('--journey-progress',progress);
-  story.dataset.phase = progress < .12 ? 'Glas neigen' : progress < .30 ? 'Der erste Fall' : progress < .43 ? 'An der Linse' : progress < .67 ? 'Mit den Fäden' : progress < .86 ? 'In der Schale' : 'Die volle Essenz';
+  story.dataset.phase = progress < .15 ? 'Am Glasrand' : progress < .30 ? 'Der erste Fall' : progress < .45 ? 'An der Linse' : progress < .70 ? 'Mit den Fäden' : progress < .88 ? 'In der Schale' : 'Die volle Essenz';
   document.querySelector('.journey-phase').textContent = story.dataset.phase;
   document.querySelector('.journey-percent').textContent = Math.round(progress*100)+' %';
   if(index !== currentNote) {
@@ -124,6 +124,7 @@ reducedMotion.addEventListener('change',()=>{
 updateMotion();
 updateScroll();
 function sceneFailure(){
+  stopPlayback();
   story.classList.add('scene-failed');story.classList.remove('scene-enabled');
   document.querySelector('#scene-stage').dataset.ready='false';
   toggle.hidden=true;document.querySelector('.journey-controls').hidden=true;
@@ -138,18 +139,13 @@ const loader = new IntersectionObserver(async entries => {
   try {
     const { createSaffronScene } = await import('./scene.js');
     scene = await createSaffronScene(document.querySelector('#scene-stage'), { paused, onProgress:updateNotes,onFailure:sceneFailure });
+    toggle.hidden=false;document.querySelector('.journey-controls').hidden=false;
     story.classList.add('scene-enabled');
     updateScroll();
   } catch {
-<<<<<<< HEAD
     sceneFailure();
-=======
-    story.classList.add('scene-failed');
-    toggle.hidden = true;
-    document.querySelector('.scene-caption').textContent='[Produkt] in seiner ganzen Schönheit.';
->>>>>>> ca006b1bfa78931a6652f74d03502f3d4c982598
   }
-}, {rootMargin:'350px'});
+}, {rootMargin:'100px'});
 loader.observe(story);
 
 const playButton=document.querySelector('.journey-play');

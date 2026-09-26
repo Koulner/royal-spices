@@ -1,0 +1,341 @@
+{
+  "date": "2026-09-25T23:44:19.978Z",
+  "browser": "153.0.4234.48",
+  "devices": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 1000,
+      "states": [
+        {
+          "signature": 69099,
+          "stateHash": 514165469,
+          "progress": 0,
+          "simTime": 0,
+          "camera": [
+            0.75,
+            4.48,
+            3.5
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 1309.3,
+          "calls": 33,
+          "triangles": 1257584,
+          "depthOfField": true
+        },
+        {
+          "signature": 65931,
+          "stateHash": -1532620436,
+          "progress": 0.24991,
+          "simTime": 0.28601502600204765,
+          "camera": [
+            0.75,
+            4.48,
+            3.5
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 48.2,
+          "calls": 33,
+          "triangles": 1257584,
+          "depthOfField": true
+        },
+        {
+          "signature": 23315,
+          "stateHash": 1001792147,
+          "progress": 0.44991,
+          "simTime": 0.8197161491830458,
+          "camera": [
+            0.020000000000000018,
+            4.43,
+            0.3500000000000001
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 51.5,
+          "calls": 33,
+          "triangles": 1257584,
+          "depthOfField": true
+        },
+        {
+          "signature": 57236,
+          "stateHash": 1221959243,
+          "progress": 0.69991,
+          "simTime": 1.7760766711745652,
+          "camera": [
+            0.7958024152511968,
+            0.7002405485413863,
+            2.408672050738148
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 346.5,
+          "calls": 27,
+          "triangles": 973252,
+          "depthOfField": true
+        },
+        {
+          "signature": 46455,
+          "stateHash": -1219108239,
+          "progress": 0.99991,
+          "simTime": 9.999997332551489,
+          "camera": [
+            0.10000112275939477,
+            4.449994006125065,
+            5.79999466689511
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 42,
+          "calls": 29,
+          "triangles": 973316,
+          "depthOfField": true
+        }
+      ],
+      "reverseIdentical": true,
+      "pause": true,
+      "resume": true,
+      "autoplayAndManualInterrupt": true,
+      "keyboardSkip": true,
+      "layout": {
+        "overflow": false,
+        "metrics": "{\"lcpMs\":404,\"cls\":0.0020989551384066355,\"maxInteractionMs\":232}"
+      }
+    },
+    {
+      "name": "tablet",
+      "width": 820,
+      "height": 1180,
+      "states": [
+        {
+          "signature": 64306,
+          "stateHash": 514165469,
+          "progress": 0,
+          "simTime": 0,
+          "camera": [
+            0.5132768361581921,
+            4.48,
+            5.512146892655368
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 173,
+          "calls": 33,
+          "triangles": 1257584,
+          "depthOfField": true
+        },
+        {
+          "signature": 68583,
+          "stateHash": -1893584787,
+          "progress": 0.24993,
+          "simTime": 0.2860415194869254,
+          "camera": [
+            0.5132768361581921,
+            4.48,
+            5.512146892655368
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 56.8,
+          "calls": 33,
+          "triangles": 1257584,
+          "depthOfField": true
+        },
+        {
+          "signature": 16686,
+          "stateHash": 910157431,
+          "progress": 0.45002,
+          "simTime": 0.8200673533202212,
+          "camera": [
+            0.019999999999992527,
+            4.429999999999983,
+            0.3500000000000539
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 64.4,
+          "calls": 33,
+          "triangles": 1257584,
+          "depthOfField": true
+        },
+        {
+          "signature": 48306,
+          "stateHash": -1814693609,
+          "progress": 0.70002,
+          "simTime": 1.7768068257401641,
+          "camera": [
+            0.7961356044622871,
+            0.6990577868182128,
+            3.029944763993546
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 45.5,
+          "calls": 21,
+          "triangles": 972612,
+          "depthOfField": true
+        },
+        {
+          "signature": 50225,
+          "stateHash": -1219108239,
+          "progress": 0.99993,
+          "simTime": 9.999998084182359,
+          "camera": [
+            0.10000080640766251,
+            4.449995694975524,
+            7.5754185978270145
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 117.3,
+          "calls": 29,
+          "triangles": 973316,
+          "depthOfField": true
+        }
+      ],
+      "reverseIdentical": true,
+      "pause": true,
+      "resume": true,
+      "autoplayAndManualInterrupt": true,
+      "keyboardSkip": true,
+      "layout": {
+        "overflow": false,
+        "metrics": "{\"lcpMs\":240,\"cls\":0.003722488117113109,\"maxInteractionMs\":96}"
+      }
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "states": [
+        {
+          "signature": 66218,
+          "stateHash": 514165469,
+          "progress": 0.00007,
+          "simTime": 4.2401584452169306e-8,
+          "camera": [
+            0.3580568720379147,
+            4.48,
+            6.831516587677725
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 777.6,
+          "calls": 23,
+          "triangles": 312910,
+          "depthOfField": false
+        },
+        {
+          "signature": 64676,
+          "stateHash": -1842064365,
+          "progress": 0.24996,
+          "simTime": 0.2861064042423923,
+          "camera": [
+            0.3580568720379147,
+            4.48,
+            6.831516587677725
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 30.1,
+          "calls": 23,
+          "triangles": 312910,
+          "depthOfField": false
+        },
+        {
+          "signature": 18297,
+          "stateHash": 579445298,
+          "progress": 0.45005,
+          "simTime": 0.8201524384024287,
+          "camera": [
+            0.01999999999980396,
+            4.4299999999995565,
+            0.3500000000014914
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 40.1,
+          "calls": 23,
+          "triangles": 312910,
+          "depthOfField": false
+        },
+        {
+          "signature": 45194,
+          "stateHash": 2090994910,
+          "progress": 0.69994,
+          "simTime": 1.7762379233483745,
+          "camera": [
+            0.7958762292936317,
+            0.6999785281995365,
+            3.437494747149595
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 31.8,
+          "calls": 13,
+          "triangles": 226088,
+          "depthOfField": false
+        },
+        {
+          "signature": 45948,
+          "stateHash": -1219108239,
+          "progress": 1,
+          "simTime": 10,
+          "camera": [
+            0.09999999999999998,
+            4.45,
+            8.73957345971564
+          ],
+          "count": 800,
+          "landed": 800,
+          "wallCorrections": 0,
+          "drawMs": 282.5,
+          "calls": 15,
+          "triangles": 226376,
+          "depthOfField": false
+        }
+      ],
+      "reverseIdentical": true,
+      "pause": true,
+      "resume": true,
+      "autoplayAndManualInterrupt": true,
+      "keyboardSkip": true,
+      "layout": {
+        "overflow": false,
+        "metrics": "{\"lcpMs\":188,\"cls\":0.022549588978267386,\"maxInteractionMs\":80}"
+      }
+    }
+  ],
+  "errors": [],
+  "checks": {
+    "reducedMotion": {
+      "canvasCount": 0,
+      "heavyAssetsRequested": false
+    },
+    "noJavaScript": {
+      "title": "Safran.\nEin kleines\nWunder.",
+      "navigation": 4,
+      "poster": true
+    },
+    "loadFailure": true,
+    "contextLoss": true,
+    "noWebgl": true,
+    "lazyBeforeScroll": true,
+    "coreNavigation": true
+  }
+}
