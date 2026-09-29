@@ -4,6 +4,7 @@ import { makeDirector, initialState, chapterPoints } from './scene/ScrollDirecto
 import { useInteraction } from './scene/InteractionController';
 import { Content } from './Content';
 import { InquiryForm } from './InquiryForm';
+import { asset } from './asset.js';
 import './styles.css';
 import './content.css';
 const Scene=lazy(()=>import('./scene/Scene'));
@@ -49,7 +50,7 @@ function App(){
       <section ref={story} className={'story '+(still?'still ':'')+(failure?'fallback-mode':'')} aria-label="Safran entdecken">
         <div className="stage">
           <div className="light-field"/>
-          <div aria-hidden={ready&&!failure} className={'poster '+(ready&&!failure?'concealed':'')}><img src="/assets/hero-poster-v2.webp" alt="Royal-Spices-Glas mit Korkverschluss, anthrazitfarbenem Siegel und Safran, 0,5-g-Visualisierung"/><span className="loading-line" hidden={ready||failure}/></div>
+          <div aria-hidden={ready&&!failure} className={'poster '+(ready&&!failure?'concealed':'')}><img src={asset('hero-poster-v2.webp')} alt="Royal-Spices-Glas mit Korkverschluss, anthrazitfarbenem Siegel und Safran, 0,5-g-Visualisierung"/><span className="loading-line" hidden={ready||failure}/></div>
           {!failure&&<div className="scene" aria-hidden="true"><SceneBoundary onFailure={failed}><Suspense fallback={null}><Scene state={state} interaction={interaction} reduced={still} active={active} onReady={loaded} onFailure={failed}/></Suspense></SceneBoundary></div>}
           <div className="editorial">{captions.map(([eyebrow,line,em,note],i)=>{
             const visible=still?i===0:chapter===i;const Heading=i===0?'h1':'h2';

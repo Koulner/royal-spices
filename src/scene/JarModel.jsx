@@ -1,8 +1,9 @@
 import { useGLTF } from '@react-three/drei';
 import { useEffect, useMemo } from 'react';
 import { DoubleSide, FrontSide } from 'three';
+import { asset } from '../asset.js';
 export function JarModel({tier}) {
-  const {scene}=useGLTF('/assets/royal-jar-web.glb');
+  const {scene}=useGLTF(asset('royal-jar-web.glb'));
   const model=useMemo(()=>{
     const copy=scene.clone(true);
     copy.traverse(o=>{

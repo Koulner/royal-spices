@@ -2,8 +2,9 @@ import { useGLTF } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import { DoubleSide } from 'three';
+import { asset } from '../asset.js';
 export function SaffronSystem({state,reduced,tier}){
-  const {scene}=useGLTF('/assets/saffron-thread-web.glb');const {size}=useThree();const group=useRef();
+  const {scene}=useGLTF(asset('saffron-thread-web.glb'));const {size}=useThree();const group=useRef();
   const threads=useMemo(()=>Array.from({length:5},(_,i)=>{
     const obj=scene.clone(true);obj.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.side=DoubleSide;o.material.color.setRGB(.70-i*.025,.28-i*.016,.25-i*.014);o.material.envMapIntensity=.45;}});return obj;
   }),[scene]);
