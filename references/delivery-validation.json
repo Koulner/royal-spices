@@ -1,0 +1,123 @@
+{
+  "version": "2.0.0",
+  "date": "2026-09-29",
+  "checks": {
+    "python_sources_parse": true,
+    "referenced_assets_present": [
+      "catering.webp",
+      "crocus-web.glb",
+      "display.webp",
+      "font-0.ttf",
+      "font-1.ttf",
+      "font-2.ttf",
+      "font-3.ttf",
+      "font-4.ttf",
+      "font-5.ttf",
+      "hero-poster-v2.webp",
+      "jars-real.webp",
+      "royal-jar-web.glb",
+      "royal-studio.exr",
+      "saffron-thread-web.glb"
+    ],
+    "render_images_valid": true,
+    "production_build_present": true,
+    "deployment_zip_crc_and_assets": true
+  },
+  "assets": {
+    "royal-jar-web.glb": {
+      "bytes": 5476400,
+      "meshes": 8,
+      "materials": 5,
+      "embedded_images": [
+        {
+          "name": "glass-normal",
+          "mime": "image/png"
+        },
+        {
+          "name": "glass-roughness",
+          "mime": "image/jpeg"
+        },
+        {
+          "name": "cork-normal",
+          "mime": "image/png"
+        },
+        {
+          "name": "cork-color",
+          "mime": "image/jpeg"
+        },
+        {
+          "name": "cork-roughness",
+          "mime": "image/jpeg"
+        },
+        {
+          "name": "paper-normal",
+          "mime": "image/png"
+        },
+        {
+          "name": "label",
+          "mime": "image/jpeg"
+        },
+        {
+          "name": "paper-roughness",
+          "mime": "image/jpeg"
+        },
+        {
+          "name": "seal-color",
+          "mime": "image/jpeg"
+        },
+        {
+          "name": "saffron-normal",
+          "mime": "image/png"
+        },
+        {
+          "name": "saffron-color",
+          "mime": "image/jpeg"
+        },
+        {
+          "name": "saffron-roughness",
+          "mime": "image/jpeg"
+        }
+      ]
+    },
+    "saffron-thread-web.glb": {
+      "bytes": 854148,
+      "meshes": 1,
+      "materials": 1,
+      "embedded_images": [
+        {
+          "name": "saffron-normal",
+          "mime": "image/png"
+        },
+        {
+          "name": "saffron-color",
+          "mime": "image/jpeg"
+        },
+        {
+          "name": "saffron-roughness",
+          "mime": "image/jpeg"
+        }
+      ]
+    },
+    "crocus-web.glb": {
+      "bytes": 616620,
+      "meshes": 19,
+      "materials": 4,
+      "embedded_images": [
+        {
+          "name": "crocus-normal",
+          "mime": "image/png"
+        },
+        {
+          "name": "crocus-color",
+          "mime": "image/jpeg"
+        }
+      ]
+    }
+  },
+  "archives": {
+    "Royal-Spices-Website-Build.zip": {
+      "bytes": 6598121,
+      "sha256": "6660cde46ffad33f8846608dc212be714770b861cfb19f1e30b6276bec969c1a"
+    }
+  }
+}

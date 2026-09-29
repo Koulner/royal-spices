@@ -1,0 +1,23 @@
+{
+  "generator": "Blender 4.5 Cycles",
+  "reference": "Royal-Spices-3D-Referenztafel.png and original photograph",
+  "maps": [
+    "cork-color.png",
+    "cork-normal.png",
+    "cork-roughness.png",
+    "glass-normal.png",
+    "glass-roughness.png",
+    "paper-normal.png",
+    "paper-roughness.png",
+    "saffron-color.png",
+    "saffron-normal.png",
+    "saffron-roughness.png",
+    "seal-color.png"
+  ],
+  "bakes": [
+    "base color without lighting",
+    "tangent-space normal",
+    "roughness"
+  ],
+  "unverified": "Physical dimensions and hidden surfaces are reconstructed, not measured."
+}
