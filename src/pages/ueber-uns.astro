@@ -1,0 +1,113 @@
+---
+import Base from '@/layouts/Base.astro';
+import Picture from '@/components/Picture.astro';
+import Arrow from '@/components/Arrow.astro';
+import { site } from '@/config/site';
+---
+
+<Base
+  title="Über Royal Spices – Safranhandel und Küche in Hamburg"
+  description="Royal Spices ist das Unternehmen von Sajad Akrami in Hamburg: Safran aus Herat für Küche, Gastronomie und Handel sowie Catering in Hamburg und Umgebung."
+>
+  <section class="page-head">
+    <div class="wrap opener">
+      <p class="eyebrow">Über Royal Spices</p>
+      <h1 class="display-xl">Ein Gewürz.<br />Eine Küche. Ein Name.</h1>
+      <p class="lead">Royal Spices ist das Unternehmen von {site.owner} in Hamburg. Wir handeln mit Safran aus Herat – und wir kochen damit.</p>
+    </div>
+  </section>
+
+  <section class="section--tight" aria-labelledby="about-was">
+    <div class="wrap split">
+      <div class="split__a">
+        <figure class="figure about-photo">
+          <Picture name="jars-photo" alt="Reihen abgefüllter Royal-Spices-Gläser mit Korken, Siegelstreifen und Etikett auf einem Tisch." sizes="(min-width: 64rem) 38vw, 92vw" loading="eager" />
+          <figcaption>Originalaufnahme aus der Abfüllung. Abgebildet ist die 0,5-g-Ausführung; angeboten wird das 1-g-Glas.</figcaption>
+        </figure>
+      </div>
+      <div class="split__b">
+        <div class="opener">
+          <p class="eyebrow">Was wir tun</p>
+          <h2 class="display-l" id="about-was">Zwei Dinge, die zusammengehören.</h2>
+        </div>
+        <ul class="rows">
+          <li>
+            <h3 class="display-s">Safran</h3>
+            <p>Ganze Negin-Fäden aus Herat, Afghanistan, in Deutschland abgefüllt. Im Glas, im Display für den Handel und als lose Ware.</p>
+            <p><a class="link" href="/produkte/">Produkte <Arrow /></a></p>
+          </li>
+          <li>
+            <h3 class="display-s">Catering</h3>
+            <p>Für Firmenveranstaltungen, Empfänge und private Anlässe in Hamburg und Umgebung. {site.owner} plant und kocht selbst.</p>
+            <p><a class="link" href="/catering/">Catering <Arrow /></a></p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section band-slate" aria-labelledby="about-haltung">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <p class="eyebrow">Haltung</p>
+        <h2 class="display-l" id="about-haltung">Woran Sie uns messen können.</h2>
+      </div>
+      <div class="split__b">
+        <ol class="steps">
+          <li>
+            <h3 class="display-s">Wir nennen die Herkunft.</h3>
+            <p>Herat, Afghanistan. Abgefüllt in Deutschland. So steht es auf jedem Glas.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Wir zeigen das Produkt, wie es ist.</h3>
+            <p>Ganze Fäden in einem Glas, durch das man hindurchsehen kann.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Wir belegen, was wir sagen.</h3>
+            <p>Unterlagen gibt es zur konkreten Lieferung. Was wir nicht belegen können, behaupten wir nicht.</p>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="about-kontakt">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <p class="eyebrow">Kontakt</p>
+        <h2 class="display-l" id="about-kontakt">Sprechen Sie mit uns.</h2>
+      </div>
+      <div class="split__b">
+        <dl class="facts">
+          <div><dt>Unternehmen</dt><dd>{site.name} · {site.owner}</dd></div>
+          <div><dt>Anschrift</dt><dd>{site.address.street}, {site.address.postalCode} {site.address.city}</dd></div>
+          <div><dt>Telefon</dt><dd><a href={site.phone.href}>{site.phone.display}</a></dd></div>
+          <div><dt>E-Mail</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></div>
+        </dl>
+        <div class="actions">
+          <a class="btn" href="/kontakt/#anfrage">Anfrage senden <Arrow /></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .about-photo :global(img) {
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: 50% 80%;
+  }
+
+  .facts a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    margin-block: -0.625rem;
+    text-decoration-color: var(--saffron);
+  }
+
+  .actions {
+    margin-top: var(--s-3);
+  }
+</style>

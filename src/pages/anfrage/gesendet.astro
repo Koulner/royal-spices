@@ -1,0 +1,30 @@
+---
+// Result page for form posts without JavaScript (the scripted form shows the result in place).
+import Base from '@/layouts/Base.astro';
+import Arrow from '@/components/Arrow.astro';
+import { site } from '@/config/site';
+---
+
+<Base title="Anfrage gesendet" description="Ihre Anfrage ist bei Royal Spices eingegangen." noindex>
+  <section class="page-head result">
+    <div class="wrap opener">
+      <p class="eyebrow">Gesendet</p>
+      <h1 class="display-xl">Danke.<br />Ihre Anfrage ist bei uns.</h1>
+      <p class="lead">Wir melden uns bei Ihnen unter der angegebenen E-Mail-Adresse. Wenn es eilt, erreichen Sie uns unter <a href={site.phone.href}>{site.phone.display}</a>.</p>
+      <div class="actions">
+        <a class="btn" href="/">Zur Startseite <Arrow /></a>
+        <a class="link" href="/produkte/">Produkte ansehen <Arrow /></a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .result {
+    min-height: 70svh;
+  }
+
+  .actions {
+    margin-top: var(--s-5);
+  }
+</style>

@@ -1,0 +1,70 @@
+---
+// Price / inquiry module of the product page (V1 specification §18, §20).
+//   store configured -> variant, quantity, cart, Shopify Checkout. Prices and availability are read
+//                       from the Storefront API when the page is viewed; none are written into this site.
+//   no store yet     -> the inquiry path. No placeholder prices, no simulated cart.
+import Arrow from './Arrow.astro';
+import { commerceEnabled } from '@/lib/commerce/config';
+
+interface Props {
+  handle: string;
+  inquiryHref: string;
+}
+const { handle, inquiryHref } = Astro.props;
+---
+
+<div class="buybox label">
+  {
+    commerceEnabled ? (
+      <>
+        <p class="eyebrow">Kaufen</p>
+        <div class="buybox__body" data-buybox data-commerce data-handle={handle}>
+          <div data-buybox-body aria-live="polite">
+            <p class="small">Preis und Verfügbarkeit werden geladen …</p>
+          </div>
+        </div>
+        <p class="small buybox__alt">
+          Größere Mengen oder Fragen? <a href={inquiryHref}>Direkt anfragen</a>
+        </p>
+      </>
+    ) : (
+      <>
+        <p class="eyebrow">Preis &amp; Verfügbarkeit</p>
+        <p class="buybox__text">Den aktuellen Preis, die Verfügbarkeit und den Versand nennen wir Ihnen im Angebot – für ein einzelnes Glas ebenso wie für eine größere Stückzahl.</p>
+        <div class="actions">
+          <a class="btn" href={inquiryHref}>
+            Glas anfragen <Arrow />
+          </a>
+          <a class="link" href="/handel/">
+            Für den Handel <Arrow />
+          </a>
+        </div>
+      </>
+    )
+  }
+</div>
+
+<style>
+  .buybox {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  .buybox__text {
+    max-width: 30rem;
+  }
+
+  .buybox__body {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  .buybox__body :global([data-buybox-body]) {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  .buybox .actions {
+    margin-top: var(--s-2);
+  }
+</style>

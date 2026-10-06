@@ -1,0 +1,57 @@
+---
+// Company details as published by the client on royalspices.de/impressum.html (checked 2026-10-05).
+// Legal review by the responsible party is required before launch (docs/PRODUCT-TRUTH.md).
+import Base from '@/layouts/Base.astro';
+import { site } from '@/config/site';
+---
+
+<Base title="Impressum" description="Impressum von Royal Spices, Sajad Akrami, Hammerdeich 10, 20537 Hamburg.">
+  <section class="page-head">
+    <div class="wrap">
+      <h1 class="display-l">Impressum</h1>
+      <div class="longform">
+        <p>Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)</p>
+
+        <h2>Betreiber</h2>
+        <p>
+          {site.owner}<br />
+          {site.name}<br />
+          {site.address.street}<br />
+          {site.address.postalCode}
+          {site.address.city}<br />
+          Deutschland
+        </p>
+
+        <h2>Kontakt</h2>
+        <p>
+          Telefon: <a href={site.phone.href}>{site.phone.display}</a><br />
+          E-Mail: <a href={`mailto:${site.email}`}>{site.email}</a>
+        </p>
+
+        <h2>Umsatzsteuer-ID</h2>
+        <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz: DE459334343</p>
+
+        <h2>Bildnachweis</h2>
+        <p>
+          Darstellungen von Blüte, Safranfäden und Glas: 3D-Visualisierungen im Auftrag von Royal Spices. Fotografien der abgefüllten Gläser und der Veranstaltung: Royal Spices.
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-head {
+    padding-bottom: var(--section-pad);
+  }
+
+  h1 {
+    margin-bottom: var(--s-5);
+  }
+
+  .longform a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+</style>

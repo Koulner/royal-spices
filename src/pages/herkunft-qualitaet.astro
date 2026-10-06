@@ -1,0 +1,206 @@
+---
+import Base from '@/layouts/Base.astro';
+import Picture from '@/components/Picture.astro';
+import Arrow from '@/components/Arrow.astro';
+import Anatomy from '@/components/Anatomy.astro';
+import { site } from '@/config/site';
+import { saffronJar } from '@/data/product';
+---
+
+<Base
+  title="Herkunft & Qualität – Safran aus Herat, Afghanistan"
+  description="Woher der Safran von Royal Spices stammt, welcher Teil der Blüte verwendet wird, was Negin bedeutet und welche Nachweise Sie zu einer Lieferung erhalten."
+>
+  <section class="page-head">
+    <div class="wrap opener">
+      <p class="eyebrow">Herkunft &amp; Qualität</p>
+      <h1 class="display-xl">Was wir sagen,<br />können wir zeigen.</h1>
+      <p class="lead">Herkunft, Pflanze, Verarbeitung, Nachweise. Auf dieser Seite steht, was wir über unseren Safran wissen – und was Sie dazu von uns bekommen.</p>
+    </div>
+  </section>
+
+  <section class="section--tight" aria-labelledby="hq-herkunft">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <p class="eyebrow">Herkunft</p>
+        <h2 class="display-l" id="hq-herkunft">Herat, Afghanistan.</h2>
+      </div>
+      <div class="split__b">
+        <p class="lead">Der Safran stammt aus Herat im Westen Afghanistans. In Deutschland wird er abgefüllt.</p>
+        <dl class="facts">
+          <div><dt>Herkunft</dt><dd>{saffronJar.origin}</dd></div>
+          <div><dt>Abfüllung</dt><dd>Deutschland</dd></div>
+          <div><dt>Verantwortlich</dt><dd>{site.name} · {site.owner}, {site.address.street}, {site.address.postalCode} {site.address.city}</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="section band-deep" aria-labelledby="hq-pflanze">
+    <div class="wrap grid plant">
+      <div class="plant__head opener">
+        <p class="eyebrow">Die Pflanze</p>
+        <h2 class="display-l" id="hq-pflanze"><em>Crocus sativus</em></h2>
+        <p class="lead">Eine violette Blüte mit sechs Blütenhüllblättern, drei gelben Staubbeuteln und einem hellen Griffel, der sich in drei rote Narbenäste teilt.</p>
+        <p>Diese drei Äste sind der Safran. Mehr trägt eine Blüte nicht. Alles andere – Blütenblätter, Staubbeutel, der helle Griffel – gehört nicht in das Gewürz.</p>
+      </div>
+      <Anatomy class="plant__figure" sizes="(min-width: 64rem) 56vw, 92vw" note />
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="hq-faden">
+    <div class="wrap">
+      <div class="opener thread-head">
+        <p class="eyebrow">Vom Narbenast zum Faden</p>
+        <h2 class="display-l" id="hq-faden">Frisch und getrocknet<br />sind nicht dasselbe.</h2>
+      </div>
+      <div class="pair">
+        <figure class="figure">
+          <Picture name="stigma" alt="Frischer roter Narbenast an der Blüte, an der Spitze trichterförmig geweitet." sizes="(min-width: 48rem) 46vw, 92vw" />
+          <figcaption><b>Frisch.</b> Die Narbe sitzt an der Blüte: glatt, kräftig rot, zur Spitze hin geweitet.</figcaption>
+        </figure>
+        <figure class="figure">
+          <Picture name="saffron" alt="Getrocknete Safranfäden: dunkelrot, gedreht und faltig, mit verbreiterten Enden." sizes="(min-width: 48rem) 46vw, 92vw" />
+          <figcaption><b>Getrocknet.</b> Das Gewebe fällt zusammen und dreht sich. Die Fäden werden dunkler, die geweitete Spitze bleibt erkennbar.</figcaption>
+        </figure>
+      </div>
+      <div class="split negin">
+        <div class="split__a">
+          <h3 class="display-m">Was Negin bedeutet</h3>
+        </div>
+        <div class="split__b prose">
+          <p>Negin nennt der Handel ganze, rote Fäden. Auf unserem Etikett steht: {saffronJar.grade}.</p>
+          <p>Ganze Fäden haben einen praktischen Vorteil: Man sieht, was man kauft. Form, Farbe und die geweitete Spitze lassen sich am einzelnen Faden prüfen.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section band-slate" aria-labelledby="hq-nachweise">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <p class="eyebrow">Nachweise</p>
+        <h2 class="display-l" id="hq-nachweise">Zur Lieferung, nicht zur Dekoration.</h2>
+        <p class="lead">Wir veröffentlichen keine Siegel und keine Laborwerte, die sich nicht auf eine konkrete Charge beziehen.</p>
+      </div>
+      <div class="split__b">
+        <ol class="steps">
+          <li>
+            <h3 class="display-s">Auf dem Etikett</h3>
+            <p>Bezeichnung, Sorte, Füllmenge, Zutaten, Herkunft, Abfüllort, verantwortliches Unternehmen mit Anschrift.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Auf jedem Glas</h3>
+            <p>Mindesthaltbarkeitsdatum und Los. Über das Los lässt sich jedes Glas seiner Charge zuordnen.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Auf Anfrage</h3>
+            <p>Verfügbare Labor- und Herkunftsunterlagen zur angebotenen Lieferung. Wir klären mit Ihnen, auf welches Produkt und welche Charge sie sich beziehen.</p>
+          </li>
+        </ol>
+        <div class="actions">
+          <a class="btn" href="/kontakt/?anliegen=handel#anfrage">Unterlagen anfragen <Arrow /></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="hq-glas">
+    <div class="wrap split">
+      <div class="split__a">
+        <figure class="figure jars">
+          <Picture name="jars-photo" alt="Reihen abgefüllter Royal-Spices-Gläser mit Korken, Siegelstreifen und Etikett." sizes="(min-width: 64rem) 38vw, 92vw" />
+          <figcaption>Originalaufnahme aus der Abfüllung. Abgebildet ist die 0,5-g-Ausführung; angeboten wird das 1-g-Glas.</figcaption>
+        </figure>
+      </div>
+      <div class="split__b">
+        <div class="opener">
+          <p class="eyebrow">Verpackung &amp; Lagerung</p>
+          <h2 class="display-l" id="hq-glas">Glas, Kork, Siegel.</h2>
+        </div>
+        <ul class="rows">
+          <li>
+            <h3 class="display-s">Glas</h3>
+            <p>Man sieht die Fäden, bevor man das Glas öffnet.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Naturkork und Siegelstreifen</h3>
+            <p>Der Streifen läuft über den Korken. Ist er unversehrt, wurde das Glas nicht geöffnet.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Lagerung</h3>
+            <p>{saffronJar.storage}</p>
+          </li>
+        </ul>
+        <div class="actions">
+          <a class="link" href="/produkte/safran-negin-1g/">Zum Produkt <Arrow /></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .plant__head {
+    grid-column: 1 / span 5;
+    align-content: start;
+  }
+
+  .plant__head p:last-child {
+    color: var(--ink-2);
+    max-width: var(--measure);
+  }
+
+  .plant :global(.plant__figure) {
+    grid-column: 6 / span 7;
+  }
+
+  .thread-head {
+    margin-bottom: var(--s-7);
+  }
+
+  .pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-6) clamp(1rem, 2.4vw, 2.5rem);
+  }
+
+  .pair :global(img) {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  .pair figcaption {
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+  }
+
+  .pair figcaption b {
+    color: var(--ink);
+  }
+
+  .negin {
+    margin-top: var(--s-8);
+    padding-top: var(--s-6);
+    border-top: 1px solid var(--rule);
+  }
+
+  .jars :global(img) {
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: 50% 80%;
+  }
+
+  @media (max-width: 63.99rem) {
+    .plant__head,
+    .plant :global(.plant__figure) {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 47.99rem) {
+    .pair {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

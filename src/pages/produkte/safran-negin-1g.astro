@@ -1,0 +1,204 @@
+---
+import Base from '@/layouts/Base.astro';
+import Picture from '@/components/Picture.astro';
+import LabelSheet from '@/components/LabelSheet.astro';
+import BuyBox from '@/components/BuyBox.astro';
+import Arrow from '@/components/Arrow.astro';
+import { saffronJar, formats } from '@/data/product';
+import { site } from '@/config/site';
+
+const inquiryHref = '/kontakt/?anliegen=produkt&format=glas#anfrage';
+
+// Product data without an offer: price and availability are added from Shopify once the store is live.
+const productSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: `${saffronJar.name} ${saffronJar.grade}, ${saffronJar.quantity}`,
+  description: 'Ganze Safranfäden, Negin, Grade 1. Herkunft Herat, Afghanistan. In Deutschland abgefüllt. 1 g im Glas mit Naturkork.',
+  category: 'Gewürze',
+  brand: { '@type': 'Brand', name: site.name },
+  countryOfOrigin: { '@type': 'Country', name: 'Afghanistan' },
+  weight: { '@type': 'QuantitativeValue', value: 1, unitCode: 'GRM' },
+  image: new URL('/og.jpg', Astro.site).href,
+};
+---
+
+<Base
+  title="Safranfäden Negin, 1 g im Glas"
+  description="Ganze Safranfäden, Negin · Grade 1, aus Herat, Afghanistan. 1 g im Glas mit Naturkork, in Deutschland abgefüllt. Produktdaten, Verpackung und Anfrage."
+  schema={[productSchema]}
+>
+  <section class="pdp-head">
+    <div class="wrap grid">
+      <figure class="pdp-head__figure figure">
+        <Picture
+          name="arrival-desktop"
+          alt="Royal-Spices-Glas mit Safranfäden: Naturkork, dunkler Siegelstreifen mit Blattzeichen, cremefarbenes Etikett. Daneben eine Safranblüte und getrocknete Fäden."
+          sizes="(min-width: 64rem) 54vw, 100vw"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </figure>
+      <div class="pdp-head__body">
+        <nav aria-label="Brotkrumen" class="crumbs small">
+          <a href="/produkte/">Produkte</a><span aria-hidden="true"> / </span><span aria-current="page">Safranfäden, 1 g</span>
+        </nav>
+        <p class="eyebrow">{saffronJar.grade} · {saffronJar.origin}</p>
+        <h1 class="display-xl">Safranfäden,<br />1 g im Glas.</h1>
+        <p class="lead">Ganze Fäden aus Herat, in Deutschland abgefüllt. Ein Gramm im Glas mit Naturkork und Siegelstreifen.</p>
+        <BuyBox handle={saffronJar.shopifyHandle} inquiryHref={inquiryHref} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section band-deep" aria-labelledby="daten-title">
+    <div class="wrap split">
+      <div class="split__a">
+        <div class="opener">
+          <p class="eyebrow">Produktdaten</p>
+          <h2 class="display-l" id="daten-title">Was auf dem Etikett steht.</h2>
+        </div>
+        <p class="lead">Die Angaben stehen so auf dem Glas. Mindesthaltbarkeitsdatum und Los werden je Charge aufgebracht.</p>
+      </div>
+      <div class="split__b">
+        <LabelSheet headingLevel="h3" />
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="faeden-title">
+    <div class="wrap split">
+      <div class="split__a">
+        <div class="opener">
+          <p class="eyebrow">Die Fäden</p>
+          <h2 class="display-l" id="faeden-title">Ganz, rot, getrocknet.</h2>
+        </div>
+        <figure class="figure">
+          <Picture name="saffron" alt="Getrocknete Safranfäden in der Nahaufnahme: dunkelrot, gedreht, mit verbreiterten Enden." sizes="(min-width: 64rem) 38vw, 92vw" />
+        </figure>
+      </div>
+      <div class="split__b">
+        <ul class="rows">
+          <li>
+            <h3 class="display-s">Charakter</h3>
+            <p>Negin steht für ganze, rote Fäden. Getrocknet sind sie dunkelrot, leicht gedreht und an der Spitze trichterförmig geweitet.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Anwendung</h3>
+            <p>Ganze Fäden lassen sich abzählen. Üblich ist, sie vor der Verwendung kurz in warmer Flüssigkeit ziehen zu lassen und mitsamt der Flüssigkeit zu verwenden.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Verpackung</h3>
+            <p>{saffronJar.packaging.join(', ')}. Das Glas ist klein und dickwandig, der Siegelstreifen läuft über den Korken.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Lagerung</h3>
+            <p>{saffronJar.storage}</p>
+          </li>
+          <li>
+            <h3 class="display-s">Dokumente</h3>
+            <p>Verfügbare Labor- und Herkunftsunterlagen zur angebotenen Lieferung erhalten Sie auf Anfrage.</p>
+            <p><a class="link" href={inquiryHref}>Unterlagen anfragen <Arrow /></a></p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section--tight more" aria-labelledby="mehr-title">
+    <div class="wrap">
+      <h2 class="eyebrow" id="mehr-title">Größere Mengen</h2>
+      <ul class="rows">
+        {
+          formats.slice(1).map((f) => (
+            <li class="more__row">
+              <div>
+                <h3 class="display-m">{f.title}</h3>
+                <p>{f.spec}</p>
+              </div>
+              <a class="link" href={f.action.href}>{f.action.label} <Arrow /></a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .pdp-head {
+    padding-top: var(--header-h);
+  }
+
+  .pdp-head .grid {
+    align-items: center;
+    row-gap: var(--s-6);
+  }
+
+  .pdp-head__figure {
+    grid-column: 1 / span 7;
+    margin-left: calc(var(--gutter) * -1);
+  }
+
+  .pdp-head__figure :global(img) {
+    border-radius: 0 0.375rem 0.375rem 0;
+    aspect-ratio: 1 / 1;
+    max-height: calc(100svh - var(--header-h));
+    object-fit: cover;
+    object-position: 80% 50%;
+  }
+
+  .pdp-head__body {
+    grid-column: 8 / span 5;
+    display: grid;
+    gap: var(--s-5);
+    padding-block: var(--s-6);
+  }
+
+  .crumbs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+
+  .more .eyebrow {
+    margin-bottom: var(--s-4);
+  }
+
+  .more__row {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: var(--s-5);
+  }
+
+  .section--tight.more {
+    padding-top: 0;
+    padding-bottom: var(--section-pad);
+  }
+
+  @media (max-width: 63.99rem) {
+    .pdp-head__figure,
+    .pdp-head__body {
+      grid-column: 1 / -1;
+    }
+
+    .pdp-head__figure {
+      margin-right: calc(var(--gutter) * -1);
+    }
+
+    .pdp-head__figure :global(img) {
+      border-radius: 0;
+      aspect-ratio: 4 / 3;
+    }
+
+    .pdp-head__body {
+      padding-top: 0;
+    }
+  }
+
+  @media (max-width: 35.99rem) {
+    .more__row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

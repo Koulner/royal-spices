@@ -1,0 +1,26 @@
+---
+// The botanical mark as it sits on the jar label, redrawn from the label geometry of the
+// production master (no original vector artwork was supplied — see docs/PRODUCT-TRUTH.md).
+interface Props {
+  class?: string;
+  [key: `data-astro-cid-${string}`]: unknown;
+}
+// `rest` carries the parent's style scope, so a parent can size the mark with its own scoped CSS.
+const { class: className, ...rest } = Astro.props;
+---
+
+<svg class={className} viewBox="0 0 100 92" width="24" height="22" aria-hidden="true" focusable="false" {...rest}>
+  <g
+    transform="translate(50 90) scale(100 -100)"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="0.03"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M0 0V.75M0 0C-.06 .1-.16 .22-.3 .43M0 0C.06 .12 .16 .28 .3 .51"></path>
+    <path d="M0 .35C-.2 .5-.16 .72 0 .86C.16 .72 .2 .5 0 .35Z"></path>
+    <path d="M-.08 .18C-.3 .2-.44 .4-.4 .62C-.22 .56-.1 .38-.08 .18Z"></path>
+    <path d="M.07 .25C.3 .26 .44 .48 .41 .72C.22 .66 .08 .46 .07 .25Z"></path>
+  </g>
+</svg>

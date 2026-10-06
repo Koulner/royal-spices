@@ -1,0 +1,773 @@
+---
+// Signature hero: CROCUS -> STIGMA -> SAFFRON -> ROYAL SPICES.
+//
+// Two modes, decided before first paint (see the inline script in Base.astro):
+//   static  – default. No JavaScript, reduced motion or data saver. The arrival composition is the
+//             hero; the journey follows as a four-part picture essay.
+//   motion  – html.journey-on. The stage pins and a pre-rendered camera move is scrubbed by scroll.
+// All copy and both calls to action are HTML in either mode. The canvas only adds the movement.
+import Picture from './Picture.astro';
+import Arrow from './Arrow.astro';
+import stills from '@/data/stills.json';
+import manifest from '@/data/hero-manifest.json';
+import { chapters, stops } from '@/data/journey';
+
+type Variant = { src: string; width: number };
+type Still = { width: number; height: number; avif: Variant[]; webp: Variant[] };
+const s = stills as Record<string, Still>;
+const srcset = (list: Variant[]) => list.map((v) => `${v.src} ${v.width}w`).join(', ');
+const PORTRAIT = '(max-aspect-ratio: 4/5)';
+const BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+
+const originAlt = 'Makroaufnahme im Inneren einer Safranblüte: ein roter Narbenast vor violetten Blütenblättern.';
+const arrivalAlt =
+  'Royal-Spices-Glas mit Safranfäden, Naturkork und Etikett. Daneben eine violette Safranblüte und eine Prise getrockneter Fäden.';
+---
+
+<section
+  class="journey"
+  data-journey
+  data-header-clear
+  data-sets={JSON.stringify(manifest.sets)}
+  data-base={manifest.base}
+  data-fine={manifest.fine}
+  data-stops={JSON.stringify(stops)}
+  aria-labelledby="journey-title"
+>
+  <div class="journey__stage" data-journey-stage>
+    <div class="journey__media" data-journey-media>
+      <picture class="journey__poster journey__poster--origin">
+        {/* static mode never shows this frame: do not download it there */}
+        <source media="(prefers-reduced-motion: reduce)" srcset={BLANK} />
+        <source media={PORTRAIT} type="image/avif" srcset={srcset(s['origin-mobile'].avif)} sizes="100vw" />
+        <source media={PORTRAIT} type="image/webp" srcset={srcset(s['origin-mobile'].webp)} sizes="100vw" />
+        <source type="image/avif" srcset={srcset(s['origin-desktop'].avif)} sizes="100vw" />
+        <source type="image/webp" srcset={srcset(s['origin-desktop'].webp)} sizes="100vw" />
+        <img src={s['origin-desktop'].webp[0].src} alt={originAlt} width={s['origin-desktop'].width} height={s['origin-desktop'].height} fetchpriority="high" decoding="async" />
+      </picture>
+
+      {/* the moving picture: two frames, the upper one dissolved over the lower */}
+      <div class="journey__canvas" data-journey-canvas aria-hidden="true">
+        <canvas class="journey__layer" data-journey-layer></canvas>
+        <canvas class="journey__layer" data-journey-layer></canvas>
+      </div>
+      {/* the settled picture in full resolution, laid over the moving one */}
+      <canvas class="journey__canvas journey__layer journey__sharp" data-journey-sharp aria-hidden="true"></canvas>
+
+      <picture class="journey__poster journey__poster--arrival" data-journey-final>
+        <source media={PORTRAIT} type="image/avif" srcset={srcset(s['arrival-mobile'].avif)} sizes="100vw" />
+        <source media={PORTRAIT} type="image/webp" srcset={srcset(s['arrival-mobile'].webp)} sizes="100vw" />
+        <source type="image/avif" srcset={srcset(s['arrival-desktop'].avif)} sizes="100vw" />
+        <source type="image/webp" srcset={srcset(s['arrival-desktop'].webp)} sizes="100vw" />
+        <img src={s['arrival-desktop'].webp[0].src} alt={arrivalAlt} width={s['arrival-desktop'].width} height={s['arrival-desktop'].height} loading="lazy" decoding="async" />
+      </picture>
+    </div>
+
+    <div class="journey__copy wrap">
+      <div class="journey__intro" data-journey-intro>
+        <p class="eyebrow">Royal Spices · Negin · Grade 1</p>
+        <h1 class="display-xl" id="journey-title">Safran aus Herat.</h1>
+        <p class="lead">Ganze Safranfäden aus Afghanistan, in Deutschland abgefüllt. Für die Küche, die Gastronomie und den Handel.</p>
+        <div class="actions">
+          <a class="btn" href="/produkte/safran-negin-1g/">Zum Produkt <Arrow /></a>
+          <a class="link" href="/handel/">Für den Handel <Arrow /></a>
+        </div>
+      </div>
+
+    </div>
+
+    {/* Source order is keyboard and reading order: opening, "continue / skip", the four chapters,
+        then the arrival (which sits after the chapters below, laid over this stage). */}
+    <div class="journey__controls wrap">
+      <button class="journey__next" type="button" data-journey-next>
+        <span data-journey-next-label>Vom Crocus zum Glas</span>
+        <Arrow dir="down" />
+      </button>
+      <a class="journey__skip" href="#herkunft">Reise überspringen</a>
+    </div>
+
+    <div class="journey__thread" aria-hidden="true"><i data-journey-thread></i></div>
+  </div>
+
+  <div class="journey__chapters-wrap">
+    <p class="journey__essay-title eyebrow wrap">Vom Crocus zum Glas</p>
+    <ol class="journey__chapters wrap">
+      {
+        chapters.map((c) => (
+          <li class="chapter" data-chapter data-from={c.from} data-to={c.to}>
+            <figure class="chapter__figure">
+              <Picture name={c.still} alt={c.alt} sizes="(min-width: 64rem) 44vw, 92vw" />
+            </figure>
+            <div class="chapter__label label">
+              <p class="chapter__index eyebrow">
+                {c.index}
+                <span aria-hidden="true"> / 04</span>
+              </p>
+              <h2 class:list={['chapter__title display-m', { latin: c.latin }]}>{c.title}</h2>
+              <p class="chapter__text">{c.text}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="journey__copy journey__copy--arrival wrap">
+      <div class="journey__arrival" data-journey-arrival>
+        <p class="eyebrow">Royal Spices</p>
+        <h2 class="display-l">Safranfäden.<br />Ein Gramm im Glas.</h2>
+        <p class="lead">Negin · Grade 1. Herkunft Herat, Afghanistan. In Deutschland abgefüllt.</p>
+        <div class="actions">
+          <a class="btn" href="/produkte/safran-negin-1g/">Produkt ansehen <Arrow /></a>
+          <a class="link" href="/kontakt/?anliegen=handel#anfrage">Handelsanfrage senden <Arrow /></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import '@/scripts/journey';
+</script>
+
+<style>
+  /* ============================================================== static mode (default) */
+  .journey {
+    position: relative;
+    background: var(--paper);
+    /* Which part of the picture survives when the viewport is not the picture's own shape.
+       Read by the posters (object-position) and by the canvas (src/scripts/journey.ts). */
+    --focal-x: 74%;
+    --focal-y: 50%;
+    /* Height of the picture, and the width left for copy beside the still life. The column is
+       derived from the picture where copy and flower share a row (see "wide landscape" below). */
+    --stage-h: max(100svh, 38rem);
+    --copy-w: 35rem;
+  }
+
+  /* the hero is full-bleed: its copy keeps to the page gutter, not to the centred text column */
+  .journey :global(.wrap) {
+    max-width: none;
+  }
+
+  .journey__stage {
+    position: relative;
+    min-height: var(--stage-h);
+    display: grid;
+    overflow: clip;
+    isolation: isolate;
+  }
+
+  .journey__media,
+  .journey__poster,
+  .journey__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .journey__media {
+    z-index: -1;
+    background: #d9d3c6;
+  }
+
+  .journey__poster img,
+  .journey__layer {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--focal-x) var(--focal-y);
+  }
+
+  /* frames of the move: each canvas has the size of its frame and is cropped like the posters.
+     Their opacity is the dissolve and changes every frame, so each keeps its own compositor layer. */
+  .journey__layer {
+    position: absolute;
+    inset: 0;
+    will-change: opacity;
+  }
+
+  /* a breath of paper behind the navigation, so it reads over any frame of the move */
+  .journey__media::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: calc(var(--header-h) * 1.9);
+    background: linear-gradient(to bottom, color-mix(in srgb, var(--paper) 62%, transparent), transparent);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* the stage dissolves into the page instead of ending on an edge */
+  .journey__media::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    /* short: the pinch of threads lies near the lower edge and must stay clear */
+    height: 10%;
+    background: linear-gradient(to bottom, transparent, var(--paper));
+    pointer-events: none;
+  }
+
+  .journey__poster--origin,
+  .journey__canvas,
+  .journey__controls,
+  .journey__thread {
+    display: none;
+  }
+
+  /* both copy layers share the stage; only their content takes pointer input */
+  .journey__copy {
+    grid-area: 1 / 1;
+    display: grid;
+    align-content: center;
+    padding-top: calc(var(--header-h) + 1.5rem);
+    padding-bottom: clamp(4rem, 12vh, 8rem);
+    pointer-events: none;
+  }
+
+  .journey__copy > * {
+    pointer-events: auto;
+  }
+
+  /* static mode has one statement, the opening; the arrival layer belongs to the journey */
+  .journey__copy.journey__copy--arrival {
+    display: none;
+  }
+
+  .journey__intro,
+  .journey__arrival {
+    max-width: 35rem;
+  }
+
+  /* sized to stay clear of the flower, which reaches furthest left in the arrival frame */
+  .journey__arrival :global(.display-l) {
+    font-size: clamp(2.25rem, 2.6vw + 1rem, 3.75rem);
+  }
+
+  .journey__intro .eyebrow,
+  .journey__arrival .eyebrow {
+    margin-bottom: var(--s-5);
+  }
+
+  .journey__intro .lead,
+  .journey__arrival .lead {
+    margin-top: var(--s-5);
+    max-width: 29rem;
+    color: var(--ink);
+  }
+
+  .journey .actions {
+    margin-top: var(--s-6);
+  }
+
+  /* picture essay */
+  .journey__chapters-wrap {
+    padding-block: clamp(3rem, 7vw, 6rem) 0;
+  }
+
+  /* the essay is reading matter: it returns to the text column */
+  :global(html:not(.journey-on)) .journey__chapters-wrap :global(.wrap) {
+    max-width: calc(var(--wrap) + 2 * var(--gutter));
+  }
+
+  .journey__essay-title {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    margin-bottom: var(--s-6);
+  }
+
+  .journey__essay-title::before {
+    content: '';
+    width: 2.5rem;
+    height: 1px;
+    background: var(--saffron);
+  }
+
+  .journey__chapters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(2.5rem, 5vw, 5rem) clamp(1rem, 2.4vw, 2.5rem);
+    margin-block: 0;
+  }
+
+  .chapter__figure :global(img) {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 0.375rem;
+    background: #d9d3c6;
+  }
+
+  .chapter__label {
+    margin: -2.5rem var(--s-4) 0;
+    max-width: 26rem;
+  }
+
+  .chapter__title {
+    margin-top: var(--s-2);
+  }
+
+  .chapter__text {
+    margin-top: var(--s-3);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 47.99rem) {
+    .journey__chapters {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* portrait: the still life stands in the upper two thirds of the frame, the copy sits on a
+     label below it. (In motion mode the opening frame keeps its subject low instead, and the
+     headline moves to the top — see the motion rules further down.) */
+  @media (max-aspect-ratio: 4/5) {
+    .journey {
+      /* portrait pictures are trimmed at the bottom (free floor), never at the cork */
+      --focal-x: 50%;
+      --focal-y: 20%;
+    }
+
+    .journey__copy {
+      align-content: end;
+      padding-top: calc(var(--header-h) + 1rem);
+      padding-bottom: 1.25rem;
+    }
+
+    .journey__intro,
+    .journey__arrival {
+      max-width: none;
+      padding: 1.375rem 1.25rem 1.125rem;
+      border-radius: var(--radius-label);
+      /* opaque, like a paper label: the threads tuck behind it instead of ghosting through */
+      background: var(--paper-deep);
+      outline: 1px solid color-mix(in srgb, var(--bronze) 38%, transparent);
+      outline-offset: -0.4375rem;
+      box-shadow: 0 18px 40px -24px rgb(40 30 10 / 0.35);
+    }
+
+    .journey__intro .eyebrow,
+    .journey__arrival .eyebrow {
+      margin-bottom: var(--s-2);
+    }
+
+    .journey__intro :global(.display-xl) {
+      font-size: clamp(2.5rem, 11.5vw, 3.25rem);
+    }
+
+    .journey__arrival :global(.display-l) {
+      font-size: clamp(1.75rem, 7.4vw, 2.25rem);
+    }
+
+    .journey__intro .lead,
+    .journey__arrival .lead {
+      margin-top: var(--s-3);
+      max-width: none;
+      font-size: 0.9375rem;
+    }
+
+    .journey .actions {
+      margin-top: var(--s-4);
+      gap: 0 var(--s-5);
+    }
+
+    .journey__media::after {
+      height: 8%;
+    }
+  }
+
+  /* ============================================================== motion mode */
+  :global(html.journey-on) .journey {
+    /* scroll length of the camera move: about 6.6 screens of travel for 90 frames */
+    height: 760svh;
+    --stage-h: 100svh;
+  }
+
+  :global(html.journey-on) .journey__stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    min-height: 0;
+  }
+
+  :global(html.journey-on) .journey__poster--origin,
+  :global(html.journey-on) .journey__canvas {
+    display: block;
+  }
+
+  /* laid over the pinned stage from the captions' layer, which shares its place on screen */
+  :global(html.journey-on) .journey__copy.journey__copy--arrival {
+    display: grid;
+    position: absolute;
+    inset: 0;
+    /* no grid placement: the whole layer is the containing block, not the captions' cell */
+    grid-area: auto;
+  }
+
+  :global(html.journey-on) .journey__controls {
+    display: flex;
+  }
+
+  :global(html.journey-on) .journey__thread {
+    display: block;
+  }
+
+  :global(html.journey-on) .journey__canvas {
+    opacity: 0;
+  }
+
+  :global(html.journey-on) .journey__canvas:global(.is-live) {
+    opacity: 1;
+  }
+
+  /* Sharpening comes in gently once the camera rests and is gone at once when it moves again. */
+  :global(html.journey-on) .journey__sharp {
+    transition: opacity 0.08s linear;
+  }
+
+  :global(html.journey-on) .journey__sharp:global(.is-active) {
+    opacity: 1;
+    transition: opacity 0.35s var(--ease-out);
+  }
+
+  /* the full-resolution arrival frame takes over once the camera has come to rest */
+  :global(html.journey-on) .journey__poster--arrival {
+    opacity: 0;
+    transition: opacity 0.6s var(--ease-out);
+  }
+
+  :global(html.journey-on) .journey__poster--arrival:global(.is-active) {
+    opacity: 1;
+  }
+
+  :global(html.journey-on) .journey__media::after {
+    height: 9%;
+    opacity: var(--journey-exit, 0);
+  }
+
+  /* Off-screen parts of the story stay in the accessibility tree (opacity, not visibility):
+     a screen reader reads the whole journey in order, whatever the scroll position. */
+  :global(html.journey-on) .journey__intro,
+  :global(html.journey-on) .journey__arrival,
+  :global(html.journey-on) .chapter {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(0.75rem);
+    transition:
+      opacity 0.45s var(--ease-out),
+      transform 0.6s var(--ease-out);
+  }
+
+  :global(html.journey-on) .journey__intro:global(.is-active),
+  :global(html.journey-on) .journey__arrival:global(.is-active),
+  :global(html.journey-on) .chapter:global(.is-active) {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    transition:
+      opacity 0.55s var(--ease-out) 0.08s,
+      transform 0.7s var(--ease-out) 0.08s;
+  }
+
+  /* before the script has taken over, the opening must already read */
+  :global(html.journey-on) .journey:not(:global(.is-ready)) .journey__intro {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+
+  /* captions ride on top of the pinned stage */
+  :global(html.journey-on) .journey__chapters-wrap {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    margin-top: -100svh;
+    padding: 0;
+    pointer-events: none;
+    display: grid;
+    align-content: end;
+  }
+
+  :global(html.journey-on) .journey__essay-title,
+  :global(html.journey-on) .chapter__figure {
+    display: none;
+  }
+
+  :global(html.journey-on) .journey__chapters {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding-bottom: clamp(4.5rem, 12svh, 7rem);
+  }
+
+  :global(html.journey-on) .chapter {
+    grid-area: 1 / 1;
+    align-self: end;
+  }
+
+  :global(html.journey-on) .chapter__label {
+    margin: 0;
+    max-width: 23.5rem;
+    /* opaque, like a paper label laid on the picture: nothing of the frame ghosts through */
+    background: var(--paper-deep);
+    box-shadow: 0 1px 0 rgb(0 0 0 / 0.04), 0 18px 40px -24px rgb(40 30 10 / 0.35);
+  }
+
+  /* controls */
+  .journey__controls {
+    position: absolute;
+    inset: auto 0 clamp(1rem, 3.5svh, 2rem) 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    z-index: 3;
+  }
+
+  .journey__next,
+  .journey__skip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 2.75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .journey__next :global(.arrow) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .journey__skip {
+    color: var(--ink-2);
+    text-decoration: underline;
+    text-decoration-color: var(--rule-strong);
+    text-underline-offset: 0.35em;
+  }
+
+  .journey__skip:hover,
+  .journey__next:hover {
+    color: var(--saffron-deep);
+  }
+
+  /* the red thread: how far along the journey we are */
+  .journey__thread {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 2px;
+    background: color-mix(in srgb, var(--ink) 10%, transparent);
+    z-index: 3;
+  }
+
+  .journey__thread i {
+    display: block;
+    height: 100%;
+    background: var(--saffron);
+    transform-origin: 0 50%;
+    transform: scaleX(var(--journey-p, 0));
+  }
+
+  @media (max-aspect-ratio: 4/5) {
+    :global(html.journey-on) .journey {
+      height: 660svh;
+    }
+
+    /* Portrait arrival: the product stands in the upper two thirds, its name and the next step
+       sit on a label below it — the same place the chapter captions used on the way here. */
+    :global(html.journey-on) .journey__copy {
+      align-content: stretch;
+      padding-bottom: clamp(4.25rem, 10svh, 6rem);
+    }
+
+    :global(html.journey-on) .journey__copy {
+      padding-top: calc(var(--header-h) + clamp(1.25rem, 4svh, 3rem));
+    }
+
+    /* opening: type straight on the picture, above the subject */
+    :global(html.journey-on) .journey__intro {
+      position: relative;
+      isolation: isolate;
+      align-self: start;
+      padding: 0;
+      background: none;
+      outline: 0;
+      box-shadow: none;
+    }
+
+    /* The red stigma runs diagonally through the portrait opening. A haze of paper behind the copy
+       keeps every line readable; it leaves with the copy when the camera starts to move. */
+    :global(html.journey-on) .journey__intro::before {
+      content: '';
+      position: absolute;
+      z-index: -1;
+      inset: calc(-1 * (var(--header-h) + 3rem)) calc(-1 * var(--gutter)) -8rem;
+      background: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--paper) 74%, transparent) 46%,
+        color-mix(in srgb, var(--paper) 50%, transparent) 66%,
+        color-mix(in srgb, var(--paper) 20%, transparent) 85%,
+        transparent
+      );
+      pointer-events: none;
+    }
+
+    :global(html.journey-on) .journey__intro .eyebrow {
+      margin-bottom: var(--s-4);
+    }
+
+    :global(html.journey-on) .journey__intro .lead {
+      font-size: 1.0625rem;
+      max-width: 21rem;
+    }
+
+    :global(html.journey-on) .journey__intro .actions {
+      margin-top: var(--s-5);
+    }
+
+    :global(html.journey-on) .journey__arrival {
+      align-self: end;
+    }
+
+    :global(html.journey-on) .journey__next,
+    :global(html.journey-on) .journey__skip {
+      font-size: 0.6875rem;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    :global(html.journey-on) .journey__chapters {
+      padding-bottom: clamp(4.25rem, 10svh, 6rem);
+    }
+
+    :global(html.journey-on) .chapter__label {
+      max-width: none;
+    }
+  }
+
+  /* Wide landscape: copy and still life share a row. The flower is the leftmost object of the arrival
+     frame (its left edge lies 38.8 % into the 16:9 picture); the copy column ends just before it,
+     whatever the viewport crops, and the headline scales with the column. */
+  @media (min-aspect-ratio: 3/2) {
+    .journey {
+      --flower-x: min(38.8vw, 74vw - 0.6258 * var(--stage-h));
+      --copy-w: calc(var(--flower-x) - var(--gutter) - 1rem);
+    }
+
+    .journey__arrival,
+    :global(html:not(.journey-on)) .journey__intro {
+      max-width: min(35rem, var(--copy-w));
+    }
+
+    .journey__arrival :global(.display-l) {
+      font-size: min(clamp(2.25rem, 2.6vw + 1rem, 3.75rem), var(--copy-w) / 8);
+    }
+
+    :global(html:not(.journey-on)) .journey__intro :global(.display-xl) {
+      font-size: min(clamp(3rem, 5.6vw + 1.1rem, 6.75rem), var(--copy-w) / 4.1);
+    }
+  }
+
+  /* Squarish landscape (tablets on their side, small laptops): too little width for copy beside the
+     still life. More of the left is trimmed, and the arrival copy moves up into the empty paper. */
+  @media (min-aspect-ratio: 4/5) and (max-aspect-ratio: 3/2) {
+    .journey {
+      --focal-x: 84%;
+    }
+
+    :global(html.journey-on) .journey__copy--arrival,
+    :global(html:not(.journey-on)) .journey__copy {
+      align-content: start;
+      padding-top: calc(var(--header-h) + clamp(1.25rem, 5svh, 3.5rem));
+    }
+
+    .journey__arrival,
+    :global(html:not(.journey-on)) .journey__intro {
+      max-width: 22rem;
+    }
+
+    .journey__arrival :global(.display-l),
+    :global(html:not(.journey-on)) .journey__intro :global(.display-xl) {
+      font-size: clamp(2rem, 4.2vw, 2.75rem);
+    }
+
+    .journey__arrival .lead,
+    :global(html:not(.journey-on)) .journey__intro .lead {
+      margin-top: var(--s-3);
+      font-size: 1rem;
+    }
+
+    .journey__arrival .actions,
+    :global(html:not(.journey-on)) .journey__intro .actions {
+      margin-top: var(--s-4);
+    }
+  }
+
+  /* low landscape viewports (phones on their side): tighten the opening */
+  @media (max-height: 30rem) and (min-aspect-ratio: 4/5) {
+    .journey {
+      --stage-h: max(100svh, 20rem);
+    }
+
+    .journey__copy {
+      padding-top: calc(var(--header-h) + 0.5rem);
+      padding-bottom: 3.25rem;
+    }
+
+    :global(html:not(.journey-on)) .journey__copy {
+      padding-bottom: 1rem;
+    }
+
+    .journey__intro .eyebrow,
+    .journey__arrival .eyebrow {
+      margin-bottom: var(--s-2);
+    }
+
+    .journey :global(.display-xl),
+    :global(html:not(.journey-on)) .journey__intro :global(.display-xl) {
+      font-size: min(2.5rem, var(--copy-w) / 6.7);
+    }
+
+    .journey :global(.display-l),
+    .journey__arrival :global(.display-l) {
+      font-size: min(2rem, var(--copy-w) / 8);
+    }
+
+    /* beside the flower there is room for the name and the next step, not for a paragraph */
+    :global(html.journey-on) .journey__arrival .lead {
+      display: none;
+    }
+
+    .journey__arrival .actions,
+    :global(html:not(.journey-on)) .journey__intro .actions {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+    }
+
+    .journey__intro .lead,
+    .journey__arrival .lead {
+      margin-top: var(--s-2);
+      font-size: 0.9375rem;
+    }
+
+    .journey .actions {
+      margin-top: var(--s-3);
+    }
+
+    :global(html.journey-on) .chapter__text {
+      display: none;
+    }
+  }
+</style>

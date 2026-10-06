@@ -1,0 +1,393 @@
+---
+// One inquiry form for every audience. The fields are the label's fill-in lines.
+// Works as a plain form post; src/scripts/forms.ts adds inline validation and an in-place result.
+import Arrow from './Arrow.astro';
+import { TOPICS, FORMATS, type Topic } from '@/lib/inquiry/schema';
+import { site } from '@/config/site';
+
+interface Props {
+  /** Pre-selected topic for this page. The query string (?anliegen=…) can override it. */
+  topic?: Topic;
+  heading?: string;
+  intro?: string;
+}
+const { topic = 'produkt', heading = 'Ihre Anfrage', intro } = Astro.props;
+---
+
+<section class="inquiry" id="anfrage" aria-labelledby="anfrage-title">
+  <div class="inquiry__head">
+    <div class="opener">
+      <p class="eyebrow">Anfrage</p>
+      <h2 class="display-l" id="anfrage-title">{heading}</h2>
+    </div>
+    {intro && <p class="lead">{intro}</p>}
+    <address class="inquiry__direct">
+      <p class="eyebrow">Direkt</p>
+      <p>
+        <a href={site.phone.href}>{site.phone.display}</a><br />
+        <a href={`mailto:${site.email}`}>{site.email}</a>
+      </p>
+    </address>
+  </div>
+
+  <div class="inquiry__panel label">
+    <form class="form" method="post" action="/api/anfrage/" data-inquiry data-default-topic={topic}>
+      <p class="form__hint small">Felder mit <span aria-hidden="true">*</span><span class="sr-only">Stern</span> sind erforderlich.</p>
+
+      <div class="field">
+        <label for="f-anliegen">Anliegen <span aria-hidden="true">*</span></label>
+        <select id="f-anliegen" name="anliegen" required data-topic>
+          {Object.entries(TOPICS).map(([value, text]) => <option value={value} selected={value === topic}>{text}</option>)}
+        </select>
+        <p class="field__error" id="e-anliegen" data-error-for="anliegen"></p>
+      </div>
+
+      <div class="form__pair">
+        <div class="field">
+          <label for="f-name">Name <span aria-hidden="true">*</span></label>
+          <input id="f-name" name="name" type="text" autocomplete="name" required minlength="2" maxlength="100" />
+          <p class="field__error" id="e-name" data-error-for="name"></p>
+        </div>
+        <div class="field">
+          <label for="f-unternehmen">Unternehmen</label>
+          <input id="f-unternehmen" name="unternehmen" type="text" autocomplete="organization" maxlength="160" />
+          <p class="field__error" id="e-unternehmen" data-error-for="unternehmen"></p>
+        </div>
+      </div>
+
+      <div class="form__pair">
+        <div class="field">
+          <label for="f-email">E-Mail <span aria-hidden="true">*</span></label>
+          <input id="f-email" name="email" type="email" autocomplete="email" inputmode="email" required maxlength="180" />
+          <p class="field__error" id="e-email" data-error-for="email"></p>
+        </div>
+        <div class="field">
+          <label for="f-telefon">Telefon</label>
+          <input id="f-telefon" name="telefon" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" pattern="[0-9+()/\s.\-]*" />
+          <p class="field__error" id="e-telefon" data-error-for="telefon"></p>
+        </div>
+      </div>
+
+      <fieldset class="form__group" data-group="ware">
+        <legend class="eyebrow">Safran</legend>
+        <div class="form__pair">
+          <div class="field">
+            <label for="f-format">Gebinde</label>
+            <select id="f-format" name="format">
+              {Object.entries(FORMATS).map(([value, text]) => <option value={value}>{text}</option>)}
+            </select>
+            <p class="field__error" id="e-format" data-error-for="format"></p>
+          </div>
+          <div class="field">
+            <label for="f-menge">Gewünschte Menge</label>
+            <input id="f-menge" name="menge" type="text" maxlength="60" aria-describedby="h-menge" />
+            <p class="field__help" id="h-menge">Zum Beispiel „48 Gläser“ oder „15 kg“.</p>
+            <p class="field__error" id="e-menge" data-error-for="menge"></p>
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-land">Land / Markt</label>
+          <input id="f-land" name="land" type="text" autocomplete="country-name" maxlength="80" />
+          <p class="field__error" id="e-land" data-error-for="land"></p>
+        </div>
+        <div class="check">
+          <input id="f-unterlagen" name="unterlagen" type="checkbox" />
+          <label for="f-unterlagen">Verfügbare Labor- und Herkunftsunterlagen zur angebotenen Lieferung mit anfragen</label>
+        </div>
+      </fieldset>
+
+      <fieldset class="form__group" data-group="catering">
+        <legend class="eyebrow">Catering</legend>
+        <div class="form__pair">
+          <div class="field">
+            <label for="f-anlass">Anlass</label>
+            <input id="f-anlass" name="anlass" type="text" maxlength="120" />
+            <p class="field__error" id="e-anlass" data-error-for="anlass"></p>
+          </div>
+          <div class="field">
+            <label for="f-gaeste">Gästezahl</label>
+            <input id="f-gaeste" name="gaeste" type="number" inputmode="numeric" min="1" max="5000" step="1" />
+            <p class="field__error" id="e-gaeste" data-error-for="gaeste"></p>
+          </div>
+        </div>
+        <div class="form__pair">
+          <div class="field">
+            <label for="f-termin">Wunschtermin</label>
+            <input id="f-termin" name="termin" type="date" />
+            <p class="field__error" id="e-termin" data-error-for="termin"></p>
+          </div>
+          <div class="field">
+            <label for="f-ort">Veranstaltungsort</label>
+            <input id="f-ort" name="ort" type="text" maxlength="160" />
+            <p class="field__error" id="e-ort" data-error-for="ort"></p>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="field">
+        <label for="f-nachricht">Nachricht</label>
+        <textarea id="f-nachricht" name="nachricht" rows="4" maxlength="2000"></textarea>
+        <p class="field__error" id="e-nachricht" data-error-for="nachricht"></p>
+      </div>
+
+      {/* Bot trap: hidden from people and assistive technology, tempting for scripts. */}
+      <div class="form__trap" aria-hidden="true">
+        <label for="f-website">Website</label>
+        <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+      </div>
+      <input type="hidden" name="gestartet" value="" data-started />
+
+      <div class="form__foot">
+        <button class="btn" type="submit" data-submit>
+          <span data-submit-label>Anfrage senden</span>
+          <Arrow />
+        </button>
+        <p class="small">
+          Wir verwenden Ihre Angaben, um Ihre Anfrage zu beantworten. Mehr dazu in den <a href="/datenschutz/">Datenschutzhinweisen</a>.
+        </p>
+      </div>
+
+      <div class="form__status" role="alert" data-status hidden></div>
+    </form>
+
+    <div class="inquiry__done" data-done hidden tabindex="-1">
+      <p class="eyebrow">Gesendet</p>
+      <h3 class="display-m">Danke. Ihre Anfrage ist bei uns.</h3>
+      <p>Wir melden uns bei Ihnen unter der angegebenen E-Mail-Adresse. Wenn es eilt, erreichen Sie uns unter <a href={site.phone.href}>{site.phone.display}</a>.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import '@/scripts/forms';
+</script>
+
+<style>
+  .inquiry {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2.4vw, 2.5rem);
+    row-gap: var(--s-7);
+  }
+
+  .inquiry__head {
+    grid-column: 1 / span 4;
+    display: grid;
+    gap: var(--s-5);
+    align-content: start;
+  }
+
+  .inquiry__direct {
+    font-style: normal;
+    margin-top: var(--s-4);
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--rule);
+  }
+
+  .inquiry__direct p + p {
+    margin-top: var(--s-2);
+    font-size: 1.125rem;
+  }
+
+  .inquiry__direct a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    text-decoration-color: var(--saffron);
+  }
+
+  .inquiry__panel {
+    grid-column: 6 / span 7;
+    padding: clamp(1.5rem, 3.4vw, 3rem);
+  }
+
+  .form {
+    display: grid;
+    gap: var(--s-5);
+  }
+
+  .form__pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-5) var(--s-5);
+  }
+
+  .form__group {
+    display: grid;
+    gap: var(--s-5);
+    margin: 0;
+    padding: var(--s-5) 0 0;
+    border: 0;
+    border-top: 1px solid var(--rule-strong);
+    min-width: 0;
+  }
+
+  .form__group legend {
+    padding: 0 var(--s-3) 0 0;
+    float: left;
+    width: 100%;
+    margin-bottom: var(--s-2);
+  }
+
+  .form__group legend + * {
+    clear: both;
+  }
+
+  .form__group[hidden] {
+    display: none;
+  }
+
+  .field {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .field label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--ink-2);
+  }
+
+  /* the label's fill-in line */
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100%;
+    min-height: 2.875rem;
+    padding: 0.5rem 0;
+    border: 0;
+    border-bottom: 1px solid var(--rule-strong);
+    border-radius: 0;
+    background: transparent;
+    font-size: 1.0625rem;
+    line-height: 1.4;
+    transition: border-color 0.15s var(--ease-out);
+  }
+
+  .field select {
+    appearance: none;
+    padding-right: 1.75rem;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23221f1a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E") no-repeat right 0.125rem center / 1rem;
+    cursor: pointer;
+  }
+
+  .field textarea {
+    resize: vertical;
+    min-height: 7rem;
+    padding-top: 0.625rem;
+  }
+
+  .field input:hover,
+  .field select:hover,
+  .field textarea:hover {
+    border-bottom-color: var(--ink);
+  }
+
+  .field input:focus-visible,
+  .field select:focus-visible,
+  .field textarea:focus-visible {
+    outline: none;
+    border-bottom-color: var(--saffron);
+    box-shadow: 0 1px 0 var(--saffron);
+  }
+
+  .field [aria-invalid='true'] {
+    border-bottom-color: var(--saffron);
+    box-shadow: 0 1px 0 var(--saffron);
+  }
+
+  .field__help {
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+
+  .field__error {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--saffron-deep);
+    min-height: 0;
+  }
+
+  .field__error:empty {
+    display: none;
+  }
+
+  .check {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    gap: var(--s-3);
+    align-items: start;
+    min-height: 2.75rem;
+  }
+
+  .check input {
+    width: 1.375rem;
+    height: 1.375rem;
+    margin: 0.125rem 0 0;
+    accent-color: var(--saffron-deep);
+  }
+
+  .check label {
+    font-size: 0.9375rem;
+    padding-block: 0.125rem;
+  }
+
+  .form__trap {
+    position: absolute;
+    left: -200vw;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .form__foot {
+    display: grid;
+    gap: var(--s-4);
+    justify-items: start;
+    padding-top: var(--s-3);
+  }
+
+  .form__foot .small {
+    max-width: 30rem;
+  }
+
+  .form__status {
+    padding: var(--s-4);
+    border-left: 2px solid var(--saffron);
+    background: color-mix(in srgb, var(--saffron) 7%, transparent);
+    font-size: 0.9375rem;
+  }
+
+  .form__status[hidden] {
+    display: none;
+  }
+
+  .inquiry__done {
+    display: grid;
+    gap: var(--s-4);
+    max-width: 30rem;
+  }
+
+  .inquiry__done[hidden] {
+    display: none;
+  }
+
+  .inquiry__done:focus {
+    outline: none;
+  }
+
+  @media (max-width: 63.99rem) {
+    .inquiry__head,
+    .inquiry__panel {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 35.99rem) {
+    .form__pair {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

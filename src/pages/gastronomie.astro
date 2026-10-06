@@ -1,0 +1,127 @@
+---
+import Base from '@/layouts/Base.astro';
+import Picture from '@/components/Picture.astro';
+import InquiryForm from '@/components/InquiryForm.astro';
+import Arrow from '@/components/Arrow.astro';
+import { saffronDishes } from '@/data/catering';
+import { saffronJar, looseMinimumKg } from '@/data/product';
+import { site } from '@/config/site';
+---
+
+<Base
+  title="Gastronomie – Safran für Küche, Bar und Café"
+  description="Ganze Negin-Safranfäden aus Herat für die Gastronomie: im 1-g-Glas für die Station, als lose Ware ab 10 kg für große Küchen. Angebot und Unterlagen auf Anfrage."
+>
+  <section class="page-head">
+    <div class="wrap opener">
+      <p class="eyebrow">Gastronomie</p>
+      <h1 class="display-xl">Safran für<br />Küche und Bar.</h1>
+      <p class="lead">Ganze Fäden, die man sieht, zählt und dosiert. Für Restaurants, Bars, Cafés und Caterer.</p>
+    </div>
+  </section>
+
+  <section class="section--tight" aria-labelledby="gastro-gebinde">
+    <div class="wrap split">
+      <div class="split__a">
+        <figure class="figure">
+          <Picture name="saffron" alt="Getrocknete Safranfäden in der Nahaufnahme." sizes="(min-width: 64rem) 38vw, 92vw" loading="eager" />
+        </figure>
+      </div>
+      <div class="split__b">
+        <div class="opener">
+          <p class="eyebrow">Gebinde</p>
+          <h2 class="display-l" id="gastro-gebinde">Vom Glas an der Station bis zur Vorratsmenge.</h2>
+        </div>
+        <ul class="rows">
+          <li>
+            <h3 class="display-s">1-g-Glas</h3>
+            <p>Für den Posten und die Bar: klein, wieder verschließbar mit Korken, mit Mindesthaltbarkeitsdatum und Los auf dem Glas.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Display mit 24 Gläsern</h3>
+            <p>Wenn Sie Safran nicht nur verwenden, sondern auch an Ihre Gäste verkaufen.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Lose Ware ab {looseMinimumKg} kg</h3>
+            <p>Für große Küchen und Produktion. Sorte und Konditionen im Angebot.</p>
+          </li>
+        </ul>
+        <div class="actions">
+          <a class="btn" href="#anfrage">Anfrage senden <Arrow dir="down" /></a>
+          <a class="link" href="/produkte/">Alle Gebinde <Arrow /></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section band-deep" aria-labelledby="gastro-umgang">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <p class="eyebrow">Im Betrieb</p>
+        <h2 class="display-l" id="gastro-umgang">Was in der Küche zählt.</h2>
+      </div>
+      <div class="split__b">
+        <ul class="rows">
+          <li>
+            <h3 class="display-s">Ganze Fäden</h3>
+            <p>Negin · Grade 1. Die Fäden bleiben ganz und lassen sich einzeln abzählen.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Lagerung</h3>
+            <p>{saffronJar.storage}</p>
+          </li>
+          <li>
+            <h3 class="display-s">Rückverfolgbarkeit</h3>
+            <p>Los und Mindesthaltbarkeitsdatum stehen auf jedem Glas. Unterlagen zur Lieferung erhalten Sie auf Anfrage.</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="gastro-kueche">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <p class="eyebrow">Aus unserer eigenen Küche</p>
+        <h2 class="display-l" id="gastro-kueche">Wir verwenden ihn selbst.</h2>
+        <p class="lead">{site.owner} kocht als Inhaber für das Royal-Spices-Catering in Hamburg. Diese Gerichte aus dem Katalog führen Safran im Namen.</p>
+        <p><a class="link" href="/catering/">Zum Catering <Arrow /></a></p>
+      </div>
+      <div class="split__b">
+        <ul class="rows">
+          {
+            saffronDishes.map((d) => (
+              <li>
+                <h3 class="display-s">{d.name}</h3>
+                <p>{d.detail}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="section band-deep">
+    <div class="wrap">
+      <InquiryForm topic="gastronomie" heading="Anfrage für Ihren Betrieb" intro="Nennen Sie uns Gebinde und ungefähre Menge. Wir melden uns mit einem Angebot." />
+    </div>
+  </div>
+</Base>
+
+<style>
+  .split__a .figure :global(img) {
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+  }
+
+  .actions {
+    margin-top: var(--s-3);
+  }
+
+  @media (max-width: 63.99rem) {
+    .split__a .figure :global(img) {
+      aspect-ratio: 16 / 10;
+    }
+  }
+</style>

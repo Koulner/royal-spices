@@ -1,0 +1,60 @@
+# GitHub Pages preview of the site.
+# Builds exactly like production (npm run build), then rewrites a copy of the static pages
+# for the Pages address (tools/pages/prepare.mjs). Production output and sources stay as they are.
+# Not available on Pages: the inquiry endpoint and the server's security headers.
+name: Deploy preview to GitHub Pages
+
+on:
+  push:
+    branches: ["prod", "dev"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Install
+        run: npm ci
+
+      - name: Build (production build, unchanged)
+        run: npm run build
+        env:
+          SITE_URL: ${{ steps.pages.outputs.origin }}
+
+      - name: Prepare Pages copy
+        run: node tools/pages/prepare.mjs --site "${{ steps.pages.outputs.origin }}" --base "${{ steps.pages.outputs.base_path }}"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist-pages
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

@@ -1,0 +1,29 @@
+---
+import Base from '@/layouts/Base.astro';
+import Arrow from '@/components/Arrow.astro';
+---
+
+<Base title="Seite nicht gefunden" description="Diese Seite gibt es bei Royal Spices nicht." noindex>
+  <section class="page-head lost">
+    <div class="wrap opener">
+      <p class="eyebrow">Fehler 404</p>
+      <h1 class="display-xl">Hier ist der Faden gerissen.</h1>
+      <p class="lead">Diese Seite gibt es nicht oder nicht mehr. Von hier aus geht es weiter:</p>
+      <div class="actions">
+        <a class="btn" href="/">Zur Startseite <Arrow /></a>
+        <a class="link" href="/produkte/">Produkte <Arrow /></a>
+        <a class="link" href="/kontakt/">Kontakt <Arrow /></a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lost {
+    min-height: 70svh;
+  }
+
+  .actions {
+    margin-top: var(--s-5);
+  }
+</style>

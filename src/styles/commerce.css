@@ -1,0 +1,150 @@
+/* Cart panel and buy box. Loaded with src/scripts/commerce.ts, i.e. only when a store is configured. */
+
+.cart {
+  width: min(28rem, 100vw);
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0 0 0 auto;
+  padding: var(--s-5) var(--gutter) var(--s-6);
+  border: 0;
+  background: var(--paper);
+  color: var(--ink);
+  overflow-y: auto;
+}
+
+.cart[open] {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--s-5);
+}
+
+.cart::backdrop {
+  background: rgb(34 31 26 / 0.45);
+}
+
+.cart.is-busy {
+  cursor: progress;
+}
+
+.cart__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+
+.cart__close,
+.cart__remove {
+  min-height: 2.75rem;
+  padding: 0 0.25rem;
+  border: 0;
+  background: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--saffron);
+  text-underline-offset: 0.3em;
+  cursor: pointer;
+}
+
+.cart__lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  align-self: start;
+}
+
+.cart__lines li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--s-2) var(--s-4);
+  padding-block: var(--s-4);
+  border-top: 1px solid var(--rule);
+}
+
+.cart__name {
+  font-weight: 600;
+}
+
+.cart__controls {
+  grid-column: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.cart__price {
+  grid-column: 2;
+  grid-row: 1;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cart__qty,
+.buybox__qty {
+  width: 4.5rem;
+  min-height: 2.75rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 0.375rem;
+  background: transparent;
+  font-size: 1rem;
+}
+
+.cart__foot {
+  display: grid;
+  gap: var(--s-3);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--rule-strong);
+}
+
+.cart__subtotal {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.cart__status,
+.buybox__feedback {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--saffron-deep);
+}
+
+.cart__status:empty,
+.buybox__feedback:empty {
+  display: none;
+}
+
+.buybox__variants {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: var(--s-2);
+}
+
+.buybox__variant {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 2.75rem;
+}
+
+.buybox__variant input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--saffron-deep);
+}
+
+.buybox__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3) var(--s-4);
+}
+
+.buybox__qty-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}

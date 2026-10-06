@@ -1,0 +1,33 @@
+{
+  "name": "royal-spices-v1",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev --host 127.0.0.1",
+    "build": "astro check && astro build",
+    "preview": "node ./server.mjs",
+    "start": "node ./server.mjs",
+    "check": "astro check",
+    "test": "node --experimental-strip-types --no-warnings --test \"tests/**/*.test.mjs\"",
+    "assets:hero": "node pipeline/images/build-hero.mjs",
+    "assets:stills": "node pipeline/images/build-stills.mjs"
+  },
+  "dependencies": {
+    "@astrojs/node": "^11.1.6",
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.3.5",
+    "nodemailer": "^10.0.15"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@fontsource-variable/manrope": "^5.3.0",
+    "@fontsource/cormorant-garamond": "^5.3.0",
+    "@types/nodemailer": "^8.0.2",
+    "sharp": "^0.35.5",
+    "typescript": "^6.0.3"
+  }
+}

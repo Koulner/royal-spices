@@ -1,0 +1,51 @@
+---
+import Base from '@/layouts/Base.astro';
+import InquiryForm from '@/components/InquiryForm.astro';
+import { site } from '@/config/site';
+---
+
+<Base
+  title="Kontakt – Anfrage an Royal Spices"
+  description="Anfrage an Royal Spices in Hamburg: Safran im Glas, Handel und Großhandel, Gastronomie oder Catering. Telefon 040 59374940, info@royalspices.de."
+>
+  <section class="page-head">
+    <div class="wrap opener">
+      <p class="eyebrow">Kontakt</p>
+      <h1 class="display-xl">Was dürfen wir<br />für Sie tun?</h1>
+      <p class="lead">Ein Glas, ein Display, eine Handelsmenge oder ein Catering: Schreiben Sie uns, worum es geht. Wir antworten persönlich.</p>
+    </div>
+  </section>
+
+  <div class="section--tight">
+    <div class="wrap">
+      <InquiryForm heading="Ihre Anfrage" intro="Wählen Sie Ihr Anliegen. Das Formular zeigt dann nur die Felder, die dazu passen." />
+    </div>
+  </div>
+
+  <section class="section" aria-labelledby="kontakt-daten">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <p class="eyebrow">Direkt erreichbar</p>
+        <h2 class="display-l" id="kontakt-daten">Royal Spices, Hamburg.</h2>
+      </div>
+      <div class="split__b">
+        <dl class="facts">
+          <div><dt>Unternehmen</dt><dd>{site.name} · {site.owner}</dd></div>
+          <div><dt>Anschrift</dt><dd>{site.address.street}, {site.address.postalCode} {site.address.city}</dd></div>
+          <div><dt>Telefon</dt><dd><a href={site.phone.href}>{site.phone.display}</a></dd></div>
+          <div><dt>E-Mail</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .facts a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    margin-block: -0.625rem;
+    text-decoration-color: var(--saffron);
+  }
+</style>

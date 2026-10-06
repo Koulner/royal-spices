@@ -1,0 +1,45 @@
+---
+// Error page for form posts without JavaScript. The reason is never taken from the URL into the
+// markup: the page lists the possible causes and the direct ways to reach us.
+import Base from '@/layouts/Base.astro';
+import Arrow from '@/components/Arrow.astro';
+import { site } from '@/config/site';
+---
+
+<Base title="Anfrage nicht gesendet" description="Die Anfrage konnte nicht gesendet werden." noindex>
+  <section class="page-head result">
+    <div class="wrap opener">
+      <p class="eyebrow">Nicht gesendet</p>
+      <h1 class="display-xl">Das hat leider<br />nicht geklappt.</h1>
+      <p class="lead">Ihre Anfrage ist nicht bei uns angekommen. Mögliche Gründe: eine unvollständige Angabe, zu viele Versuche in kurzer Zeit oder eine Störung bei der Zustellung.</p>
+      <ul class="rows result__ways">
+        <li>
+          <h2 class="display-s">Noch einmal versuchen</h2>
+          <p>Bitte prüfen Sie Name und E-Mail-Adresse und senden Sie das Formular erneut.</p>
+          <p><a class="link" href="/kontakt/#anfrage">Zurück zum Formular <Arrow /></a></p>
+        </li>
+        <li>
+          <h2 class="display-s">Direkt schreiben oder anrufen</h2>
+          <p><a href={`mailto:${site.email}`}>{site.email}</a> · <a href={site.phone.href}>{site.phone.display}</a></p>
+        </li>
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .result {
+    min-height: 70svh;
+  }
+
+  .result__ways {
+    margin-top: var(--s-5);
+    max-width: 40rem;
+  }
+
+  .result__ways a:not(.link) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+</style>

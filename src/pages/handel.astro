@@ -1,0 +1,171 @@
+---
+import Base from '@/layouts/Base.astro';
+import InquiryForm from '@/components/InquiryForm.astro';
+import Arrow from '@/components/Arrow.astro';
+import { formats, looseVarieties, looseMinimumKg } from '@/data/product';
+---
+
+<Base
+  title="Handel & Großhandel – Safran im Glas, im Display und lose ab 10 kg"
+  description="Safran aus Herat für Einzelhandel, Großhandel, Import und Lebensmittelproduktion: 1-g-Gläser, Displays mit 24 Gläsern und lose Ware ab 10 kg. Angebot auf Anfrage."
+>
+  <section class="page-head">
+    <div class="wrap opener">
+      <p class="eyebrow">Handel · Großhandel · Import</p>
+      <h1 class="display-xl">Safran für<br />Ihr Sortiment.</h1>
+      <p class="lead">Im Glas für das Regal, im Display für die Theke, lose für Handel und Produktion. Sie nennen uns Gebinde und Menge, wir machen ein Angebot.</p>
+      <div class="actions">
+        <a class="btn" href="#anfrage">Handelsanfrage senden <Arrow dir="down" /></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section--tight" aria-labelledby="gebinde-title">
+    <div class="wrap">
+      <h2 class="eyebrow gebinde-title" id="gebinde-title">Gebinde</h2>
+      <div class="table-wrap" tabindex="0" role="region" aria-labelledby="gebinde-title">
+        <table class="spec">
+          <thead>
+            <tr>
+              <th scope="col">Gebinde</th>
+              <th scope="col">Inhalt</th>
+              <th scope="col">Für wen</th>
+              <th scope="col">Menge</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" class="display-s">{formats[0].title}</th>
+              <td>1 g · Negin · Grade 1</td>
+              <td>Einzelhandel, Feinkost, Gastronomie</td>
+              <td>Nach Stückzahl. Bestellbedingungen im Angebot.</td>
+            </tr>
+            <tr>
+              <th scope="row" class="display-s">{formats[1].title}</th>
+              <td>24 Gläser à 1 g</td>
+              <td>Theke und Regal</td>
+              <td>Je Display.</td>
+            </tr>
+            <tr>
+              <th scope="row" class="display-s">{formats[2].title}</th>
+              <td>{looseVarieties.join(', ')}</td>
+              <td>Großhandel, Import, Distribution, Lebensmittelproduktion</td>
+              <td>Ab {looseMinimumKg} kg.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small table-note">Preise veröffentlichen wir hier nicht. Preis, Verfügbarkeit, Lieferzeit, Versand und Umsatzsteuer stehen in Ihrem individuellen Angebot.</p>
+    </div>
+  </section>
+
+  <section class="section band-slate" aria-labelledby="ablauf-title">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <p class="eyebrow">Ablauf</p>
+        <h2 class="display-l" id="ablauf-title">Von der Anfrage zum Angebot.</h2>
+        <p class="lead">Sie schreiben uns, was Sie brauchen. Wir antworten mit einem Angebot, das zu Ihrer Menge passt.</p>
+      </div>
+      <div class="split__b">
+        <ol class="steps">
+          <li>
+            <h3 class="display-s">Sie nennen den Bedarf</h3>
+            <p>Gebinde, gewünschte Menge und den Markt oder Lieferort. Bei loser Ware zusätzlich die Sorte.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Wir bestätigen die Konditionen</h3>
+            <p>Verfügbarkeit, Preis, Lieferzeit, Versand und Bestellbedingungen – schriftlich, bezogen auf Ihre Menge.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Sie erhalten die Unterlagen</h3>
+            <p>Verfügbare Labor- und Herkunftsunterlagen zur angebotenen Lieferung. Wir klären, auf welche Charge sie sich beziehen.</p>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="fragen-title">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <p class="eyebrow">Vor der Anfrage</p>
+        <h2 class="display-l" id="fragen-title">Zwei Dinge, die oft gefragt werden.</h2>
+      </div>
+      <div class="split__b">
+        <ul class="rows">
+          <li>
+            <h3 class="display-s">Gelten die {looseMinimumKg} kg auch für Gläser?</h3>
+            <p>Nein. Die Mindestmenge von {looseMinimumKg} kg gilt für lose Ware. Für Gläser und Displays nennen Sie uns die gewünschte Stückzahl.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Gibt es Sonderverpackungen oder eigene Spezifikationen?</h3>
+            <p>Das klären wir im Gespräch. Beschreiben Sie in der Anfrage, was Sie brauchen.</p>
+          </li>
+        </ul>
+        <p><a class="link" href="/herkunft-qualitaet/">Herkunft &amp; Qualität <Arrow /></a></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="section band-deep">
+    <div class="wrap">
+      <InquiryForm topic="handel" heading="Handelsanfrage" intro="Je genauer Gebinde und Menge, desto schneller das Angebot." />
+    </div>
+  </div>
+</Base>
+
+<style>
+  .page-head .actions {
+    margin-top: var(--s-6);
+  }
+
+  .gebinde-title {
+    margin-bottom: var(--s-4);
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  .spec {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 44rem;
+  }
+
+  .spec th,
+  .spec td {
+    text-align: left;
+    vertical-align: top;
+    padding: var(--s-5) var(--s-5) var(--s-5) 0;
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .spec thead th {
+    padding-block: var(--s-3);
+    border-top: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--bronze);
+  }
+
+  .spec tbody th {
+    width: 26%;
+  }
+
+  .spec tbody td {
+    color: var(--ink-2);
+  }
+
+  .spec tbody tr:last-child th,
+  .spec tbody tr:last-child td {
+    border-bottom: 1px solid var(--rule-strong);
+  }
+
+  .table-note {
+    margin-top: var(--s-4);
+    max-width: 40rem;
+  }
+</style>

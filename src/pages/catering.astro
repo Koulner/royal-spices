@@ -1,0 +1,278 @@
+---
+import Base from '@/layouts/Base.astro';
+import Picture from '@/components/Picture.astro';
+import InquiryForm from '@/components/InquiryForm.astro';
+import Arrow from '@/components/Arrow.astro';
+import { categories, packages } from '@/data/catering';
+import { site } from '@/config/site';
+---
+
+<Base
+  title="Catering in Hamburg – persönlich geplant, vor Ort serviert"
+  description="Royal Spices Catering in Hamburg und Umgebung: Canapés, Löffelgerichte, Platten, Menüs und Desserts für Firmenveranstaltungen, Empfänge und private Anlässe. Angebot auf Anfrage."
+>
+  <section class="page-head cat-head">
+    <div class="wrap grid">
+      <div class="cat-head__body opener">
+        <p class="eyebrow">Catering · Hamburg &amp; Umgebung</p>
+        <h1 class="display-xl">Persönlich geplant.<br />Vor Ort serviert.</h1>
+        <p class="lead">{site.owner} begleitet Planung und Umsetzung als Inhaber und Koch. Für Firmenveranstaltungen, Empfänge und private Anlässe.</p>
+        <div class="actions">
+          <a class="btn" href="#anfrage">Catering anfragen <Arrow dir="down" /></a>
+          <a class="link" href="#katalog">Zum Katalog <Arrow dir="down" /></a>
+        </div>
+      </div>
+      <figure class="cat-head__figure figure">
+        <Picture name="catering-photo" alt="Royal-Spices-Catering bei einem Business-Event: Menükarte als Aufsteller, dahinter eine Theke mit angerichteten Löffelgerichten." sizes="(min-width: 64rem) 34vw, 92vw" loading="eager" fetchpriority="high" />
+        <figcaption>Business-Event im AMG Brand Center Hamburg.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section--tight" aria-labelledby="cat-leistung">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <p class="eyebrow">Leistungen</p>
+        <h2 class="display-l" id="cat-leistung">Vom Empfang bis zum Menü.</h2>
+      </div>
+      <div class="split__b">
+        <ul class="rows">
+          <li>
+            <h3 class="display-s">Exklusiv-Catering</h3>
+            <p>Löffelgerichte, Canapés, Platten, Flying Buffet, Vier-Gänge-Menü und Mini-Desserts für Veranstaltungen und Empfänge.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Office-Catering</h3>
+            <p>Frühstück, Lunch und Verpflegung für Meetings und Teams. Das Angebot richtet sich nach Anlass und Personenzahl.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Flying Buffet &amp; Etageren</h3>
+            <p>Warme und kalte Speisen am Gast serviert oder auf Etageren präsentiert. Zusammenstellung auf Anfrage.</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section band-deep" id="katalog" aria-labelledby="cat-katalog">
+    <div class="wrap split split--wide">
+      <div class="split__a opener">
+        <p class="eyebrow">Aus dem Katalog</p>
+        <h2 class="display-l" id="cat-katalog">Eine Auswahl für Ihren Anlass.</h2>
+        <p class="lead">Auswahl und Mengen stimmen wir gemeinsam ab. Preise nennen wir im Angebot, passend zu Gästezahl und Umfang.</p>
+      </div>
+      <div class="split__b menu">
+        {
+          categories.map((category, index) => (
+            <details class="menu__category" open={index === 0}>
+              <summary>
+                <span class="display-m">{category.title}</span>
+                <span class="menu__count small">{category.dishes.length} Gerichte</span>
+                <span class="menu__icon" aria-hidden="true" />
+              </summary>
+              <div class="menu__body">
+                <p class="small">{category.intro}</p>
+                <ul>
+                  {category.dishes.map((dish) => (
+                    <li>
+                      <span class="menu__dish">{dish.name}</span>
+                      <span class="menu__detail">{dish.detail}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="cat-pakete">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <p class="eyebrow">Pakete</p>
+        <h2 class="display-l" id="cat-pakete">Zwei Vorschläge zum Einstieg.</h2>
+        <p class="lead">Die Pakete enthalten die genannten Speisen. Lieferung, Personal, Equipment, Dekoration sowie Auf- und Abbau bieten wir separat an.</p>
+      </div>
+      <div class="split__b packs">
+        {
+          packages.map((p) => (
+            <div class="label pack">
+              <p class="eyebrow">{p.size}</p>
+              <h3 class="display-m">{p.title}</h3>
+              <ul>{p.parts.map((part) => <li>{part}</li>)}</ul>
+            </div>
+          ))
+        }
+        <p class="small packs__note">Angaben zu Allergenen erhalten Sie zur gewählten Menüauswahl.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="section band-deep">
+    <div class="wrap">
+      <InquiryForm topic="catering" heading="Catering-Anfrage" intro="Termin, Ort, Gästezahl und Anlass genügen für den Anfang. Eine Speisenauswahl hilft uns bei der Planung." />
+    </div>
+  </div>
+</Base>
+
+<style>
+  .cat-head {
+    padding-bottom: var(--s-7);
+  }
+
+  .cat-head .grid {
+    align-items: end;
+  }
+
+  .cat-head__body {
+    grid-column: 1 / span 7;
+  }
+
+  .cat-head__figure {
+    grid-column: 9 / span 4;
+  }
+
+  .cat-head__figure :global(img) {
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: 50% 40%;
+  }
+
+  .cat-head .actions {
+    margin-top: var(--s-4);
+  }
+
+  .menu {
+    gap: 0;
+  }
+
+  .menu__category {
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .menu__category:last-child {
+    border-bottom: 1px solid var(--rule-strong);
+  }
+
+  .menu__category summary {
+    display: grid;
+    grid-template-columns: 1fr auto 1.5rem;
+    align-items: center;
+    gap: var(--s-4);
+    min-height: 4.5rem;
+    padding-block: var(--s-4);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .menu__category summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu__icon {
+    position: relative;
+    width: 1rem;
+    height: 1rem;
+    justify-self: end;
+  }
+
+  .menu__icon::before,
+  .menu__icon::after {
+    content: '';
+    position: absolute;
+    inset: 50% 0 auto 0;
+    height: 1.5px;
+    background: var(--saffron);
+    transition: transform 0.2s var(--ease-out);
+  }
+
+  .menu__icon::after {
+    transform: rotate(90deg);
+  }
+
+  .menu__category[open] .menu__icon::after {
+    transform: rotate(0deg);
+  }
+
+  .menu__body {
+    padding: 0 0 var(--s-6);
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  .menu__body ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .menu__body li {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: var(--s-2) var(--s-5);
+    padding-block: var(--s-3);
+    border-top: 1px solid var(--rule);
+  }
+
+  .menu__dish {
+    font-weight: 600;
+  }
+
+  .menu__detail {
+    color: var(--ink-2);
+  }
+
+  .packs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-5);
+  }
+
+  .pack {
+    display: grid;
+    gap: var(--s-3);
+    align-content: start;
+  }
+
+  .pack ul {
+    margin: var(--s-2) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pack li {
+    padding-block: 0.5rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .packs__note {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 63.99rem) {
+    .cat-head__body,
+    .cat-head__figure {
+      grid-column: 1 / -1;
+    }
+
+    .cat-head__figure {
+      max-width: 26rem;
+    }
+  }
+
+  @media (max-width: 35.99rem) {
+    .menu__category summary {
+      grid-template-columns: 1fr 1.5rem;
+    }
+
+    .menu__count {
+      display: none;
+    }
+
+    .menu__body li,
+    .packs {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,124 @@
+---
+import Base from '@/layouts/Base.astro';
+import Picture from '@/components/Picture.astro';
+import Arrow from '@/components/Arrow.astro';
+import { formats, saffronJar } from '@/data/product';
+---
+
+<Base
+  title="Produkte – Safran im Glas, im Display und als lose Ware"
+  description="Royal Spices bietet Safran aus Herat in drei Gebinden: Safranfäden Negin im 1-g-Glas, das Display mit 24 Gläsern und lose Ware ab 10 kg."
+>
+  <section class="page-head">
+    <div class="wrap opener">
+      <p class="eyebrow">Produkte</p>
+      <h1 class="display-xl">Ein Safran,<br />drei Gebinde.</h1>
+      <p class="lead">Die Fäden sind dieselben: Negin, Grade 1, aus Herat. Was sich ändert, ist die Menge – vom Glas für die Küche bis zur Handelsmenge.</p>
+    </div>
+  </section>
+
+  <section class="section--tight lead-product" aria-labelledby="glas-title">
+    <div class="wrap grid">
+      <figure class="lead-product__figure figure">
+        <Picture name="arrival-desktop" alt="Royal-Spices-Glas mit Safranfäden, daneben eine Safranblüte und getrocknete Fäden." sizes="(min-width: 64rem) 58vw, 92vw" loading="eager" fetchpriority="high" />
+      </figure>
+      <div class="lead-product__body">
+        <p class="eyebrow">01 · {formats[0].spec}</p>
+        <h2 class="display-l" id="glas-title">{formats[0].title}</h2>
+        <p class="lead">{formats[0].body}</p>
+        <dl class="facts">
+          <div><dt>Herkunft</dt><dd>{saffronJar.origin}</dd></div>
+          <div><dt>Füllmenge</dt><dd>{saffronJar.quantity}</dd></div>
+          <div><dt>Für</dt><dd>{formats[0].audience}</dd></div>
+        </dl>
+        <div class="actions">
+          <a class="btn" href={formats[0].action.href}>{formats[0].action.label} <Arrow /></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-label="Weitere Gebinde">
+    <div class="wrap">
+      <ol class="rows formats">
+        {
+          formats.slice(1).map((f, i) => (
+            <li>
+              <p class="eyebrow">0{i + 2} · {f.spec}</p>
+              <div class="formats__main">
+                <h2 class="display-m">{f.title}</h2>
+                <p>{f.body}</p>
+                <p class="small">{f.audience}</p>
+              </div>
+              <a class="link" href={f.action.href}>{f.action.label} <Arrow /></a>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="small formats__note">Preise, Verfügbarkeit, Lieferzeit und Versand nennen wir Ihnen im Angebot. Für lose Ware gilt eine Mindestmenge von 10 kg.</p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lead-product__figure {
+    grid-column: 1 / span 7;
+  }
+
+  .lead-product__figure :global(img) {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: 82% 50%;
+  }
+
+  .lead-product__body {
+    grid-column: 9 / span 4;
+    display: grid;
+    gap: var(--s-5);
+    align-content: center;
+  }
+
+  .formats > li {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr);
+    column-gap: clamp(1rem, 2.4vw, 2.5rem);
+    align-items: start;
+    padding-block: var(--s-6);
+  }
+
+  .formats .eyebrow {
+    padding-top: 0.625rem;
+  }
+
+  .formats__main {
+    display: grid;
+    gap: var(--s-3);
+  }
+
+  .formats .link {
+    justify-self: end;
+  }
+
+  .formats__note {
+    margin-top: var(--s-5);
+    max-width: 40rem;
+  }
+
+  @media (max-width: 63.99rem) {
+    .lead-product__figure,
+    .lead-product__body {
+      grid-column: 1 / -1;
+    }
+
+    .formats > li {
+      grid-template-columns: 1fr;
+    }
+
+    .formats .link {
+      justify-self: start;
+    }
+
+    .formats .eyebrow {
+      padding-top: 0;
+    }
+  }
+</style>

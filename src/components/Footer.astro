@@ -1,0 +1,152 @@
+---
+import Sprig from './Sprig.astro';
+import { site, primaryNav, secondaryNav, legalNav } from '@/config/site';
+---
+
+<footer class="site-footer band-slate">
+  <div class="wrap site-footer__grid">
+    <div class="site-footer__brand">
+      <a class="site-footer__wordmark" href="/" aria-label="Royal Spices – Startseite">
+        <Sprig class="site-footer__sprig" />
+        <span>Royal Spices</span>
+      </a>
+      <p class="small">Safran aus Herat, Afghanistan.<br />In Deutschland abgefüllt.</p>
+    </div>
+
+    <address class="site-footer__contact">
+      <p class="eyebrow">Kontakt</p>
+      <p>
+        {site.name} · {site.owner}<br />
+        {site.address.street}<br />
+        {site.address.postalCode}
+        {site.address.city}
+      </p>
+      <p>
+        <a href={site.phone.href}>{site.phone.display}</a><br />
+        <a href={`mailto:${site.email}`}>{site.email}</a>
+      </p>
+    </address>
+
+    <nav class="site-footer__nav" aria-label="Seiten">
+      <p class="eyebrow">Seiten</p>
+      <ul>
+        {[...primaryNav, ...secondaryNav].map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+    </nav>
+  </div>
+
+  <div class="wrap site-footer__base">
+    <p class="small">© {new Date().getFullYear()} {site.name} · {site.owner}</p>
+    <ul class="site-footer__legal">
+      {legalNav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding-top: clamp(3.5rem, 7vw, 6rem);
+    padding-bottom: var(--s-6);
+  }
+
+  .site-footer__grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: var(--s-7) clamp(1.5rem, 4vw, 4rem);
+  }
+
+  .site-footer__wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    text-decoration: none;
+    font-family: var(--font-display), Georgia, serif;
+    font-size: 1.625rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .site-footer__sprig {
+    width: 1.875rem;
+    height: 1.75rem;
+    color: #c9bd9c;
+  }
+
+  .site-footer__brand .small {
+    margin-top: var(--s-4);
+  }
+
+  address {
+    font-style: normal;
+  }
+
+  .site-footer__contact p + p,
+  .site-footer__nav ul {
+    margin-top: var(--s-4);
+  }
+
+  .site-footer__contact .eyebrow + p {
+    margin-top: var(--s-4);
+  }
+
+  .site-footer ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-footer__nav ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 var(--s-5);
+    margin-top: var(--s-3);
+  }
+
+  .site-footer a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    text-decoration: none;
+  }
+
+  .site-footer a:hover {
+    text-decoration: underline;
+    text-decoration-color: #e0907f;
+    text-underline-offset: 0.3em;
+  }
+
+  .site-footer__base {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3) var(--s-6);
+    margin-top: clamp(2.5rem, 6vw, 5rem);
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--rule);
+  }
+
+  .site-footer__legal {
+    display: flex;
+    gap: var(--s-5);
+    font-size: 0.875rem;
+  }
+
+  @media (max-width: 55.99rem) {
+    .site-footer__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .site-footer__brand {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 35.99rem) {
+    .site-footer__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,86 @@
+---
+// DRAFT. Based on the client's published privacy notice (royalspices.de/datenschutz.html,
+// "Stand: September 2026"), adapted to how this site actually works: the inquiry form now sends
+// data to the web server. Hosting and e-mail provider are not decided yet and are marked as open.
+// Must be completed and legally reviewed by the responsible party before launch.
+import Base from '@/layouts/Base.astro';
+import { site } from '@/config/site';
+import { commerceEnabled } from '@/lib/commerce/config';
+---
+
+<Base title="Datenschutz" description="Datenschutzhinweise von Royal Spices: Verantwortlicher, Hosting, Anfragen, Speicherdauer, Cookies und Ihre Rechte.">
+  <section class="page-head">
+    <div class="wrap">
+      <h1 class="display-l">Datenschutzhinweise</h1>
+      <div class="longform">
+        <p><span class="open">Entwurf – vor Veröffentlichung zu vervollständigen und rechtlich zu prüfen.</span></p>
+
+        <h2>1. Verantwortlicher</h2>
+        <p>
+          {site.owner} · {site.name}<br />
+          {site.address.street}, {site.address.postalCode}
+          {site.address.city}, Deutschland<br />
+          E-Mail: <a href={`mailto:${site.email}`}>{site.email}</a><br />
+          Telefon: <a href={site.phone.href}>{site.phone.display}</a>
+        </p>
+
+        <h2>2. Aufruf der Website und Hosting</h2>
+        <p>
+          Beim Aufruf dieser Website werden technische Verbindungsdaten wie IP-Adresse, Zeitpunkt des Zugriffs, angeforderte Seite und Browserinformationen verarbeitet. Dies dient der Auslieferung der Inhalte, dem sicheren Betrieb und der Abwehr von Missbrauch. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse liegt in einem sicheren und erreichbaren Internetangebot.
+        </p>
+        <p><span class="open">Offen: Hosting-Anbieter, Sitz, Ort der Verarbeitung und Auftragsverarbeitung eintragen.</span></p>
+
+        <h2>3. Anfragen über das Formular, per E-Mail oder Telefon</h2>
+        <p>
+          Wenn Sie uns über das Anfrageformular kontaktieren, übermittelt Ihr Browser die eingegebenen Angaben an unseren Webserver: Anliegen, Name, E-Mail-Adresse sowie – soweit Sie sie angeben – Unternehmen, Telefonnummer, Land oder Markt, Gebinde, Menge, Angaben zu einer Veranstaltung und Ihre Nachricht. Der Server prüft die Angaben und leitet sie per E-Mail an uns weiter. Zur Abwehr von Missbrauch wird dabei Ihre IP-Adresse kurzzeitig im Arbeitsspeicher des Servers verarbeitet (Begrenzung der Anzahl von Anfragen); sie wird nicht mit der Anfrage gespeichert.
+        </p>
+        <p>
+          Wir nutzen Ihre Angaben zur Bearbeitung Ihrer Anfrage sowie zur Vorbereitung und Durchführung eines Auftrags. Rechtsgrundlagen sind Art. 6 Abs. 1 lit. b DSGVO bei vertragsbezogenen Anfragen und Art. 6 Abs. 1 lit. f DSGVO bei sonstiger geschäftlicher Kommunikation. Die Angaben sind freiwillig; ohne Name und E-Mail-Adresse können wir Ihre Anfrage nicht beantworten.
+        </p>
+        <p><span class="open">Offen: E-Mail-Dienstleister für die Zustellung der Anfragen eintragen.</span></p>
+
+        <h2>4. Speicherdauer</h2>
+        <p>
+          Wir speichern Anfragen, solange sie für deren Bearbeitung und eine daraus entstehende Geschäftsbeziehung benötigt werden. Danach löschen wir die Angaben, sofern keine gesetzlichen Aufbewahrungspflichten oder berechtigten Gründe wie die Geltendmachung oder Abwehr von Ansprüchen bestehen. Aufbewahrungspflichtige Geschäftsdokumente werden für die jeweils gesetzlich vorgeschriebene Dauer gespeichert.
+        </p>
+
+        <h2>5. Cookies, Analyse und Werbung</h2>
+        <p>
+          Diese Website setzt keine Cookies und enthält keine Analyse- oder Werbepixel. Es werden keine Inhalte von Drittanbietern nachgeladen; Schriften, Bilder und Skripte werden von dieser Website selbst ausgeliefert.
+        </p>
+        {
+          commerceEnabled ? (
+            <p>
+              Für den Warenkorb speichert Ihr Browser eine Warenkorb-Kennung im lokalen Speicher Ihres Geräts. Produktdaten, Warenkorb und Bezahlvorgang werden über Shopify bereitgestellt.{' '}
+              <span class="open">Offen: Angaben zu Shopify als Dienstleister, Rechtsgrundlagen und Drittlandübermittlung ergänzen.</span>
+            </p>
+          ) : (
+            <p>Der lokale Browserspeicher wird nicht verwendet.</p>
+          )
+        }
+
+        <h2>6. Ihre Rechte</h2>
+        <p>
+          Nach Maßgabe der DSGVO haben Sie Rechte auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung und Datenübertragbarkeit. Eine erteilte Einwilligung können Sie jederzeit mit Wirkung für die Zukunft widerrufen.
+        </p>
+        <p>
+          Soweit eine Verarbeitung auf Art. 6 Abs. 1 lit. f DSGVO beruht, können Sie aus Gründen Ihrer besonderen Situation widersprechen. Gegen eine Verarbeitung für Direktwerbung können Sie jederzeit Widerspruch einlegen.
+        </p>
+        <p>
+          Wenden Sie sich zur Ausübung Ihrer Rechte an <a href={`mailto:${site.email}`}>{site.email}</a>. Sie können sich außerdem bei einer Datenschutzaufsichtsbehörde beschweren, insbesondere am Ort Ihres Aufenthalts, Ihres Arbeitsplatzes oder des vermuteten Verstoßes. Für Hamburg ist dies der Hamburgische Beauftragte für Datenschutz und Informationsfreiheit.
+        </p>
+        <p>Wir treffen auf Grundlage der über diese Website erhaltenen Daten keine ausschließlich automatisierten Entscheidungen mit rechtlicher oder vergleichbar erheblicher Wirkung.</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .page-head {
+    padding-bottom: var(--section-pad);
+  }
+
+  h1 {
+    margin-bottom: var(--s-5);
+  }
+</style>

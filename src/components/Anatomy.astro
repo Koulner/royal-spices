@@ -1,0 +1,118 @@
+---
+// Annotated flower centre. Mark positions follow the camera of the botanical still
+// (pipeline/blender/web_hero.py, mode "anatomy"); the legend carries the meaning for everyone.
+import Picture from './Picture.astro';
+
+interface Props {
+  sizes: string;
+  class?: string;
+  /** Adds the note that this is a visualisation, not a measured botanical plate. */
+  note?: boolean;
+}
+const { sizes, class: className, note = false } = Astro.props;
+
+// Positions live in the stylesheet (not in style attributes) so the strict CSP needs no exception.
+const marks = [
+  { n: 1, text: 'Blütenhüllblatt' },
+  { n: 2, text: 'Narbe – daraus wird Safran' },
+  { n: 3, text: 'Staubbeutel' },
+  { n: 4, text: 'Staubfaden' },
+];
+---
+
+<figure class:list={['figure anatomy', className]}>
+  <div class="anatomy__image">
+    <Picture
+      name="anatomy"
+      alt="Blütenzentrum von Crocus sativus: vom hellen Griffel zweigen drei rote Narbenäste ab, daneben drei gelbe Staubbeutel auf hellen Staubfäden, umgeben von violetten Blütenhüllblättern."
+      sizes={sizes}
+    />
+    <ol class="anatomy__marks" aria-hidden="true">
+      {marks.map((m) => <li class={`anatomy__mark anatomy__mark--${m.n}`}>{m.n}</li>)}
+    </ol>
+  </div>
+  <figcaption>
+    <ol class="anatomy__legend">
+      {
+        marks.map((m) => (
+          <li>
+            <b>{m.n}</b>
+            {m.text}
+          </li>
+        ))
+      }
+    </ol>
+    {note && <span>3D-Visualisierung nach botanischen Beschreibungen und Fotografien, keine vermessene Darstellung.</span>}
+  </figcaption>
+</figure>
+
+<style>
+  .anatomy__image {
+    position: relative;
+  }
+
+  .anatomy__marks {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    pointer-events: none;
+  }
+
+  .anatomy__mark--1 {
+    left: 18%;
+    top: 9%;
+  }
+
+  .anatomy__mark--2 {
+    left: 70%;
+    top: 41%;
+  }
+
+  .anatomy__mark--3 {
+    left: 64.5%;
+    top: 45.5%;
+  }
+
+  .anatomy__mark--4 {
+    left: 59%;
+    top: 56%;
+  }
+
+  .anatomy__marks li {
+    position: absolute;
+    width: 1.625rem;
+    height: 1.625rem;
+    margin: -0.8125rem 0 0 -0.8125rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--paper-soft);
+    border: 1px solid var(--saffron);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--saffron-deep);
+  }
+
+  .anatomy__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem var(--s-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--ink-2);
+  }
+
+  .anatomy__legend b {
+    color: var(--saffron-deep);
+    margin-right: 0.375rem;
+  }
+
+  figcaption span {
+    display: block;
+    margin-top: var(--s-2);
+  }
+</style>
