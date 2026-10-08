@@ -7,7 +7,8 @@
 //    story and both calls to action, and throw nothing.
 // 3. Tiers: with less memory and fewer cores reported, the page must load fewer frames and still
 //    play the whole move and sharpen the settled picture.
-import { launch } from './browser.mjs';
+// 4. Slow link: at 3 Mbit/s the motion set must stop refining at a complete level and still play.
+import { launch, scrollToProgress } from './browser.mjs';
 import { join } from 'node:path';
 
 const base = process.argv[2] ?? 'http://127.0.0.1:4321';
@@ -45,7 +46,7 @@ const STATE = `(() => {
     overflow: document.documentElement.scrollWidth > innerWidth,
   };
 })()`;
-const goTo = (p) => `(() => { const j = document.querySelector('[data-journey]'); scrollTo(0, j.getBoundingClientRect().top + scrollY + (j.offsetHeight - innerHeight) * ${p}); })()`;
+const goTo = scrollToProgress;
 
 let failed = 0;
 const check = (ok, text) => {
@@ -137,6 +138,48 @@ try {
       check(seen[1].arrival && seen[1].final, 'end: arrival copy on the arrival still');
     }
     await page.send('Page.removeScriptToEvaluateOnNewDocument', { identifier });
+  }
+
+  // ---- 4. slow link: the finer levels of the motion set are only fetched when the measured rate
+  // carries them within a few seconds (REFINE_SECONDS in src/scripts/journey.ts). At 3 Mbit/s the
+  // large landscape set stops refining; whatever level it stops at must be complete.
+  {
+    const vp = VIEWPORTS[0];
+    console.log(`\nslow link (3 Mbit/s), ${vp.name}`);
+    await page.viewport(vp.width, vp.height, { dpr: vp.dpr ?? 1, mobile: vp.mobile ?? false });
+    await page.send('Network.setCacheDisabled', { cacheDisabled: true });
+    await page.throttle({ network: { latency: 40, down: (3e6 / 8) | 0, up: (1e6 / 8) | 0 } });
+    await page.goto(base + '/', { settle: 2500 });
+    const LOADED = `(() => {
+      const j = document.querySelector('[data-journey]');
+      const set = j.dataset.set;
+      const files = performance.getEntriesByType('resource').filter((e) => e.name.includes('/hero/5/' + set + '/'));
+      return { set, detail: Number(j.dataset.detail), loaded: files.map((e) => Number(e.name.match(/(\\d{4})\\.webp/)[1])) };
+    })()`;
+    // wait until no frame has arrived for eight seconds (at most two minutes)
+    let state = await page.eval(LOADED);
+    for (let quiet = 0, t = 0; quiet < 8 && t < 120; t++) {
+      await page.wait(1000);
+      const now = await page.eval(LOADED);
+      quiet = now.loaded.length === state.loaded.length ? quiet + 1 : 0;
+      state = now;
+    }
+    const info = JSON.parse(await page.eval(`document.querySelector('[data-journey]').dataset.sets`))[state.set];
+    const present = [];
+    for (const [first, last, stride] of info.frames) for (let i = first; i <= last; i += Math.max(1, stride)) present.push(i);
+    const wanted = present.filter((i) => i % state.detail === 0 || i === info.count - 1);
+    const loaded = new Set(state.loaded);
+    check(state.detail > 1 && state.loaded.length < present.length, `refining stops: level ${state.detail}, ${state.loaded.length} of ${present.length} frames of ${state.set} loaded`);
+    check(wanted.every((i) => loaded.has(i)) && state.loaded.every((i) => i % state.detail === 0 || i === info.count - 1), `the level it stops at is complete and nothing finer was fetched (${wanted.length} frames)`);
+    const seen = {};
+    for (const p of [0.22, 0.4, 0.76]) {
+      await page.eval(goTo(p));
+      await page.wait(SETTLE);
+      seen[p] = await page.eval(STATE);
+    }
+    check(Object.values(seen).every((s) => s.live) && new Set(Object.values(seen).map((s) => s.hash)).size === 3, 'the move still plays on the slow link');
+    await page.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+    await page.send('Network.setCacheDisabled', { cacheDisabled: false });
   }
 
   // blocked requests are reported as failed loads; anything else is a real problem

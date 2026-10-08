@@ -30,6 +30,9 @@ Zur Einordnung, wie im Übergabepaket dokumentiert: Die Szene ist eine recherchi
 | Füllgut: etwas kräftigere Fäden, wärmeres Rot | Lesbarkeit der Fäden im Glas bei Web-Auflösung |
 | Kamerafahrt: zwei eigene Pfade statt des einen 85-mm-Pfads | Eigene Kompositionen für Quer- und Hochformat (§13) |
 | Am Narben-Haltepunkt (Fortschritt 0,40): Die Kamera verlässt zwischen Fortschritt 0,325 und 0,475 den gesetzten Pfad für eine Makro-Position vor dem Ende der Narbe (Abstand 1,9 statt 5,6 Einheiten, 50° zur Achse des Narbenastes, Blende 2,0, Schärfepunkt auf dem Ende) | Auf dem gesetzten Pfad war das Ende der Narbe rund 5 % der Bildbreite groß, von der Seite gesehen und nur kurz scharf (Rückmeldung des Auftraggebers, 06.10.). Der gefaltete Endquerschnitt und der papillöse Rand, die der Master modelliert, waren so nicht zu lesen. Zwischen 0,375 und 0,425 zeigt das Bild allein die Makro-Ansicht, mit langsamer Annäherung und leichtem Schwenk; außerhalb von 0,325 bis 0,475 ändert sich kein Bild |
+| Enden der drei frischen Narbenäste geöffnet: Das Ende weitet sich trompetenförmig, die geschlossene Endfläche wird zur Mulde, der Rand ist unregelmäßig gekerbt und fein gezähnt. Gewebe durchscheinend (Subsurface 0,35 statt 0,045), leichter Samtschimmer, Rand etwas heller und orangeroter, feine Zellstruktur und Papillen als Relief (`refine_stigma_ends`, nur im Arbeitsspeicher). Die 141 Papillen-Kurven des Masters (`Papilla_*`, je 47 um das geschlossene Ende) sind ausgeblendet: Sie wandern mit der geöffneten Form nicht mit und schwebten sonst als Ring heller Striche in der Mulde (gefunden am 06.10. um 23:20 im ersten Bild in voller Auflösung) | Rückmeldung des Auftraggebers (06.10. abends): Die Nahaufnahme der Narbenspitze muss absolut realistisch sein und darf nicht gerendert aussehen. Der Master modelliert das Ende als geschlossenen, gefalteten Querschnitt; nah gesehen las es sich als abgeschnittenes rotes Profil, wovor die Notizen des 3D-Artists ausdrücklich warnen („keine rote Kunststoffschnur"). Die Quellen beschreiben trichterförmige Narbenlappen mit papillösem Rand [S4]. Die Form ist eine Interpretation dieser Beschreibung und der Fotos P01/P02, keine Messung |
+| Ausstieg aus der Makro-Ansicht (`leave_hold`): Der gesetzte Weg von der Narbe zu den Fäden beginnt erst nach der Makro-Ansicht, sanft, und auf halbem Weg zieht die Kamera etwas zurück (Abstand bis × 1,5) | Rückmeldung (06.10. abends): „Szenensprung statt Übergang". Der gesetzte Pfad lief während der Makro-Ansicht weiter; beim Verlassen musste die Kamera aufholen: Narbe, leerer Boden, Fäden in rund 3 % der Fahrt. Jetzt stehen Narbe und Fäden kurz gemeinsam im Bild (Fortschritt 0,48) |
+| Hochformat ab dem Produkt (76, 90, 100 %): dieselbe Sichtlinie wie im Querformat, nur weiter zurück (Faktor 1,42 bzw. 1,30), Ausschnitt per Objektivverschiebung | Rückmeldung (06.10. abends): Auf dem Telefon war die Abfolge nicht dieselbe. Das Hochformat fuhr ans Etikett heran, und am Ende war die Blüte abgeschnitten. Jetzt zeigt es dieselben Einstellungen: Blüte, Glas und Fäden nebeneinander, innerhalb der mittleren 82 % der Bildbreite, die ein 9:19,5-Telefon zeigt, oberhalb des Textschilds |
 | Blende außerhalb des Narben-Haltepunkts fest auf 0,11 | Der Master animiert die Blende an den Kameradaten. Diese Animation wurde vom Renderskript nie entfernt: Alle Bilder beider Fahrten sind mit dem Wert des letzten Master-Frames (0,11) gerendert, nicht mit den Blenden der Schlüsselpositionen (gefunden am 06.10.; deshalb blieb die Narbe nach der ersten Korrektur weich). Der veröffentlichte Look bleibt so; die gesetzten Blenden überall zu verwenden hieße, beide Fahrten neu zu rendern |
 
 ## Die Fahrt
@@ -46,7 +49,9 @@ Zwei von Hand gesetzte Kamerapfade, je sieben Schlüsselpositionen, 85 mm Brennw
 | 90 % | Royal Spices | Schärfe auf dem Etikett, 3/4-Ansicht |
 | 100 % | Hero State | Kamera steht; diese Komposition ist das Standbild der Website |
 
-Zwischen den Positionen: Catmull-Rom für Ort, Ziel und Schärfepunkt, weiches An- und Abfahren, Blende logarithmisch wie ein echter Blendenzug. Hochformat ist ein gedrehter Sensor, kein Ausschnitt: Der Auftakt hält das Motiv tief (Überschrift darüber), alle späteren Positionen hoch (Beschriftung darunter).
+Zwischen den Positionen: Catmull-Rom für Ort, Ziel und Schärfepunkt, weiches An- und Abfahren, Blende logarithmisch wie ein echter Blendenzug. Hochformat ist ein gedrehter Sensor, kein Ausschnitt: Der Auftakt hält das Motiv tief (Überschrift darüber), alle späteren Positionen hoch (Beschriftung darunter). Beide Formate zeigen dieselbe Abfolge von Einstellungen; das Hochformat steht dafür auf derselben Sichtlinie weiter zurück (Vergleich: `docs/sequenz-quer-hoch.png`).
+
+**Tempo beim Scrollen.** Der Fortschritt ist nicht überall proportional zum Scrollweg. Von 0,425 bis 0,56 (von der Makro-Ansicht der Narbe zu den Fäden) kostet die Fahrt den doppelten Scrollweg, mit weichen Übergängen (`slow` in `src/data/journey.ts`, umgerechnet in `src/scripts/journey.ts`; Prüfskripte nutzen dieselbe Umrechnung, `scrollToProgress` in `tools/qa/browser.mjs`). Die Seite ist entsprechend länger (849 statt 760 svh), alle anderen Abschnitte behalten ihr Tempo. Gemessen bei 900 px Fensterhöhe: 5940 px Scrollweg je Fortschrittseinheit, im langsamen Abschnitt 11875 px.
 
 Rendereinstellungen: Cycles, 48 Samples adaptiv (Schwelle 0,035) für Sequenzbilder, 96 Samples (0,02) für die beiden Standbilder je Format, OpenImageDenoise, keine Kaustiken. Die Basisbilder des Narben-Kapitels (Querformat 29–42, Hochformat 21–29) sind in voller Größe (1920 × 1080 bzw. 720 × 1280) mit 64 Samples gerendert: Dort verweilt man am längsten.
 
@@ -84,7 +89,7 @@ Diese Abschnitte werden deshalb wie Film gerendert: Der Verschluss bleibt von ei
 
 Ein ruhendes Bild ist nie unscharf: Im Stillstand übernimmt auf jedem Gerät das scharfe Basisbild. Die scharfen Zwischenbilder des Querformat-Schwenks bleiben erhalten; `RS_NO_BLUR=1 npm run assets:hero` baut die Bewegungsebene ohne Unschärfe. Im Hochformat gibt es keine scharfen Zwischenbilder; ohne Unschärfe bleiben dort die 64 Basisbilder.
 
-- **Raster:** Positionen liegen auf einem Raster von acht je Basisschritt (713 im Querformat, 505 im Hochformat). Belegt sind die geraden, in der Makro-Ansicht der Narbe alle.
+- **Raster:** Positionen liegen auf einem Raster von acht je Basisschritt (713 im Querformat, 505 im Hochformat). Belegt waren zuerst die geraden, in der Makro-Ansicht der Narbe alle. Seit dem 07.10.2026 (Entscheidung des Auftraggebers, „Option A") werden auch die ungeraden gerendert (`pipeline/blender/queue-dense.sh`): doppelt so viele Bilder in der Bewegungsebene, bei neun Sekunden Durchfahrt rund 79 statt 42 Bilder pro Sekunde im Querformat, 56 statt 28 im Hochformat. Die unscharfen ungeraden Bilder haben dieselbe Belichtungslänge wie ihre geraden Nachbarn (zwei Positionen); die Belichtungen überlappen sich zur Hälfte, und keine Strecke wechselt den Look.
 - **Zwischen zwei benachbarten Bildern** wird überblendet. Bei eng liegenden oder ineinander verwischten Bildern liest sich das als Bewegung.
 - **Bei schnellem Scrollen** überspringt der Player Positionen (jede zweite, vierte, dann nur die Basisbilder), damit nie mehr Bilder decodiert werden müssen, als das Gerät schafft.
 - **Messung:** `node tools/qa/frame-steps.mjs` zeigt, wie stark sich das Bild von einem ausgelieferten Bild zum nächsten ändert. Die Zwischenbilder rendert `pipeline/blender/queue-large.sh` (1440 × 810, 720 × 1280); `pipeline/blender/queue-inbetweens.sh` enthält die Stufen der ersten, kleinen Renderings und die Makro-Ansicht der Narbe.
@@ -124,7 +129,8 @@ Fallback und statische Fassung sind eigene Kompositionen mit denselben Inhalten 
 1. HTML und CSS: Überschrift, Navigation und beide Handlungen stehen ohne ein einziges Hero-Bild.
 2. Ein Standbild, per `preload` mit hoher Priorität: im bewegten Modus das Auftaktbild, im statischen das Ankunftsbild, je nach Format quer oder hoch. Das ist das LCP-Element.
 3. Schriften (drei Dateien, selbst gehostet).
-4. Erst danach, mit niedriger Priorität, die Bewegungsebene: erstes und letztes Bild, dann jedes 16., 8., 4., 2. Basisbild, dann die Basisbilder vollständig, dann die Zwischenbilder. Die Fahrt ist nach einer Handvoll Bildern benutzbar und wird feiner, während der Rest eintrifft.
+4. Erst danach, mit niedriger Priorität, die Bewegungsebene: erstes und letztes Bild, dann jedes 16., 8., 4., 2. Basisbild, dann die Basisbilder vollständig, dann die Zwischenbilder, vom Groben zum Feinen (jede vierte, jede zweite, jede Position). Die Fahrt ist nach einer Handvoll Bildern benutzbar und wird feiner, während der Rest eintrifft.
+   **Bremse für langsame Leitungen:** Die Basisbilder kommen immer. Jede feinere Stufe beginnt nur, wenn sie bei der bis dahin gemessenen Datenrate (gemessen an den Bildern selbst, nicht an der Netzschätzung des Browsers) in höchstens acht Sekunden vollständig wäre (`REFINE_SECONDS` in `src/scripts/journey.ts`). Sonst bleibt die Fahrt auf der Stufe, die vollständig da ist, gleichmäßig dicht statt halb gefüllt. Großer Querformat-Satz gerechnet: Bei 50 Mbit/s kommen alle Stufen, bei 10 Mbit/s alle außer der feinsten (dann so dicht wie vor Option A), bei 3 Mbit/s rechnerisch eine Zwischenstufe. Gemessen (gedrosselte Leitung in `tools/qa/journey.mjs`) bleibt es bei 3 Mbit/s bei den 90 Basisbildern, weil die tatsächlich erreichte Rate unter dem Nennwert der Leitung liegt; die Fahrt läuft trotzdem durch. Welche Stufe erreicht ist, steht in `data-detail` am Hero (8 = nur Basisbilder, 1 = jede Position).
 5. Danach die scharfen Bilder der Kapitel-Haltepunkte; alle anderen erst, wenn die Kamera dort ruht.
 6. Das Ankunfts-Standbild in voller Auflösung wird erst geladen, wenn es gebraucht wird (`loading="lazy"`).
 
@@ -167,7 +173,13 @@ rendert die Makro-Ansicht der Narbe (jede Position, scharf; rund 3,5 Stunden).
 bash pipeline/blender/queue-large.sh
 ```
 
-rendert die Zwischenbilder der Bewegungsebene in 1440 × 810 und 720 × 1280 (auf dieser Maschine rund 13 Stunden, fortsetzbar, einzelne Stufen wählbar). Die übrigen Stufen von `queue-inbetweens.sh` rendern dieselben Zwischenbilder klein (960 × 540, 540 × 960); sie werden nur gebraucht, wenn die großen fehlen.
+rendert seit dem 06.10. abends beide Fahrten vollständig: Basisbilder, Makro-Ansicht der Narbe, Zwischenbilder in 1440 × 810 und 720 × 1280, Standbilder und botanische Abbildung (auf dieser Maschine rund 24 Stunden, fortsetzbar, einzelne Stufen wählbar; Stufen im Skriptkopf). Die übrigen Stufen von `queue-inbetweens.sh` rendern Zwischenbilder klein (960 × 540, 540 × 960); sie werden nur gebraucht, wenn die großen fehlen.
+
+```bash
+RS_DEVICE=HIP bash pipeline/blender/queue-dense.sh
+```
+
+rendert die ungeraden Positionen des Rasters (Option A, 07.10.): Querformat 335, Hochformat 237 Bilder, auf der RX 9070 rund eine Stunde, fortsetzbar.
 
 ```bash
 npm run assets:stills

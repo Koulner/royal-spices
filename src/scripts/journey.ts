@@ -41,7 +41,8 @@ function start(root: HTMLElement) {
   // ---------------------------------------------------------------- device tier
   // Only the device decides what is drawn. The browser's network estimate is deliberately ignored:
   // it misreports under load (measured during development) and would hand a fast machine soft frames.
-  // Slow links are covered by the loading order instead: coarse first, at low priority, refining over time.
+  // Slow links are covered by the loading order instead: coarse first, at low priority, refining over
+  // time, and the finer levels only as far as the measured download rate carries them (loadSet).
   // People who ask for less data (Save-Data) get the static hero and never reach this file.
   const nav = navigator as Navigator & { deviceMemory?: number };
   const tier: Tier = (() => {
@@ -75,15 +76,20 @@ function start(root: HTMLElement) {
   const powers: number[] = [];
   for (let stride = 1; stride <= fine; stride *= 2) powers.push(stride);
   const strides = tier === 'high' ? powers : tier === 'medium' ? powers.slice(-2) : [fine * 3];
+  // the strides in use: on a slow link the finest ones are dropped (loadSet)
+  let usable = strides;
   let levels: number[][] = [[0]];
   let floors: Int16Array[] = [new Int16Array(1)];
   let level = 0;
 
-  function buildLevels(set: SetInfo) {
+  /** Levels of detail of a set, from the stride `finest` up: finer frames are not used. */
+  function buildLevels(set: SetInfo, finest = 1) {
     const present: number[] = [];
     for (const [first, last, stride] of set.frames) for (let i = first; i <= last; i += Math.max(1, stride)) present.push(i);
     const end = set.count - 1;
-    levels = strides.map((stride) => present.filter((i) => i % stride === 0 || i === end));
+    usable = strides.filter((stride) => stride >= finest);
+    if (!usable.length) usable = strides.slice(-1);
+    levels = usable.map((stride) => present.filter((i) => i % stride === 0 || i === end));
     // floors[l][p]: index in levels[l] of the last frame at or before position p
     floors = levels.map((list) => {
       const table = new Int16Array(set.count);
@@ -201,20 +207,32 @@ function start(root: HTMLElement) {
     sharp.classList.remove('is-active');
   }
 
-  /** Coarse-to-fine order: the move is scrubbable after a handful of frames and sharpens as the rest arrive. */
-  function loadOrder(list: number[], count: number) {
+  /**
+   * Coarse-to-fine order: the move is scrubbable after a handful of frames and sharpens as the rest
+   * arrive. Each stage completes a stride: after the stage of stride s, every frame on that grid is in.
+   */
+  function loadStages(list: number[], count: number) {
     const wanted = new Set(list);
-    const order: number[] = [];
-    const add = (i: number) => {
-      if (wanted.delete(i)) order.push(i);
+    const stages: { stride: number; frames: number[] }[] = [];
+    const take = (stride: number, indices: number[]) => {
+      const frames = indices.filter((i) => wanted.delete(i));
+      if (frames.length) stages.push({ stride, frames });
     };
-    add(0);
-    add(count - 1);
+    take(16 * fine, [0, count - 1]);
     for (let stride = 16 * fine; stride >= 1; stride = Math.floor(stride / 2)) {
-      for (let i = 0; i < count; i += stride) add(i);
+      const indices: number[] = [];
+      for (let i = 0; i < count; i += stride) indices.push(i);
+      take(stride, indices);
     }
-    return order.concat([...wanted]);
+    if (wanted.size) stages.push({ stride: 1, frames: [...wanted] });
+    return stages;
   }
+
+  // Slow links. The base frames always load. A finer level (half the stride) is only started when,
+  // at the rate the frames so far came in, it would be complete within REFINE_SECONDS. Otherwise the
+  // move stays at the level it has: complete and evenly spaced, rather than half filled for minutes.
+  // Measured on the frames themselves, not taken from the browser's network estimate (see tier).
+  const REFINE_SECONDS = 8;
 
   async function loadSet() {
     const chosen = chooseSets();
@@ -238,27 +256,48 @@ function start(root: HTMLElement) {
     restList = [];
     if (restName) for (const [first, last, stride] of sets[restName].frames) for (let i = first; i <= last; i += Math.max(1, stride)) restList.push(i);
     buildLevels(info);
+    root.dataset.detail = String(usable[0]);
     forgetLayers();
     requestDraw();
 
-    const queue = loadOrder(levels[0], info.count);
-    const workers = Array.from({ length: tier === 'low' ? 3 : 6 }, async () => {
-      while (queue.length && mine === generation && !degraded) {
-        const index = queue.shift()!;
-        try {
-          const response = await fetch(url(name, index), { priority: 'low' } as RequestInit);
-          if (!response.ok) throw new Error(String(response.status));
-          const blob = await response.blob();
-          if (mine !== generation) return;
-          blobs[index] = blob;
+    const set = info;
+    const started = performance.now();
+    let received = 0;
+    let arrived = 0;
+    for (const stage of loadStages(levels[0], set.count)) {
+      if (stage.stride < fine && arrived) {
+        const rate = received / Math.max(0.001, (performance.now() - started) / 1000);
+        const seconds = (stage.frames.length * (received / arrived)) / rate;
+        if (seconds > REFINE_SECONDS) {
+          // stay at the stride that is complete: twice the one this stage would have filled in
+          buildLevels(set, stage.stride * 2);
+          root.dataset.detail = String(usable[0]);
           requestDraw();
-        } catch {
-          if (mine !== generation) return;
-          if (++failures > 6) degrade();
+          break;
         }
       }
-    });
-    await Promise.all(workers);
+      const queue = stage.frames.slice();
+      const workers = Array.from({ length: tier === 'low' ? 3 : 6 }, async () => {
+        while (queue.length && mine === generation && !degraded) {
+          const index = queue.shift()!;
+          try {
+            const response = await fetch(url(name, index), { priority: 'low' } as RequestInit);
+            if (!response.ok) throw new Error(String(response.status));
+            const blob = await response.blob();
+            if (mine !== generation) return;
+            blobs[index] = blob;
+            received += blob.size;
+            arrived++;
+            requestDraw();
+          } catch {
+            if (mine !== generation) return;
+            if (++failures > 6) degrade();
+          }
+        }
+      });
+      await Promise.all(workers);
+      if (mine !== generation || degraded) return;
+    }
     // the places the "weiter" control stops at sharpen without a wait
     if (mine === generation && !degraded) for (const stop of stops) void loadSharp(nearestFrame(stop * (sets[name].count - 1)));
   }
@@ -409,8 +448,50 @@ function start(root: HTMLElement) {
     return Math.max(1, root.offsetHeight - innerHeight);
   }
 
+  // Progress is not linear in the scroll position. Inside a slow stretch (`data-slow`, from
+  // src/data/journey.ts) the camera covers its way over more scroll distance; the rate changes over
+  // soft shoulders, never in a step. warp[i] is the scroll fraction at progress i / WARP.
+  const slow = JSON.parse(root.dataset.slow || '[]') as [number, number, number][];
+  const WARP = 1024;
+  const SHOULDER = 0.012;
+  const warp = new Float64Array(WARP + 1);
+  {
+    const smooth = (x: number) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
+    let sum = 0;
+    for (let i = 1; i <= WARP; i++) {
+      const p = (i - 0.5) / WARP;
+      let cost = 1;
+      for (const [from, to, factor] of slow) {
+        const inside = smooth((p - from + SHOULDER) / (2 * SHOULDER)) * (1 - smooth((p - to + SHOULDER) / (2 * SHOULDER)));
+        cost += (factor - 1) * inside;
+      }
+      sum += cost;
+      warp[i] = sum;
+    }
+    for (let i = 1; i <= WARP; i++) warp[i] /= sum;
+  }
+
+  /** Scroll fraction of the journey at a progress value. */
+  function scrollOf(p: number) {
+    const x = Math.min(1, Math.max(0, p)) * WARP;
+    const i = Math.min(WARP - 1, Math.floor(x));
+    return warp[i] + (warp[i + 1] - warp[i]) * (x - i);
+  }
+
+  /** Progress at a scroll fraction of the journey. */
+  function progressOf(s: number) {
+    let lo = 0;
+    let hi = WARP;
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (warp[mid] <= s) lo = mid;
+      else hi = mid;
+    }
+    return Math.min(1, (lo + (s - warp[lo]) / Math.max(1e-9, warp[lo + 1] - warp[lo])) / WARP);
+  }
+
   function readScroll() {
-    target = Math.min(1, Math.max(0, -root.getBoundingClientRect().top / span()));
+    target = progressOf(Math.min(1, Math.max(0, -root.getBoundingClientRect().top / span())));
   }
 
   function requestDraw() {
@@ -440,7 +521,7 @@ function start(root: HTMLElement) {
     shown = Math.abs(goal - shown) < 0.003 ? goal : shown + (goal - shown) * (resting ? 1 - Math.exp(-dt / 0.11) : 1);
     pace += (Math.abs(shown - before) - pace) * 0.35;
     level = 0;
-    if (!resting) while (level < strides.length - 1 && pace > strides[level]) level++;
+    if (!resting) while (level < usable.length - 1 && pace > usable[level]) level++;
     updateInterface();
     draw();
     // settled between the two ends (which have their own full-resolution stills): sharpen
@@ -479,7 +560,7 @@ function start(root: HTMLElement) {
   }
 
   function scrollToProgress(p: number, smooth = true) {
-    const top = root.getBoundingClientRect().top + scrollY + p * span();
+    const top = root.getBoundingClientRect().top + scrollY + scrollOf(p) * span();
     scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
   }
 

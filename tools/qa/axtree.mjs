@@ -5,7 +5,7 @@
 // position, the canvas is not announced, a closed menu is out of reach and an open one closes off
 // the page behind it. Writes the outlines to .raw/qa/axtree-*.txt.
 // This is the tree Chrome exposes. It is not a run with VoiceOver, TalkBack, NVDA or JAWS.
-import { launch } from './browser.mjs';
+import { launch, scrollToProgress } from './browser.mjs';
 import { writeFile, mkdir } from 'node:fs/promises';
 
 const base = process.argv[2] ?? 'http://127.0.0.1:4321';
@@ -60,7 +60,7 @@ try {
   await page.goto(base + '/', { settle: 2500 });
   const snapshots = {};
   for (const p of [0, 0.5, 1]) {
-    await page.eval(`(() => { const j = document.querySelector('[data-journey]'); scrollTo(0, j.getBoundingClientRect().top + scrollY + (j.offsetHeight - innerHeight) * ${p}); })()`);
+    await page.eval(scrollToProgress(p));
     await page.wait(1500);
     snapshots[p] = await outline();
   }

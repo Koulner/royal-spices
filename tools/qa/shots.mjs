@@ -4,7 +4,7 @@
 //   actions: p=0.4 (hero journey progress), y=1200 (scroll px), #id (scroll to element),
 //            full (full-page capture), still (emulate prefers-reduced-motion), nojs (scripting off)
 // Example: node tools/qa/shots.mjs http://127.0.0.1:4321 .raw/shots "hero-end|1440x900|/|p=1"
-import { launch } from './browser.mjs';
+import { launch, scrollToProgress } from './browser.mjs';
 import { join } from 'node:path';
 
 const [base, out, ...specs] = process.argv.slice(2);
@@ -24,7 +24,7 @@ try {
       if (action.startsWith('p=')) {
         const p = Number(action.slice(2));
         // step towards the position so frames along the way get requested, like a person scrolling
-        await page.eval(`(() => { const j = document.querySelector('[data-journey]'); const top = j.getBoundingClientRect().top + scrollY; window.scrollTo(0, top + (j.offsetHeight - innerHeight) * ${p}); })()`);
+        await page.eval(scrollToProgress(p));
         await page.wait(2600);
       } else if (action.startsWith('y=')) await page.scrollTo(Number(action.slice(2)));
       else if (action.startsWith('#')) {

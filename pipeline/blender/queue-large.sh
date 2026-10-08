@@ -41,6 +41,13 @@ if [ -n "${RS_AFTER:-}" ]; then
     sleep 60
   done
 fi
+# .raw/queue-large.pause: do not render while this file exists (camera and stigma still being
+# reworked, 2026-10-06 evening). Delete it to let the queue go on. (.raw/queue-large.hold holds a
+# queue started before this version; keep it until that process is gone.)
+if [ -e .raw/queue-large.pause ]; then
+  stage "on hold until .raw/queue-large.pause is deleted"
+  while [ -e .raw/queue-large.pause ]; do sleep 60; done
+fi
 # one renderer at a time
 if rendering; then
   stage "waiting for the running render to finish"
@@ -51,11 +58,38 @@ fi
 ( while sleep 30; do powershell.exe -NoProfile -Command "Get-Process blender -ErrorAction SilentlyContinue | ForEach-Object { \$_.PriorityClass = 'Idle' }" >/dev/null 2>&1; done ) &
 WATCH=$!
 trap 'kill $WATCH 2>/dev/null' EXIT
-publish() { node pipeline/images/build-hero.mjs 2>&1; }
+# Stills and chapter pictures are rebuilt only once every source exists again (build-stills.mjs
+# would drop a missing one from the page).
+STILL_SOURCES=".raw/desktop/0012.png .raw/desktop/0036.png .raw/desktop/0050.png .raw/desktop/0062.png .raw/stills/desktop_p0000.png .raw/stills/desktop_p1000.png .raw/stills/mobile_p0000.png .raw/stills/mobile_p1000.png .raw/stills/anatomy.png"
+publish() {
+  local missing=0 f
+  for f in $STILL_SOURCES; do [ -e "$f" ] || missing=1; done
+  [ "$missing" -eq 0 ] && node pipeline/images/build-stills.mjs 2>&1 | tail -n 3
+  node pipeline/images/build-hero.mjs 2>&1
+}
 
 stage "publishing what exists"
 publish
 
+# 2026-10-06 evening: the stigma ends were reworked (web_hero.py refine_stigma_ends), the camera
+# leaves the stigma hold differently (leave_hold) and the portrait move shows the landscape shots
+# from the product on. Every frame that shows the flower or changed its path is rendered again,
+# base frames and stills included; the replaced files are in .raw/prev-swing/.
+
+# base frames. <from> <to> <resolution> <samples> <noise>
+base_d() {
+  bash "$HERE/render.sh" --variant desktop --mode seq --frames 90 --range "$1:$2" --res "$3" --spp "$4" --noise "$5" --threads "$T" --out .raw/desktop
+}
+base_m() {
+  bash "$HERE/render.sh" --variant mobile --mode seq --frames 64 --range "$1:$2" --res 720x1280 --spp "$3" --noise "$4" --threads "$T" --out .raw/mobile
+}
+# the dwell at the stigma hold: every position, sharp, large
+dwell_d() {
+  bash "$HERE/render.sh" --variant desktop --mode seq --frames 713 --range 264:307 --res 1440x810 --spp 64 --noise 0.03 --threads "$T" --out .raw/desktop-hold
+}
+dwell_m() {
+  bash "$HERE/render.sh" --variant mobile --mode seq --frames 505 --range 187:217 --res 720x1280 --spp 64 --noise 0.03 --threads "$T" --out .raw/mobile-hold
+}
 # sharp in-betweens. <from> <to> <rem>: fine positions in [from, to) with (index % 8) in rem
 landscape() {
   bash "$HERE/render.sh" --variant desktop --mode seq --frames 713 --range "$1:$2" --mod 8 --rem "$3" --res 1440x810 --spp 48 --noise 0.035 --threads "$T" --out .raw/desktop-fine-1440
@@ -67,25 +101,39 @@ landscape_blur() {
 portrait_blur() {
   bash "$HERE/render.sh" --variant mobile --mode seq --frames 505 --range "$1:$2" --mod "$3" --rem "$4" --blur 1 --blur-step 2 --blur-fade "$5" --res 720x1280 --spp 48 --noise 0.035 --threads "$T" --out .raw/mobile-blur-720
 }
+# stills (still mode renders every time: only the missing ones). <variant> <resolution>
+stills() {
+  local ps="" p
+  for p in 0 1; do [ -e ".raw/stills/$1_p${p}000.png" ] || ps="$ps${ps:+,}$p"; done
+  [ -n "$ps" ] && bash "$HERE/render.sh" --variant "$1" --mode still --p "$ps" --res "$2" --spp 96 --noise 0.02 --threads "$T" --out .raw/stills --tag "$1"
+  return 0
+}
 
 run() {
   case "$1" in
-    # around the stigma hold first (web_hero.py STIGMA_HOLD). Portrait: into and out of the dwell
-    # (187-216 is the dwell itself). The portrait blur has no fade at the range ends (fade 0), so
-    # its ranges can be split freely.
-    l-m-hold)  stage "portrait 720, into and out of the stigma hold, motion blur"; portrait_blur 164 187 2 0 0; portrait_blur 217 239 2 0 0 ;;
-    # landscape: the same two blur stretches as d-hold-blur and d-pan-blur, unchanged ranges
-    l-d-into)  stage "landscape 1440, into the stigma hold, motion blur";          landscape_blur 232 265 2 0 16 ;;
-    l-d-out)   stage "landscape 1440, stigma to jar, motion blur";                 landscape_blur 306 529 2 0 16 ;;
-    # landscape, sharp: the opening up to the hold, then the product reveal
-    l-d-sharp) stage "landscape 1440, sharp in-betweens";                          landscape 0 232 2,4,6; landscape 528 713 2,4,6 ;;
-    # portrait, the rest of the move
-    l-m-rest)  stage "portrait 720, rest of the move, motion blur";                portrait_blur 0 164 2 0 0; portrait_blur 239 505 2 0 0 ;;
+    # landscape around the stigma first: what the client looks at first
+    s-d-hold)   stage "landscape base frames 29-49: stigma hold and the way to the threads"; base_d 29 43 1920x1080 64 0.03; base_d 43 50 1440x810 48 0.035 ;;
+    s-d-dwell)  stage "landscape dwell at the stigma, every position 264-306";            dwell_d ;;
+    # the two blur stretches keep the exact ranges of queue-inbetweens.sh (the blur fades at range ends)
+    l-d-into)   stage "landscape 1440, into the stigma hold, motion blur";                landscape_blur 232 265 2 0 16 ;;
+    l-d-out)    stage "landscape 1440, stigma to jar, motion blur";                       landscape_blur 306 529 2 0 16 ;;
+    s-d-open)   stage "landscape base frames 0-28: the opening";                          base_d 0 29 1440x810 48 0.035 ;;
+    l-d-sharp)  stage "landscape 1440, sharp in-betweens";                                landscape 0 232 2,4,6; landscape 528 713 2,4,6 ;;
+    s-d-reveal) stage "landscape base frames 50-89: threads and product";                 base_d 50 55 1440x810 48 0.035; base_d 55 90 1920x1080 48 0.035 ;;
+    s-d-stills) stage "landscape stills 2560x1440 and the botanical figure";              stills desktop 2560x1440
+                [ -e .raw/stills/anatomy.png ] || bash "$HERE/render.sh" --mode anatomy --res 1920x1280 --spp 72 --noise 0.025 --threads "$T" --out .raw/stills ;;
+    # portrait
+    s-m-base)   stage "portrait base frames 0-63";                                        base_m 21 30 64 0.03; base_m 0 21 48 0.035; base_m 30 64 48 0.035 ;;
+    s-m-dwell)  stage "portrait dwell at the stigma, every position 187-216";             dwell_m ;;
+    # portrait blur: no fade at the range ends (fade 0), so its ranges can be split freely
+    l-m-hold)   stage "portrait 720, into and out of the stigma hold, motion blur";       portrait_blur 164 187 2 0 0; portrait_blur 217 239 2 0 0 ;;
+    l-m-rest)   stage "portrait 720, rest of the move, motion blur";                      portrait_blur 0 164 2 0 0; portrait_blur 239 505 2 0 0 ;;
+    s-m-stills) stage "portrait stills 1080x1920";                                        stills mobile 1080x1920 ;;
     *) echo "unknown stage: $1"; return 1 ;;
   esac
   publish
 }
 
-if [ "$#" -eq 0 ]; then set -- l-m-hold l-d-into l-d-out l-d-sharp l-m-rest; fi
+if [ "$#" -eq 0 ]; then set -- s-d-hold s-d-dwell l-d-into l-d-out s-d-open l-d-sharp s-d-reveal s-d-stills s-m-stills s-m-base s-m-dwell l-m-hold l-m-rest; fi
 for name in "$@"; do run "$name"; done
 stage "QUEUE-DONE"

@@ -10,7 +10,7 @@ import Picture from './Picture.astro';
 import Arrow from './Arrow.astro';
 import stills from '@/data/stills.json';
 import manifest from '@/data/hero-manifest.json';
-import { chapters, stops } from '@/data/journey';
+import { chapters, stops, slow } from '@/data/journey';
 
 type Variant = { src: string; width: number };
 type Still = { width: number; height: number; avif: Variant[]; webp: Variant[] };
@@ -32,6 +32,7 @@ const arrivalAlt =
   data-base={manifest.base}
   data-fine={manifest.fine}
   data-stops={JSON.stringify(stops)}
+  data-slow={JSON.stringify(slow)}
   aria-labelledby="journey-title"
 >
   <div class="journey__stage" data-journey-stage>
@@ -382,8 +383,10 @@ const arrivalAlt =
 
   /* ============================================================== motion mode */
   :global(html.journey-on) .journey {
-    /* scroll length of the camera move: about 6.6 screens of travel for 90 frames */
-    height: 760svh;
+    /* scroll length of the camera move: 6.6 screens of travel at the normal rate, plus the slow
+       stretch from the stigma to the threads (src/data/journey.ts, `slow`: (2 - 1) * 0.135 of the
+       travel more): 100svh + 660svh * 1.135 */
+    height: 849svh;
     --stage-h: 100svh;
   }
 

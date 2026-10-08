@@ -9,6 +9,8 @@ What this script changes relative to the master (documented in docs/ASSETS.md):
   * A small pinch of dried threads is laid on the set between flower and jar, built from
     the master's own dry-stigma study mesh. Nothing moves during the shot.
   * Ground, world and light balance are re-set for a warm paper-toned set.
+  * The ends of the three fresh stigma branches are opened into flared funnels with an uneven,
+    papillose margin, and the stigma tissue is made translucent (refine_stigma_ends, 2026-10-06).
   * The single 85 mm motion-control path is replaced by two authored paths
     (desktop 16:9, mobile 9:16) that pass through the V1 storyboard:
     ORIGIN -> CROCUS -> STIGMA -> SAFFRON -> PRODUCT -> ROYAL SPICES -> HERO STATE.
@@ -37,6 +39,10 @@ Usage (after "--"):
   --threads 10                 CPU threads (0 = all)
   --out DIR                    output directory
   --tag NAME                   filename prefix for still mode
+
+Environment: RS_DEVICE=HIP (AMD), OPTIX or CUDA (NVIDIA), ONEAPI (Intel) renders on the graphics
+card; unset or CPU renders on the processor as before. A requested card that Blender cannot use
+stops the render with an error instead of falling back to the processor.
 """
 import bpy, sys, os, math, time
 from math import radians
@@ -308,9 +314,12 @@ KEYS = {
         dict(p=0.22, cam=( 2.73, -13.73, 7.27), aim=(-2.20, -1.35, 1.95), focus=(-2.35, -1.20, 1.90), lens=85, fstop=0.22, shift=(0.0, -0.09)),
         dict(p=0.40, cam=( 1.20, -8.05, 2.62), aim=(-1.50, -3.45, 1.20), focus=(-1.68, -3.53, 1.21), snap=PISTIL, lens=85, fstop=0.45, shift=(0.0, -0.12)),
         dict(p=0.56, cam=( 2.75, -9.20, 3.90), aim=( 0.70, -3.80, 0.15), focus=( 0.70, -3.72, 0.12), lens=85, fstop=0.85, shift=(0.0, -0.12)),
-        dict(p=0.76, cam=( 9.60, -22.6, 10.6), aim=( 1.40, -0.60, 2.90), focus=( 3.90, -1.20, 1.60), lens=85, fstop=0.11, shift=(0.05, -0.09)),
-        dict(p=0.90, cam=(14.13, -33.38, 15.99), aim=( 1.20, -0.60, 3.00), focus=( 2.15, -1.64, 2.60), lens=85, fstop=0.10, shift=(0.0485, -0.175)),
-        dict(p=1.00, cam=(14.29, -33.77, 16.15), aim=( 1.20, -0.60, 3.00), focus=( 2.15, -1.64, 2.60), lens=85, fstop=0.11, shift=(0.0485, -0.175)),
+        # From the product on, the same shots as landscape (client, 2026-10-06 evening: the phone must
+        # show the same sequence): the landscape line of sight, pulled back until flower, jar and
+        # threads fit the middle 82 % of the width above the caption label, framed by lens shift.
+        dict(p=0.76, cam=(14.11, -37.15, 14.81), aim=( 0.90, -0.80, 2.60), focus=( 3.90, -1.20, 1.60), lens=85, fstop=0.11, shift=(-0.029, -0.174)),
+        dict(p=0.90, cam=(18.41, -46.64, 20.38), aim=( 0.42, -0.90, 2.32), focus=( 2.15, -1.64, 2.60), lens=85, fstop=0.10, shift=(0.001, -0.166)),
+        dict(p=1.00, cam=(18.55, -46.87, 20.51), aim=( 0.40, -0.90, 2.30), focus=( 2.15, -1.64, 2.60), lens=85, fstop=0.11, shift=(0.002, -0.166)),
     ],
 }
 
@@ -492,12 +501,187 @@ def sample(keys, p):
     out['shift'] = tuple(a['shift'][j] + (b['shift'][j] - a['shift'][j]) * s for j in range(2))
     return out
 
+# --------------------------------------------------------------------------- stigma ends
+# Fresh stigma ends for the macro view (client, 2026-10-06 evening: "absoluter Realismus, darf nicht
+# gerendert aussehen"). The master models each end as a closed, folded cross-section: seen close up
+# it reads as a cut red profile. A fresh saffron stigma ends in an open, flared funnel with an
+# irregularly toothed (crenate to fimbriate) margin covered in papillae [S4: "drei trichterförmige
+# Narbenlappen, papillöser Rand"]. In memory only, the master is never saved:
+#   * geometry: the end flares like a trumpet, the closed end face becomes a hollow, the margin is
+#     uneven with fine teeth (all three branches)
+#   * material: translucent living tissue (subsurface), velvet sheen of the papillae, a lighter
+#     orange-red margin, fine cell texture instead of a smooth surface
+import numpy as np
+
+def _smooth(x):
+    x = np.clip(x, 0.0, 1.0)
+    return x * x * (3 - 2 * x)
+
+def _ring_noise(theta, seed, lobes):
+    """Smooth periodic noise around the axis: a sum of a few sines with random phases."""
+    rng = np.random.default_rng(seed)
+    out = np.zeros_like(theta)
+    for k, w in lobes:
+        out += w * np.sin(k * theta + rng.uniform(0, 2 * np.pi))
+    return out
+
+def refine_stigma_ends(flare=0.28, depth=0.85, crenate=0.13, teeth=0.045):
+    ob = D.objects[PISTIL]
+    me = ob.data
+    mw = np.array(ob.matrix_world)
+    rot = mw[:3, :3]
+    n = len(me.vertices)
+    co = np.empty(n * 3, dtype=np.float64); me.vertices.foreach_get('co', co); co = co.reshape(-1, 3)
+    nl = np.empty(n * 3, dtype=np.float64); me.vertex_normals.foreach_get('vector', nl); nl = nl.reshape(-1, 3)
+    world = co @ rot.T + mw[:3, 3]
+    nw = nl @ np.linalg.inv(rot)  # normals transform with the inverse transpose
+    nw /= np.linalg.norm(nw, axis=1, keepdims=True) + 1e-12
+    # the three branch ends: highest values of the length coordinate, far apart
+    uv = np.empty(len(me.loops) * 2, dtype=np.float32); me.uv_layers['AnatomicalUV'].data.foreach_get('uv', uv)
+    lv = np.empty(len(me.loops), dtype=np.int32); me.loops.foreach_get('vertex_index', lv)
+    vy = np.zeros(n); vy[lv] = uv.reshape(-1, 2)[:, 1]
+    hi = np.where(vy > np.quantile(vy, 0.995))[0]
+    seeds = [world[hi[0]]]
+    for _ in range(2):
+        dd = np.min([np.linalg.norm(world[hi] - s, axis=1) for s in seeds], axis=0)
+        seeds.append(world[hi[dd.argmax()]])
+    rim_attr = np.zeros(n)
+    cup_attr = np.zeros(n)
+    new = world.copy()
+    for e, seed in enumerate(seeds):
+        c, a, R = stigma_end(PISTIL, tuple(seed))
+        c, a = np.array(c), np.array(a)
+        e1 = np.cross(a, [0.0, 0.0, 1.0]); e1 /= np.linalg.norm(e1); e2 = np.cross(a, e1)
+        rel = world - c
+        along = rel @ a
+        radial = rel - np.outer(along, a)
+        rr = np.linalg.norm(radial, axis=1)
+        sel = np.where((along > -4.0 * R) & (along < 0.4 * R) & (rr < 2.2 * R))[0]
+        al, rad, r = along[sel], radial[sel], rr[sel]
+        th = np.arctan2(rad @ e2, rad @ e1)
+        # outline of the end, per direction around the axis (largest radius near the end)
+        bins = 96
+        b = ((th + np.pi) / (2 * np.pi) * bins).astype(int) % bins
+        near = al > -0.6 * R
+        rim_r = np.full(bins, 0.0)
+        np.maximum.at(rim_r, b[near], r[near])
+        rim_r[rim_r == 0] = R
+        k = np.array([1, 2, 3, 2, 1], float); k /= k.sum()
+        rim_r = np.convolve(np.r_[rim_r[-2:], rim_r, rim_r[:2]], k, 'valid')
+        rho = r / rim_r[b]
+        facing = nw[sel] @ a  # +1 on the end face, 0 on the side wall
+        cap = _smooth((facing - 0.25) / 0.45) * _smooth((al + 0.6 * R) / (0.4 * R))
+        # 1. trumpet: the radius grows faster towards the end
+        t = _smooth((al + 3.0 * R) / (3.0 * R))
+        grow = 1.0 + flare * t * t
+        # 2. margin: uneven height (crenate) and fine teeth, only at the very edge
+        edge = _smooth((rho - 0.78) / 0.2) * _smooth((al + 0.45 * R) / (0.35 * R))
+        lift = R * (crenate * _ring_noise(th, 11 + e, [(5, 0.5), (8, 0.35), (13, 0.25)])
+                    + teeth * _ring_noise(th, 23 + e, [(31, 0.6), (47, 0.4)]))
+        # a slight outward roll of the lip
+        roll = 1.0 + 0.04 * edge
+        # 3. hollow: the closed end face sinks into a funnel
+        sink = depth * R * np.clip(1.0 - rho * rho, 0.0, 1.0) ** 0.8 * cap
+        moved = c + np.outer(al + lift * edge - sink, a) + rad * (grow * roll)[:, None]
+        new[sel] = moved
+        margin = _smooth((rho - 0.9) / 0.1) * _smooth((al + 0.2 * R) / (0.2 * R))
+        rim_attr[sel] = np.maximum(rim_attr[sel], margin * (1 - cap) + _smooth((rho - 0.75) / 0.25) * cap * 0.7)
+        cup_attr[sel] = np.maximum(cup_attr[sel], cap * np.clip(1.0 - rho, 0, 1))
+        print(f'TIP end {e}: centre {tuple(np.round(c, 3))} radius {R:.4f} vertices {len(sel)}', flush=True)
+    local = (new - mw[:3, 3]) @ np.linalg.inv(rot).T
+    me.vertices.foreach_set('co', local.astype(np.float32).ravel())
+    me.update()
+    for name, data in (('rs_rim', rim_attr), ('rs_cup', cup_attr)):
+        at = me.attributes.get(name) or me.attributes.new(name, 'FLOAT', 'POINT')
+        at.data.foreach_set('value', data.astype(np.float32))
+    # The master's papilla curves (Papilla_<end>_<nn>, 47 per end) ring the closed end it models.
+    # They do not follow the opened trumpet and would float inside the hollow as a ring of bright
+    # dashes; the papillae of the new margin come from the material (bump), so the curves go.
+    for o in D.objects:
+        if o.name.startswith('Papilla_'):
+            o.hide_render = True
+    _stigma_material()
+
+def _stigma_material():
+    mat = D.materials['Pistil | continuous ivory to orange to crimson tissue']
+    nt = mat.node_tree
+    L = nt.links.new
+    p = nt.nodes['Principled BSDF']
+    # living tissue: light enters and scatters (thin margins glow), soft sheen of the papillae
+    p.inputs['Subsurface Weight'].default_value = 0.35
+    p.inputs['Subsurface Radius'].default_value = (1.0, 0.12, 0.05)
+    p.inputs['Subsurface Scale'].default_value = 0.035
+    p.inputs['Roughness'].default_value = 0.58
+    p.inputs['Specular IOR Level'].default_value = 0.22
+    p.inputs['Sheen Weight'].default_value = 0.08
+    p.inputs['Sheen Roughness'].default_value = 0.35
+    p.inputs['Sheen Tint'].default_value = (1.0, 0.2, 0.1, 1.0)
+    # margin lighter and more orange, the hollow a little deeper in tone
+    rim = nt.nodes.new('ShaderNodeAttribute'); rim.attribute_name = 'rs_rim'
+    cup = nt.nodes.new('ShaderNodeAttribute'); cup.attribute_name = 'rs_cup'
+    base_link = next(l for l in nt.links if l.to_node == p and l.to_socket.name == 'Base Color')
+    src = base_link.from_socket
+    m1 = nt.nodes.new('ShaderNodeMix'); m1.data_type = 'RGBA'; m1.blend_type = 'MIX'
+    m1.inputs[7].default_value = (0.50, 0.040, 0.006, 1.0)
+    L(src, m1.inputs[6]); L(rim.outputs['Fac'], m1.inputs[0])
+    m2 = nt.nodes.new('ShaderNodeMix'); m2.data_type = 'RGBA'; m2.blend_type = 'MULTIPLY'
+    m2.inputs[7].default_value = (0.62, 0.42, 0.4, 1.0)
+    L(m1.outputs[2], m2.inputs[6]); L(cup.outputs['Fac'], m2.inputs[0])
+    # cell texture: fine, lengthwise stretched cells (the length coordinate is UV y)
+    tc = nt.nodes.new('ShaderNodeTexCoord')
+    mp = nt.nodes.new('ShaderNodeMapping'); mp.inputs['Scale'].default_value = (1400.0, 220.0, 1.0)
+    cells = nt.nodes.new('ShaderNodeTexVoronoi'); cells.feature = 'DISTANCE_TO_EDGE'
+    cells.inputs['Scale'].default_value = 1.0
+    L(tc.outputs['UV'], mp.inputs['Vector']); L(mp.outputs['Vector'], cells.inputs['Vector'])
+    # papillae: small round bumps in object space, strongest at the margin and in the hollow
+    pap = nt.nodes.new('ShaderNodeTexVoronoi'); pap.feature = 'F1'
+    pap.inputs['Scale'].default_value = 260.0
+    L(tc.outputs['Object'], pap.inputs['Vector'])
+    pap_h = nt.nodes.new('ShaderNodeMath'); pap_h.operation = 'POWER'; pap_h.inputs[1].default_value = 0.5
+    L(pap.outputs['Distance'], pap_h.inputs[0])
+    tone = nt.nodes.new('ShaderNodeMix'); tone.data_type = 'RGBA'; tone.blend_type = 'MULTIPLY'
+    tone.inputs[0].default_value = 0.10
+    cells_c = nt.nodes.new('ShaderNodeMapRange'); cells_c.inputs['From Max'].default_value = 0.12
+    cells_c.inputs['To Min'].default_value = 0.72
+    L(cells.outputs['Distance'], cells_c.inputs['Value'])
+    L(m2.outputs[2], tone.inputs[6]); L(cells_c.outputs['Result'], tone.inputs[7])
+    L(tone.outputs[2], p.inputs['Base Color'])
+    old_bump = next(l.from_node for l in nt.links if l.to_node == p and l.to_socket.name == 'Normal')
+    b1 = nt.nodes.new('ShaderNodeBump'); b1.inputs['Strength'].default_value = 0.25; b1.inputs['Distance'].default_value = 0.002
+    L(cells.outputs['Distance'], b1.inputs['Height']); L(old_bump.outputs['Normal'], b1.inputs['Normal'])
+    pap_s = nt.nodes.new('ShaderNodeMath'); pap_s.operation = 'MULTIPLY_ADD'
+    pap_s.inputs[1].default_value = 0.35; pap_s.inputs[2].default_value = 0.05
+    L(rim.outputs['Fac'], pap_s.inputs[0])
+    b2 = nt.nodes.new('ShaderNodeBump'); b2.inputs['Distance'].default_value = 0.004
+    L(pap_s.outputs[0], b2.inputs['Strength']); L(pap_h.outputs[0], b2.inputs['Height']); L(b1.outputs['Normal'], b2.inputs['Normal'])
+    L(b2.outputs['Normal'], p.inputs['Normal'])
+
+# Leaving the stigma hold (client, 2026-10-06 evening: "ein Szenensprung statt der Übergang").
+# The authored move from the stigma to the dried threads kept running while the camera dwelt at the
+# macro view, so on leaving it the camera had to catch up: stigma, empty floor, threads in about 3 %
+# of the journey. Now the authored move waits for the dwell and starts softly after it (EXIT['ease']),
+# and halfway it backs off a little (EXIT['pull']), so the end of the stigma and the threads on the
+# ground share the picture for a moment: one continuous move instead of a cut.
+EXIT = dict(start=0.40, end=0.56, pull=float(arg('--exit-pull', '0.5')))
+
+def leave_hold(p):
+    """Authored pose after the stigma hold: delayed start, a short step back halfway."""
+    e = EXIT
+    if not (e['start'] < p < e['end']):
+        return sample(KEYS[VARIANT], p)
+    u = (p - e['start']) / (e['end'] - e['start'])
+    q = e['start'] + (e['end'] - e['start']) * u * u * (2.0 - u)  # slope 0 at the hold, 1 at the threads
+    k = sample(KEYS[VARIANT], q)
+    back = 1.0 + e['pull'] * math.sin(math.pi * u) ** 2
+    k['cam'] = k['aim'] + (k['cam'] - k['aim']) * back
+    return k
+
 def apply_camera(p):
     cam = D.objects['CAMERA']
     cam.animation_data_clear()
     focus = D.objects['FOCUS target']
     focus.animation_data_clear()
-    k = refine_hold(p, sample(KEYS[VARIANT], p))
+    k = refine_hold(p, leave_hold(p))
     cam.location = k['cam']
     cam.rotation_euler = (k['aim'] - k['cam']).to_track_quat('-Z', 'Y').to_euler()
     cd = cam.data
@@ -522,6 +706,22 @@ def apply_camera(p):
     scene.camera = cam
 
 # --------------------------------------------------------------------------- render
+def use_device(c):
+    kind = os.environ.get('RS_DEVICE', 'CPU').upper()
+    if kind == 'CPU':
+        c.device = 'CPU'
+        return
+    prefs = bpy.context.preferences.addons['cycles'].preferences
+    prefs.compute_device_type = kind
+    prefs.get_devices()
+    cards = [dv for dv in prefs.devices if dv.type == kind]
+    if not cards:
+        raise RuntimeError('RS_DEVICE=%s: no such device (found %s)' % (kind, [(dv.name, dv.type) for dv in prefs.devices]))
+    for dv in prefs.devices:
+        dv.use = dv.type == kind
+    c.device = 'GPU'
+    print('DEVICE', kind, [dv.name for dv in cards], flush=True)
+
 def setup_render():
     r = scene.render
     r.engine = 'CYCLES'
@@ -536,6 +736,7 @@ def setup_render():
         r.threads_mode = 'FIXED'
         r.threads = THREADS_CPU
     c = scene.cycles
+    use_device(c)
     c.samples = SPP
     c.use_adaptive_sampling = True
     c.adaptive_threshold = NOISE
@@ -594,6 +795,10 @@ def render(path):
 setup_scene()
 setup_render()
 resolve_keys()
+# The macro pose of the stigma hold is taken from the untouched end, so the camera paths do not move;
+# then the ends are opened up (refine_stigma_ends).
+stigma_macro(0.0)
+refine_stigma_ends()
 
 if MODE == 'plan':
     cd = D.cameras.new('Plan'); cd.type = 'ORTHO'; cd.ortho_scale = 16

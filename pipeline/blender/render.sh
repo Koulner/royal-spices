@@ -4,6 +4,11 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
-BLENDER="${BLENDER:-/c/Program Files/Blender Foundation/Blender 4.5/blender.exe}"
+# Blender 4.5 LTS: installed on the laptop, unpacked next to Blender 5.1 on the PC with the RX 9070
+if [ -z "${BLENDER:-}" ]; then
+  for BLENDER in "/c/Program Files/Blender Foundation/Blender 4.5/blender.exe" "/f/3D/Blender/Blender 4.5/blender.exe"; do
+    [ -x "$BLENDER" ] && break
+  done
+fi
 MASTER="${RS_MASTER:-$ROOT/../Projektübergabe/royal-spices/blender/royal-spices-master.blend}"
 "$BLENDER" -b "$MASTER" --python "$HERE/web_hero.py" -- "$@" 2>&1 | grep -E "RENDERED|DONE|HOLD|Error|Traceback|line [0-9]+|Exception" || true

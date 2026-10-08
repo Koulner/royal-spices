@@ -16,6 +16,28 @@ const CANDIDATES = [
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
 ].filter(Boolean);
 
+/**
+ * Page expression that scrolls the hero journey to a progress value. Progress is not linear in the
+ * scroll position (slow stretches, `data-slow`); this is the same mapping as src/scripts/journey.ts.
+ */
+export const scrollToProgress = (p) => `(() => {
+  const j = document.querySelector('[data-journey]');
+  const slow = JSON.parse(j.dataset.slow || '[]');
+  const N = 1024, E = 0.012, sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
+  const warp = [0];
+  let sum = 0;
+  for (let i = 1; i <= N; i++) {
+    const q = (i - 0.5) / N;
+    let c = 1;
+    for (const [a, b, f] of slow) c += (f - 1) * sm((q - a + E) / (2 * E)) * (1 - sm((q - b + E) / (2 * E)));
+    sum += c;
+    warp.push(sum);
+  }
+  const x = Math.min(1, Math.max(0, ${p})) * N, i = Math.min(N - 1, Math.floor(x));
+  const s = (warp[i] + (warp[i + 1] - warp[i]) * (x - i)) / sum;
+  scrollTo(0, j.getBoundingClientRect().top + scrollY + (j.offsetHeight - innerHeight) * s);
+})()`;
+
 export async function launch({ port = 9333 } = {}) {
   const binary = CANDIDATES.find((p) => existsSync(p));
   if (!binary) throw new Error('No Chrome/Edge found. Set CHROME_PATH.');

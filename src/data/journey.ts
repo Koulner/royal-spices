@@ -65,3 +65,13 @@ export const chapters: Chapter[] = [
 
 /** Progress stops for the "weiter" control and keyboard stepping. */
 export const stops = [0, ...chapters.map((c) => c.at), 1];
+
+/**
+ * Slow stretches: [from, to, factor] in progress. Inside one, the camera covers its way over
+ * `factor` times the scroll distance (soft shoulders at both ends, src/scripts/journey.ts).
+ * From the end of the stigma macro view to the dried threads the camera travels from the flower to
+ * the ground; at the normal rate that read as a cut (client, 2026-10-06). The page is longer by
+ * (factor - 1) * (to - from) of the travel, so every other stretch keeps its speed: the height of
+ * the journey in Journey.astro follows from this.
+ */
+export const slow: [number, number, number][] = [[0.425, 0.56, 2]];

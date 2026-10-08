@@ -100,6 +100,8 @@ function runs(indices) {
 }
 
 const manifest = { generated: new Date().toISOString(), base: BASE_PATH, fine: FINE, sets: {} };
+const manifestFile = join(root, 'src', 'data', 'hero-manifest.json');
+const previous = existsSync(manifestFile) ? JSON.parse(await readFile(manifestFile, 'utf8')) : { sets: {} };
 let incomplete = false;
 const cache = {};
 // which source each published frame was made from: a frame is converted again when that changes
@@ -108,13 +110,20 @@ const ledger = existsSync(ledgerFile) ? JSON.parse(await readFile(ledgerFile, 'u
 
 for (const set of SETS) {
   const { count, map, blur, hold } = (cache[set.variant] ??= await sources(set.variant));
-  if (!map.size) continue;
+  if (!map.size && !previous.sets[set.name]) continue;
   // hold frames after blurred ones: the later entry wins
   const moving = set.role === 'motion' ? new Map([...blur, ...hold]) : new Map();
   const dwell = set.role === 'motion' ? hold : new Map();
   const indices = [...new Set([...map.keys(), ...moving.keys()])].filter((i) => set.role === 'motion' || i % FINE === 0).sort((a, b) => a - b);
   const baseDone = indices.filter((i) => i % FINE === 0).length;
   if (baseDone < BASE[set.variant]) incomplete = true;
+  // A move whose base frames are being rendered again is not published half-done: its sets keep
+  // what was published before, files included (RS_PUBLISH_PARTIAL=1 publishes it anyway).
+  if (baseDone < BASE[set.variant] && !process.env.RS_PUBLISH_PARTIAL && previous.base === BASE_PATH) {
+    if (previous.sets[set.name]) manifest.sets[set.name] = previous.sets[set.name];
+    console.log(`${set.name}: kept as published, base frames ${baseDone}/${BASE[set.variant]} (move being rendered)`);
+    continue;
+  }
 
   const dir = join(out, set.name);
   await mkdir(dir, { recursive: true });
@@ -155,7 +164,7 @@ for (const set of SETS) {
 }
 
 await mkdir(join(root, 'src', 'data'), { recursive: true });
-await writeFile(join(root, 'src', 'data', 'hero-manifest.json'), JSON.stringify(manifest) + '\n');
+await writeFile(manifestFile, JSON.stringify(manifest) + '\n');
 await writeFile(ledgerFile, JSON.stringify(ledger));
 console.log('manifest written');
 if (incomplete) console.warn('WARNING: at least one camera move is not fully rendered yet — not a release state.');
