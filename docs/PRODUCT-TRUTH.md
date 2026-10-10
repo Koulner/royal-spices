@@ -58,7 +58,7 @@ Jeder Punkt mit Auswirkung, Verantwortlichkeit und nächstem Schritt.
 | 5 | Lagerhinweis | Steht auf der Website wie im Entwurf | Auftraggeber | Wortlaut bestätigen |
 | 6 | Display ohne Bild | Die vorhandene Visualisierung passt nicht zur V1-Gestaltung; das Display steht nur als Text auf der Website | Auftraggeber | Foto des Displays liefern oder Rendering beauftragen |
 | 7 | Satz „Negin nennt der Handel ganze, rote Fäden" | Erklärung auf „Herkunft & Qualität"; Handelsdefinition von uns, keine Angabe des Auftraggebers | Auftraggeber | Bestätigen, anpassen oder streichen |
-| 8 | Farbe des Siegelstreifens | Spezifikation: dunkelgrün; Foto: blaugrau; Rendering: anthrazit | Auftraggeber | Verbindliche Farbe (Muster oder Farbwert) nennen; danach Standbilder und Sequenz neu rendern |
+| 8 | Farbe des Siegelstreifens | Spezifikation: dunkelgrün; Foto: blaugrau; Rendering: anthrazit. **08.10.2026, Auftraggeber: „eher grünlich“.** Vorläufig `#3d493c` (dunkles Graugrün wie im früheren Entwurf `royal-spices-dev`, Druck elfenbein `#d4c89f`) | Auftraggeber | Farbe an den Testbildern bestätigen (Muster oder Farbwert); danach Standbilder und Sequenz neu rendern |
 | 9 | Original-Logo als Vektor fehlt | Blattzeichen ist nach dem Etikett nachgezeichnet | Auftraggeber | Vektordatei liefern |
 | 10 | Frontetikett: keine Druckdaten | Layout im Rendering ist nach der Produkttafel rekonstruiert; „0,5 g" wurde für V1 durch „1 g" ersetzt | Auftraggeber | Druckdatei des 1-g-Frontetiketts liefern |
 | 11 | Kaufkanal für Privatkunden bis Shopify | Der bisherige TikTok-Shop-Link ist nicht übernommen (`site.retailUrl` leer); Privatkunden fragen an | Auftraggeber | Entscheiden: Link wieder aufnehmen oder bei Anfrage bleiben |
@@ -71,5 +71,5 @@ Jeder Punkt mit Auswirkung, Verantwortlichkeit und nächstem Schritt.
 Historische Angaben, die nicht stillschweigend übernommen wurden:
 
 - **Füllmenge:** Produkttafel, Rücketikett-Entwurf und Blender-Master nennen 0,5 g. Verbindlich ist 1 g (05.10.2026). Im Rendering wird nur die Mengenzeile geändert (`pipeline/blender/web_hero.py`); der Master bleibt unverändert.
-- **Siegelstreifen:** drei verschiedene Farben in Spezifikation, Foto und Rendering (Punkt 8).
+- **Siegelstreifen:** drei verschiedene Farben in Spezifikation, Foto und Rendering (Punkt 8). Laut Auftraggeber am 08.10. eher grünlich, also nahe an der Spezifikation.
 - **Produkttafel:** Ihre Fußnote weist sie als KI-Rekonstruktion nach Fotoreferenzen aus. Sie ist Bildreferenz für Glas, Kork, Siegel und Etikett, keine Quelle für Produktdaten.

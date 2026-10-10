@@ -1,0 +1,12 @@
+{
+  "mm_per_bu": 11.8637,
+  "inner_half_width": 2.01,
+  "inner_corner_radius": 0.5,
+  "inner_floor_z": 0.5336,
+  "inner_floor_fillet": 0.28,
+  "inner_shoulder_z": 3.8176,
+  "neck_inner_radius": 0.9323,
+  "label_bottom_z": 0.3734,
+  "label_top_z": 3.595,
+  "fill_top_z": 3.595
+}

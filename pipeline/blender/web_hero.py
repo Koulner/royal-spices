@@ -47,6 +47,13 @@ stops the render with an error instead of falling back to the processor.
 import bpy, sys, os, math, time
 from math import radians
 from mathutils import Vector, Euler
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import product_jar, product_label, product_seal
+try:   # needs saffron_pack.py + saffron-fill.json (T-20261008-01); until then the master fill stays
+    import saffron_fill
+except ImportError as e:
+    saffron_fill = None
+    print('SAFFRON fill not available:', e, flush=True)
 
 # --------------------------------------------------------------------------- args
 argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
@@ -793,7 +800,15 @@ def render(path):
     print(f'RENDERED {os.path.basename(path)} in {time.time() - t:.1f}s', flush=True)
 
 setup_scene()
+# product after the photo: glass + cork, front label, seal loop, packed fill (one material with the loose threads)
+INTERIOR = product_jar.build_jar()
+product_label.build_label(INTERIOR)
+product_seal.build_seal(INTERIOR)
+if saffron_fill is not None and arg('--fill', 'new') == 'new':
+    saffron_fill.build_fill(INTERIOR)
+    saffron_fill.retint_loose_threads()
 setup_render()
+product_jar.tune_render_for_glass(scene)
 resolve_keys()
 # The macro pose of the stigma hold is taken from the untouched end, so the camera paths do not move;
 # then the ends are opened up (refine_stigma_ends).

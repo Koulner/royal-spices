@@ -16,7 +16,7 @@ Dann: „Stelle bitte alle Musskriterien auf, bevor du etwas umsetzt."
 - **Umfang:** Siegel und Etikett gehören mit zum Auftrag.
   - Siegel: Schlaufe mit Luft über dem Kork, wie im Foto.
   - Etikett: wärmeres Papier, „SAFFRON" fett, Satz nach dem Foto.
-  - Die Siegelfarbe ist noch offen (PRODUCT-TRUTH Punkt 8). Sie ist ein einzelner Parameter und steht vorläufig auf dem Blaugrau des Fotos.
+  - Siegelfarbe (PRODUCT-TRUTH Punkt 8), Antwort vom 08.10.: „eher grünlich“. Sie ist ein einzelner Parameter, vorläufig `#3d493c` (dunkles Graugrün aus dem früheren Entwurf), Druck elfenbein. Bestätigt wird sie an den Testbildern.
 - **Maßstab (Annahme, da keine Maße):** Das Frontetikett hat das Format des Rücketikett-Entwurfs, 44 × 49 mm. Die Körperbreite bleibt 4,44 BU, damit die Bildausschnitte halten. Daraus folgt der Maßstab mm je BU für Glas und Fäden.
 
 ## Umsetzung: Transaktionen (siehe `_agent/LOG.md`)
@@ -28,7 +28,49 @@ Dann: „Stelle bitte alle Musskriterien auf, bevor du etwas umsetzt."
 | T-20261007-03 (noch nicht angelegt) | Etikett und Siegelschlaufe nach Foto, auf der neuen Glasform. Start erst, wenn T-01 fertig ist | `pipeline/blender/product_label.py` (neu) |
 | danach, Hauptchat | Einbau in `web_hero.py`, Licht und Reflexe (E3, E4), Technik (F), Vergleichstafel und Testbilder (G) | `pipeline/blender/web_hero.py`, Doku |
 
-## Wiedereinstieg (Stand 07.10.2026, 23:40, Sitzung wegen Nutzungslimit beendet)
+## Wiedereinstieg (Stand 08.10.2026, ca. 19:00) – gilt vor allem Älteren
+
+Maßgeblich ist `_agent/LOG.md`. Der Inhalt der Transaktionen steht in `_agent/staging/<ID>/AUFTRAG.md`, der Fortschritt in `STAND.md`, das Ergebnis in `ERGEBNIS.md`.
+
+| ID | Inhalt | Status 08.10. ~19:00 | Schreibt nach Übernahme |
+| --- | --- | --- | --- |
+| T-20261007-01 | Glas und Kork | **ÜBERNOMMEN**: B1 1,2 %, F1 ok, mm_per_bu 11,8637 | `product_jar.py`, `jar-interior.json` |
+| T-20261008-01 | Packung 3D (reines Python) | läuft; Innenmaße vom 18:27 verwenden | `saffron_pack.py`, `saffron-fill.json` |
+| T-20261008-03 | Safranmaterial (Gegenlicht), Bilder ohne Glas | läuft | `saffron_fill.py` |
+| T-20261007-03 | Frontetikett und Druck | läuft | `product_label.py`, `label-assets/` |
+| T-20261008-04 | Siegelschlaufe, Farbe `#3d493c` | läuft | `product_seal.py` |
+| T-20261008-05 | Korkmaterial: feinkörnig, graubraun | läuft | `product_jar.py` (nur Kork) |
+
+Verworfen sind T-20261007-02 und T-20261008-02. Beide brachen wegen des Token-Budgets ab; ihr Zwischenstand ist in den Folgetransaktionen aufgegangen.
+
+**Prüfen und übernehmen** (je Transaktion, sobald `ERGEBNIS.md` vorliegt):
+- Werte gegen die Abnahmekriterien im `AUFTRAG.md` prüfen und die Bilder verkleinert ansehen.
+- COMMIT nach `CLAUDE.md`: Backup nach `staging/<ID>/backup/`, kopieren, MD5 vergleichen, Log auf `ÜBERNOMMEN` setzen.
+- **T-20261008-01:** C muss (N, 4) liefern; der Fehler wurde an den Agenten gemeldet. Der Cache muss mit `jar-interior.json` vom 18:27 gerechnet sein, mm_per_bu 11,8637.
+- **T-20261008-05:** Der `diff` gegen das Projekt darf nur das Korkmaterial betreffen.
+
+**Danach Integration im Hauptchat (nicht delegieren, oder nur sehr eng geschnitten):**
+1. In `web_hero.py` nach `setup_scene()` aufrufen: `product_jar.build_jar()`, `product_label.build_label(i)`, `product_seal.build_seal(i)`, `saffron_fill.build_fill(i)`, `saffron_fill.retint_loose_threads()`. Nach `setup_render()`: `product_jar.tune_render_for_glass(scene)`. Als Vorlage dienen die Test-Hooks in den `web_hero_test.py` der Staging-Ordner.
+2. Prüfen: D4 (Füllgut durch Glas 0,10–0,20 × Etikettpapier, rot), E1, E2, C5, F1 mit Füllung, F2.
+3. Licht und Umgebung (E3, E4): Softbox und Karten statt gleichmäßiger Welt, danach den Glossy-Dimmer (35 %) in `tune_render_for_glass` entfernen. Shadow Caustics prüfen. Vorschläge in `staging/T-20261007-01/ERGEBNIS.md`.
+4. Vergleichstafel G1/G2, Testbilder G3, dem Auftraggeber zeigen. Queue erst nach Freigabe (G4). F4: Renderzeit messen; das Hero-Standbild ohne Füllung brauchte 13,5 s bei 64 spp.
+
+**Lehre:** Subagents schaffen nur ein Kernergebnis. Aufträge müssen in sich vollständig sein („keine weiteren Dokumente lesen“) und bei etwa 90k Tokens enden.
+
+## Wiedereinstieg (Stand 07.10.2026, 23:40, Sitzung wegen Nutzungslimit beendet; überholt)
+
+**Nachtrag 08.10.2026:**
+
+- T-01 und T-02 laufen mit neuen Agenten weiter, auf dem Zwischenstand. Jeder führt `STAND.md` im Staging-Ordner.
+- Der Auftrag für T-03 liegt als Entwurf in `_agent/staging/T-20261007-03/AUFTRAG.md` und steht im Log. Gestartet wird er erst nach der Übernahme von T-01.
+- Etikettformat: Laut Pose-Abgleich von T-01 ist das Frontetikett 44 × 38,2 mm groß. Die angenommenen 44 × 49 mm des Rücketiketts stimmen also nicht. Der Maßstab bleibt die Breite von 44 mm.
+- T-02 brach um 18:23 wegen des Token-Budgets ab und ist `VERWORFEN`. Übernommen wurde nichts.
+  - D6 verfehlt: Oberfläche 2,867 statt 3,715 BU bei 173 Fäden. Grund: Die Packung arbeitet als Höhenfeld und kennt keine Hinterschneidungen.
+  - Der Generator ist getestet und dient als Grundlage.
+- Neu geschnitten in zwei parallele Transaktionen mit fester Schnittstelle (`saffron_pack.assemble(data) -> V, F, C` und Cache-Format, siehe Aufträge):
+  - **T-20261008-01:** Packung in 3D, reines Python → `saffron_pack.py`, `saffron-fill.json`
+  - **T-20261008-02:** Blender-Teil: Material, `build_fill`, lose Fäden, Testbilder → `saffron_fill.py`
+- Siegelfarbe beantwortet: „eher grünlich“, vorläufig `#3d493c`.
 
 Beide Agenten wurden um 23:33 mit dem Sitzungsende gestoppt. Keiner hat ein `ERGEBNIS.md`. **Im Projekt ist nichts übernommen**, und es läuft kein Blender. Der Zwischenstand liegt in `_agent/staging/`:
 
@@ -51,7 +93,7 @@ Beide Agenten wurden um 23:33 mit dem Sitzungsende gestoppt. Keiner hat ein `ERG
    - Siegel als Schlaufe mit Luft über dem Kork, Farbe vorläufig das Blaugrau des Fotos, als ein Parameter.
 4. Einbau in `web_hero.py`, Licht und Reflexe (E3, E4), F1/F2, Vergleichstafel (G1, G2), Testbilder (G3). Dem Auftraggeber zeigen, Queue erst nach Freigabe (G4).
 
-Offene Frage an den Auftraggeber, gestellt und unbeantwortet: Siegelfarbe blaugrau wie im Foto?
+Siegelfarbe: am 08.10. beantwortet, „eher grünlich“ (siehe oben).
 
 ## Zustand des Rechners (07.10., bei der Übergabe)
 
@@ -66,6 +108,7 @@ Offene Frage an den Auftraggeber, gestellt und unbeantwortet: Siegelfarbe blaugr
 | `assets-src/photos/safran-glaeser-real.jpg` (= royalspices.de/safran-glaeser-real.jpg) | **Einziges echtes Foto**, 0,5-g-Gläser, 1152 × 1536 | Maßgeblich für Form, Glas, Füllgut |
 | `../Projektübergabe/royal-spices/references/00-royal-spices-product-reference.png` (= `royal-spices-dev/references/Royal-Spices-3D-Referenztafel.png`) | Produkttafel, laut Fußnote KI-Rekonstruktion | Nur für nicht fotografierte Ansichten |
 | `../Projektübergabe/royal-spices-dev/references/safran-display.jpg` | Display, auf royalspices.de als Visualisierung bezeichnet | Nicht als Vorlage für das Glas |
+| `.raw/tests/glass/ki-frontansicht.png` (vom Auftraggeber am 08.10. geschickt, Quelle vermutlich ein Werbevideo) | Frontansicht des Glases. Fast sicher KI-generiert: Text unsinnig („PISSERZE IN COLMMIENT“, „40 cg“), lockere hellorange Füllung | Nur zur Plausibilität der Frontansicht: flache Schulter, dicke Lippe, Kork über der Lippe, Siegel endet unter dem Etikett. Nicht für Farben, Satz, Füllgut oder Maße |
 
 royalspices.de wurde am 07.10. geprüft: Es gibt dort keine weiteren Produktfotos.
 
