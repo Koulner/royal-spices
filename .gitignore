@@ -10,4 +10,3 @@ dist-pages/
 .env
 .env.*
 !.env.example
-*.webp
