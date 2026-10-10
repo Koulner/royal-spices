@@ -1,4 +1,109 @@
-# Stand 06.10.2026, 18:40 — zwei Renderläufe hintereinander, Ende voraussichtlich 07.10. mittags
+# Stand 07.10.2026, 23:40 — Glas und Füllgut naturtreu: Kriterien freigegeben, Umsetzung in Arbeit (unterbrochen)
+
+Offener Auftrag: **`docs/UEBERGABE-GLAS.md`**, Abschnitt „Wiedereinstieg“. Die Kriterien sind freigegeben, und zwei Transaktionen haben einen Zwischenstand in `_agent/staging/` (siehe `_agent/LOG.md`). Im Projekt ist noch nichts übernommen, kein Blender läuft.
+
+---
+
+# Stand 06.10.2026, 23:30 — Umzug auf den PC mit RX 9070, Rendern auf der Grafikkarte
+
+Ergänzt die Übergabe von 20:25 (darunter). Deren Liste „Fehlt noch" gilt weiter, mit den Änderungen hier. **Abgenommen ist nichts.**
+
+## Dieser Rechner
+
+- AMD Radeon RX 9070, Ryzen 7 5700X (8 Kerne), 32 GB RAM. Projekt unter `H:\royal-spices`. **Auf H: sind nur rund 18 GB frei.**
+- Blender 4.5.14 LTS liegt entpackt unter `F:\3D\Blender\Blender 4.5\` (Zip von blender.org, Prüfsumme geprüft). Direkt in `F:\3D\Blender\` liegt Blender 5.1 des Auftraggebers: nicht anfassen, das Projekt nicht damit rendern (der Master ist 4.5 LTS).
+- `pipeline/blender/render.sh` sucht Blender erst unter dem Pfad des Laptops, dann unter `F:\3D\Blender\Blender 4.5\`. `BLENDER=…` geht weiter vor.
+- **Jeder Renderaufruf hier braucht `RS_DEVICE=HIP`**, sonst rendert er auf der CPU. Gemessen mit dem Testbild aus dem Nachtrag 22:45 (1920 × 1080, 64 Samples): Grafikkarte 18,8 s, CPU dieses Rechners 110 s, Laptop rund 4 min. Grafikkarte und CPU ergeben dasselbe Bild (mittlere Abweichung 0,1 von 255 Stufen, `.raw/tests/gpu/`). In der Queue: 1920 × 1080 rund 15 s, 1440 × 810 rund 6 s je Bild.
+- Node, npm und Git waren schon installiert, `node_modules` ist mitkopiert.
+- Die Queue setzt jedes laufende `blender.exe` auf Leerlauf-Priorität, auch ein interaktiv geöffnetes Blender 5.1.
+
+## Fehler an der Narbenspitze, behoben
+
+Im ersten Bild in voller Auflösung (`.raw/desktop/0036.png`, 23:20) schwebte im geöffneten Narbenende ein Ring aus kurzen hellen Strichen. Ursache: Der Master hat je Narbenende 47 Papillen als eigene Kurvenobjekte (`Papilla_0_00` … `Papilla_2_46`) um das geschlossene Ende. `refine_stigma_ends` formt das Ende zur Trompete um, die Kurven blieben stehen. Jetzt blendet `refine_stigma_ends` sie aus; die Papillen des neuen Rands kommen aus dem Material. Vorher/nachher: `.raw/tests/gpu/papillae-vorher-nachher.png`. Eingetragen in `docs/ASSETS.md`.
+
+Die Bilder, die bis dahin auf diesem Rechner gerendert waren (21 Basisbilder 29–49, 36 der Makro-Ansicht), liegen unter `.raw/prev-swing/papilla-dashes/`. Die zwei CPU-Bilder vom Laptop (`desktop/0029`, `0030`) liegen unter `.raw/prev-swing/cpu-laptop-desktop/`.
+
+## Was läuft
+
+`queue-large.sh`, neu gestartet um 23:25 mit `RS_DEVICE=HIP`, alle Stufen, Protokoll `.raw/queue-large.log`. Geprüft: Bild 0036 der neuen Fahrt hat keine Striche mehr. Schätzung aus den ersten Bildzeiten: fertig gegen 01:30.
+
+Neustart des Rechners am 07.10. gegen 00:15, mitten in `l-d-sharp` (72 von 156 Bildern). Die zuletzt geschriebenen Bilder aller Ordner waren vollständig lesbar. Queue um 00:19 mit demselben Befehl wieder gestartet, Entwicklungsserver auf Port 4321 ebenfalls. Fertig voraussichtlich gegen 01:45.
+
+Neu starten (z. B. nach einem Neustart des Rechners), vorher das zuletzt geschriebene Bild prüfen:
+
+```bash
+(RS_DEVICE=HIP nohup bash pipeline/blender/queue-large.sh >> .raw/queue-large.log 2>&1 &)
+```
+
+Die Bremse `.raw/queue-large.pause` wirkt nur beim Start der Queue, nicht zwischen den Stufen.
+
+## Fehlt noch
+
+1. Rendern abwarten und prüfen wie unter 20:25, Punkt 1.
+2. Narbenspitze in voller Auflösung ansehen (20:25, Punkt 2), jetzt ohne die Striche: `.raw/desktop/0036.png`, `.raw/desktop-hold/0285.png`, Hochformat `.raw/mobile/0025.png` und `.raw/mobile-hold/`.
+3. Weiter wie 20:25, Punkt 3. Performance-Messungen auf diesem Rechner sind nicht mit denen vom Laptop vergleichbar (andere CPU, anderer Bildschirm). Ob Port 4322 hier frei ist, ist nicht geprüft.
+
+---
+
+# Stand 06.10.2026, 20:25 — Narbe, Übergang und Hochformat überarbeitet, alles wird neu gerendert
+
+Ersetzt die Übergabe von 18:40 (darunter, als Verlauf). Drei neue Rückmeldungen des Auftraggebers am Abend, alle drei im Code umgesetzt und an Testbildern geprüft. **Gerendert ist davon noch fast nichts. Abgenommen ist nichts.**
+
+1. „Auf dem Handy ist die Sequenz nicht dieselbe wie auf dem Desktop." Ab dem Produkt (76 %) zeigt das Hochformat jetzt dieselben Einstellungen: Querformat-Sichtlinie, weiter zurück, Blüte, Glas und Fäden nebeneinander (`docs/sequenz-quer-hoch.png`).
+2. „Beim Übergang Blüte → getrockneter Safran ist ein Szenensprung." Neuer Ausstieg aus der Makro-Ansicht (`leave_hold` in `web_hero.py`) und doppelter Scrollweg für diesen Abschnitt im Player (`docs/uebergang-narbe-faeden.png`).
+3. „Bei der Nahaufnahme der Narbenspitze muss absoluter Realismus herrschen." Offene Trompete mit gezähntem Rand, durchscheinendes Gewebe (`refine_stigma_ends`, `docs/narbe-vorher-nachher.png`).
+
+Begründungen und Werte: `docs/ASSETS.md` (Änderungen gegenüber dem Master, Tempo beim Scrollen), Rückmeldungen: `docs/QA.md`.
+
+## Nachtrag 22:30 — Neustart des Rechners
+
+Der Rechner wurde um 22:27 neu gestartet. Damit sind die alte Queue (`queue-inbetweens.sh`) und der veraltete Prozess 38260 weg; die Tabelle darunter ist überholt. Die Bilder der alten Queue bis 22:26 sind vollständig und lesbar geprüft (`.raw/desktop-fine`, `.raw/desktop-blur`). Ihre Stufen `m-hold`/`m-dwell` werden nicht nachgeholt; die neue Queue rendert dieselben Bilder in `s-m-base` und `s-m-dwell`.
+
+- `.raw/queue-large.hold` gelöscht.
+- `queue-large.sh` um 22:29 neu gestartet, ohne `RS_AFTER`, alle Stufen. Protokoll `.raw/queue-large.log`. Läuft ab `s-d-hold`.
+- Startet der Rechner nochmals neu: dasselbe tun, also `(nohup bash pipeline/blender/queue-large.sh >> .raw/queue-large.log 2>&1 &)`, vorher das zuletzt geschriebene Bild prüfen.
+- Zeitplan (Schätzung von 20:25, Start jetzt 22:29): Querformat am 07.10. gegen 13:30, alles gegen 22:30. Die alte Queue hätte realistisch bis gegen Mitternacht gebraucht; der Neustart spart diese anderthalb Stunden.
+- Die Einschränkung „Zeilen 1–43 von `queue-large.sh` nicht ändern" gilt nur, solange die Queue läuft (sie liest das Skript stückweise).
+
+### Rendern auf der Grafikkarte (vorbereitet 22:45, nicht ausprobiert)
+
+Der Auftraggeber hat einen zweiten PC mit AMD RX 9070. `web_hero.py` liest jetzt `RS_DEVICE` (`HIP` für AMD, `OPTIX`/`CUDA` NVIDIA, `ONEAPI` Intel; ohne Variable wie bisher CPU). Findet Blender die verlangte Karte nicht, bricht das Rendern mit `RuntimeError` ab statt auf die CPU zurückzufallen. Vorige Fassung: `.raw/prev-swing/web_hero-before-gpu.py`. Geprüft: Syntax; auf diesem Laptop findet Blender keine nutzbare Karte (HIP, CUDA, OptiX, oneAPI leer), die laufende CPU-Queue ist nicht betroffen.
+
+Umzug: Ordner `royal-spices-v1` und `Projektübergabe` nebeneinander kopieren, Blender 4.5, Git für Windows, Node.js installieren, `npm ci`. Testbild mit `RS_DEVICE=HIP bash pipeline/blender/render.sh --variant desktop --mode still --p 0.40 --res 1920x1080 --spp 64 --noise 0.03 --out .raw/tests/gpu --tag gpu` und mit demselben Bild von hier vergleichen. Dann die Queue dort mit `RS_DEVICE=HIP` starten. Bilder von CPU und Grafikkarte nicht in einer Fahrt mischen: die hier schon gerenderten Bilder dort neu rendern (Ordner vorher leeren).
+
+## Was läuft (20:20, überholt durch den Nachtrag 22:30)
+
+| Prozess | Was | Zustand |
+| --- | --- | --- |
+| `queue-inbetweens.sh` (PIDs 21388, 20984), Protokoll `.raw/queue-dwell.log` | Alte Queue von 16:44. Ihre restlichen Stufen (`d-hold-blur` … `m-blur-4`) rendern seit 19:58 mit der **neuen** `web_hero.py`. Brauchbar davon: `m-hold` und `m-dwell` (Hochformat in Endgröße); der Rest ist klein (960/540) und wird später durch große Bilder ersetzt | läuft, Ende sonst gegen 22:30. Der Auftraggeber wollte sie beenden (Befehle im Chat); die Berechtigungsprüfung lässt mich keine Prozesse beenden |
+| `queue-large.sh` **PID 38260** (gestartet 18:30) | Hält eine **veraltete Fassung** des Skripts offen | hängt absichtlich an `.raw/queue-large.hold`. **Die Datei nicht löschen**, solange dieser Prozess lebt. Prozess beenden ist gefahrlos |
+| `queue-large.sh` **PID 24388** (gestartet 20:08), Protokoll `.raw/queue-large.log` | Die neue Queue: Stufen `s-d-hold s-d-dwell l-d-into l-d-out s-d-open l-d-sharp s-d-reveal s-d-stills s-m-stills s-m-base s-m-dwell l-m-hold l-m-rest` (Skript, ab Zeile 44) | wartet auf `QUEUE-DONE` der alten Queue oder fünf Minuten ohne Blender. Bremse bei Bedarf: Datei `.raw/queue-large.pause` anlegen |
+
+Geschätzte Dauer der neuen Queue, aus gemessenen Bildzeiten: Querformat vollständig nach rund 15 Stunden, alles nach rund 24 Stunden. Startet sie gegen 22:30, ist das Querformat am 07.10. gegen 13:30 fertig und alles am 07.10. gegen 22:30. Läuft sie früher an, entsprechend früher.
+
+**Nicht ändern, solange PID 24388 wartet:** die Zeilen 1–43 von `pipeline/blender/queue-large.sh`. Bash liest das Skript stückweise; Änderungen davor verschieben, was es als Nächstes liest. Der Kopfkommentar dort beschreibt noch den Stand von 18:30; nach dem Lauf nachziehen.
+
+Die Seite zeigt bis dahin den veröffentlichten Stand von 18:23. `build-hero.mjs` veröffentlicht eine Fahrt erst wieder, wenn alle ihre Basisbilder neu da sind (sonst „kept as published"). `build-stills.mjs` läuft in der Queue erst, wenn alle Quellen der Standbilder da sind. Alles Ersetzte liegt unter `.raw/prev-swing/` (alte `web_hero.py`, Manifest, Renderings).
+
+## Geändert seit 18:40
+
+- `pipeline/blender/web_hero.py` (Sicherung der vorigen Fassung: `.raw/prev-swing/web_hero.py`): `refine_stigma_ends()` und `_stigma_material()` (alle drei Narbenenden, Material); `stigma_macro(0.0)` vorher, damit die Makro-Pose vom unveränderten Ende abgeleitet wird; `EXIT`/`leave_hold()`; Hochformat-Schlüssel 0,76/0,90/1,00. Entwickelt in `.raw/tests/dev/` (`stigma_tip.py`, `mobile_keys2.py` rechnet die Hochformat-Posen aus).
+- `src/data/journey.ts`: `slow`; Alt-Text des Narbenbilds (18:40). `src/components/Journey.astro`: `data-slow`, Höhe 849svh. `src/scripts/journey.ts`: Umrechnung Scrollweg ↔ Fortschritt.
+- `tools/qa/browser.mjs`: `scrollToProgress`; `journey.mjs`, `axtree.mjs`, `shots.mjs` nutzen es.
+- `pipeline/images/build-hero.mjs`: veröffentlicht keine halb gerenderte Fahrt.
+- `pipeline/blender/queue-large.sh`: neue Stufen (siehe oben), Bremse `.raw/queue-large.pause`.
+- Geprüft: `astro check` 0 Fehler; `tools/qa/journey.mjs` am Entwicklungsserver alle Prüfungen bestanden (`.raw/qa/journey-2015-dev.txt`); Umrechnung gemessen (`.raw/tests/dev/warp-check.mjs`: jeder Fortschritt kommt exakt an, Faktor 2,00 im Abschnitt, sonst unverändert); Testrenderings beider Formate mit der neuen `web_hero.py` (Standbild und unscharfes Sequenzbild) fehlerfrei.
+
+## Fehlt noch
+
+1. Rendern abwarten (beide Protokolle: `QUEUE-DONE`; nach `Error`/`Traceback` suchen). Bildzahlen: `.raw/desktop` 90, `.raw/mobile` 64, `.raw/desktop-hold` 43, `.raw/mobile-hold` 30, `.raw/desktop-blur-1440` 129, `.raw/desktop-fine-1440` 156, `.raw/mobile-blur-720` 238, `.raw/stills` 5 Dateien (`desktop_p0000`, `desktop_p1000`, `mobile_p0000`, `mobile_p1000`, `anatomy`).
+2. **Narbenspitze in voller Auflösung ansehen**, sobald `s-d-hold` und `s-d-dwell` durch sind (`.raw/desktop/0036.png`, `.raw/desktop-hold/0285.png`). Realismus beurteilen, mit P01/P02 vergleichen. Stellschrauben in `refine_stigma_ends` (flare, depth, crenate, teeth) und `_stigma_material`.
+3. Dann weiter wie 18:40, Punkte 2–7: Ausgabe von `build-hero.mjs`, Pulsieren, Build, Prüfskripte (Performance nur ohne Blender), Ansehen quer und hoch, `public/hero/3` und `/4` löschen, `docs/QA.md` (Datenmengen; die Seite ist jetzt 849svh hoch).
+4. `.raw/queue-large.hold` löschen, sobald PID 38260 nicht mehr läuft.
+
+---
+
+# Stand 06.10.2026, 18:40 — zwei Renderläufe hintereinander (überholt durch 20:25)
 
 Dieser Abschnitt ersetzt die Übergabe von 17:30 (darunter, als Verlauf). Kurz:
 
@@ -41,6 +146,7 @@ Zwei losgelöste Queues, nacheinander. Die zweite startet von selbst, wenn die e
 - `public/img/stigma-*`, `src/data/stills.json`: Kapitelbild „Narbe" aus dem neuen `.raw/desktop/0036.png`, Zuschnitt unverändert passend (`npm run assets:stills`). `src/data/journey.ts`: Alt-Text beschreibt das neue Bild (Punkt 3 von 17:30).
 - `docs/ASSETS.md`, `docs/QA.md`: Sätze, Rückmeldungen, Offen. `docs/vergleich-bewegung-stillstand.png` neu.
 - Geprüft vor der Änderung an `journey.ts`: `npm test` 20 von 20.
+- Geprüft nach der Änderung, am Entwicklungsserver mit dem Zwischenstand der Sätze (18:45): `tools/qa/journey.mjs` alle Prüfungen bestanden (`.raw/qa/journey-1840-dev.txt`). Stufe High wählt quer `d-1440m`, hoch `m-720m` (Tablet, Telefon, Telefon quer); Medium und Low weiter `d-960` und `m-540`; Fallback unverändert.
 
 ## Fehlt noch
 
