@@ -4,13 +4,19 @@ import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import { site } from '@/config/site';
 import { indexable } from '@/config/launch';
+import { serializeJsonLd } from '@/lib/seo/schema';
 import '@/styles/global.css';
 
 interface Props {
   title: string;
   description: string;
-  /** Path of the Open Graph image, relative to the site root. */
-  ogImage?: string;
+  /** Open Graph type of the page. */
+  ogType?: 'website' | 'product' | 'article';
+  /**
+   * Open Graph image: path relative to the site root or absolute URL (e.g. cdn.shopify.com). Width and
+   * height are only written when both are known; without an image the site's /og.jpg (1200×630) is used.
+   */
+  ogImage?: string | { src: string; width?: number; height?: number };
   /** Pages that must not be indexed (form results, error pages). */
   noindex?: boolean;
   /** JSON-LD objects for this page. */
@@ -19,10 +25,12 @@ interface Props {
   preloads?: { href: string; type: string; media?: string; imagesrcset?: string; imagesizes?: string }[];
 }
 
-const { title, description, ogImage = '/og.jpg', noindex = false, schema = [], preloads = [] } = Astro.props;
+const { title, description, ogType = 'website', ogImage, noindex = false, schema = [], preloads = [] } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const fullTitle = title.includes(site.name) ? title : `${title} · ${site.name}`;
-const og = new URL(ogImage, Astro.site);
+const ogSource = ogImage ?? { src: '/og.jpg', width: 1200, height: 630 };
+const og = new URL(typeof ogSource === 'string' ? ogSource : ogSource.src, Astro.site);
+const ogSize = typeof ogSource === 'object' && ogSource.width && ogSource.height ? { width: ogSource.width, height: ogSource.height } : undefined;
 ---
 
 <!doctype html>
@@ -33,19 +41,31 @@ const og = new URL(ogImage, Astro.site);
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {!indexable ? <meta name="robots" content="noindex, nofollow" /> : noindex && <meta name="robots" content="noindex, follow" />}
+    {
+      !indexable ? (
+        <meta name="robots" content="noindex, nofollow" />
+      ) : noindex ? (
+        <meta name="robots" content="noindex, follow" />
+      ) : (
+        <meta name="robots" content="max-image-preview:large" />
+      )
+    }
     <meta name="theme-color" content="#f2ede2" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-48.png" type="image/png" sizes="48x48" />
+    <link rel="icon" href="/favicon-96.png" type="image/png" sizes="96x96" />
+    <link rel="icon" href="/favicon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={site.name} />
     <meta property="og:locale" content="de_DE" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={og} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    {ogSize && <meta property="og:image:width" content={String(ogSize.width)} />}
+    {ogSize && <meta property="og:image:height" content={String(ogSize.height)} />}
     <meta name="twitter:card" content="summary_large_image" />
 
     <Font cssVariable="--font-display" preload />
@@ -65,10 +85,10 @@ const og = new URL(ogImage, Astro.site);
       })();
     </script>
 
-    {schema.map((item) => <script is:inline type="application/ld+json" set:html={JSON.stringify(item)} />)}
+    {schema.map((item) => <script is:inline type="application/ld+json" set:html={serializeJsonLd(item)} />)}
   </head>
   <body>
-    <a class="skip-link" href="#inhalt">Zum Inhalt springen</a>
+    <a class="skip-link" href="#inhalt">Direkt zum Inhalt</a>
     <Header />
     <main id="inhalt" tabindex="-1">
       <slot />

@@ -9,6 +9,8 @@ What this script changes relative to the master (documented in docs/ASSETS.md):
   * A small pinch of dried threads is laid on the set between flower and jar, built from
     the master's own dry-stigma study mesh. Nothing moves during the shot.
   * Ground, world and light balance are re-set for a warm paper-toned set.
+  * Product light reaches only the product (light linking): front light on the label, edge strips and a
+    shoulder glint on the glass; the shade cards beside the jar are dark grey (T-20261015-01).
   * The ends of the three fresh stigma branches are opened into flared funnels with an uneven,
     papillose margin, and the stigma tissue is made translucent (refine_stigma_ends, 2026-10-06).
   * The single 85 mm motion-control path is replaced by two authored paths
@@ -47,6 +49,13 @@ stops the render with an error instead of falling back to the processor.
 import bpy, sys, os, math, time
 from math import radians
 from mathutils import Vector, Euler
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import product_jar, product_label, product_seal
+try:   # needs saffron_pack.py + saffron-fill.json (T-20261008-01); until then the master fill stays
+    import saffron_fill
+except ImportError as e:
+    saffron_fill = None
+    print('SAFFRON fill not available:', e, flush=True)
 
 # --------------------------------------------------------------------------- args
 argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
@@ -149,6 +158,138 @@ def add_flags():
         o.visible_camera = False
         o.visible_shadow = False
         o.visible_diffuse = False
+
+SHADE_CARD_GREY = 0.03   # linear albedo of the shade cards (was 0.004, T-20261015-01)
+
+def add_shade_cards():
+    """Black cards right beside the jar, seen only in the glass (glossy and transmission rays).
+    The camera looks down, so the upright walls mirror the bright floor beside the jar as a milky veil (E3);
+    in the photo that floor is dark. The right card also takes the kicker out of the side wall. Left and behind:
+    the thick walls and base guide rays by total reflection to the floor behind the jar, which lit the corners up.
+    Cut at the shoulder, so the shoulder and edge highlights stay."""
+    jar = D.objects[product_jar.GLASS_NAME]
+    bb = [Vector(c) for c in jar.bound_box]
+    x0, x1 = min(c.x for c in bb), max(c.x for c in bb)
+    y0, y1 = min(c.y for c in bb), max(c.y for c in bb)
+    s = jar.matrix_world.to_scale().x
+    gap = 0.5 / s
+    zb = min(c.z for c in bb) - 0.1 / s
+    zt = min(c.z for c in bb) + (product_jar.OUT_WALL_TOP_MM / product_jar.MM_PER_BU + 0.2) / s
+    # Mirror rays leave the side wall towards +y (dy/dx ~ 2.6) and the front towards -x.
+    back_y1, front_x0 = y1 + 3.0 / s, x0 - 3.0 / s
+    # Molton, not card: the mirror rays meet it at the same grazing angle as the wall, where a glossy card shines.
+    mat = D.materials.new('Flag | dark grey molton')
+    mat.use_nodes = True
+    # Dark grey, not black (T-20261015-01): black made the glass black all round; grey keeps it clear without the veil.
+    principled(mat).inputs['Base Color'].default_value = (SHADE_CARD_GREY,) * 3 + (1,)
+    principled(mat).inputs['Roughness'].default_value = 1.0
+    principled(mat).inputs['Specular IOR Level'].default_value = 0.0
+    for name, quad in [
+        ('FLAG | shade right of jar', [(x1 + gap, y0 - gap, zb), (x1 + gap, back_y1, zb), (x1 + gap, back_y1, zt), (x1 + gap, y0 - gap, zt)]),
+        ('FLAG | shade left of jar', [(x0 - gap, back_y1, zb), (x0 - gap, y0 - gap, zb), (x0 - gap, y0 - gap, zt), (x0 - gap, back_y1, zt)]),
+        ('FLAG | shade behind jar', [(x1 + gap, y1 + gap, zb), (x0 - gap, y1 + gap, zb), (x0 - gap, y1 + gap, zt), (x1 + gap, y1 + gap, zt)]),
+        ('FLAG | shade front of jar', [(front_x0, y0 - gap, zb), (x1 + gap, y0 - gap, zb), (x1 + gap, y0 - gap, zt), (front_x0, y0 - gap, zt)]),
+    ]:
+        me = D.meshes.new(name)
+        me.from_pydata(quad, [], [(0, 1, 2, 3)])
+        me.materials.append(mat)
+        o = D.objects.new(name, me)
+        scene.collection.objects.link(o)
+        o.matrix_world = jar.matrix_world.copy()
+        o.visible_camera = False
+        o.visible_shadow = False
+        o.visible_diffuse = False
+
+FLAG_LIGHT = (1000, (0.7, 1.0, 0.8))   # W, colour of the flag's own light (T-20261015-02)
+FILL_PANEL = (100, (1.0, 0.9, 0.8), 0.03)   # W, colour, BU inside the inner wall
+
+def add_product_lights():
+    """Product light after the website photo (T-20261015-01): only the product receives it (Cycles light linking),
+    floor, flower and threads keep the set light. A soft front light from the camera side brings the label up to
+    the cream of the photo; two narrow upright strips just inside the shade cards give the vertical glass edges
+    their thin bright lines, a soft panel behind the jar the shoulder and neck. The camera looks down, so the edges
+    mirror rays that run down at the camera's angle: the strips stand on the floor right next to the jar, low
+    enough to be seen in the whole edge."""
+    emp = D.objects[product_jar.PRODUCT_EMPTY]
+    parts = [o for o in emp.children_recursive if not o.hide_render and o.type in {'MESH', 'CURVE', 'FONT'}]
+    glass = D.objects[product_jar.GLASS_NAME]
+    front_rx = D.collections.new('LIGHT LINK | front label')   # cork and charcoal seal keep the set light
+    flag_rx = D.collections.new('LIGHT LINK | flag')
+    for o in parts:
+        if o.name.startswith('FRONT LABEL | flag band'):
+            flag_rx.objects.link(o)      # the orange front light turned red pink and gold white (T-20261015-02)
+        elif o.name.startswith('FRONT LABEL'):
+            front_rx.objects.link(o)
+    glass_rx = D.collections.new('LIGHT LINK | glass')
+    glass_rx.objects.link(glass)
+    jar_c = sum((glass.matrix_world @ Vector(c) for c in glass.bound_box), Vector()) / 8
+
+    def light(name, size, loc, target, energy, color, rx, diffuse=True):
+        ld = D.lights.new(name, 'AREA'); ld.shape = 'RECTANGLE'
+        ld.size, ld.size_y = size; ld.energy = energy; ld.color = color
+        o = D.objects.new(name, ld); scene.collection.objects.link(o)
+        o.location = loc
+        o.rotation_euler = (Vector(target) - Vector(loc)).to_track_quat('-Z', 'Y').to_euler()
+        o.visible_camera = False
+        o.visible_diffuse = diffuse
+        o.visible_volume_scatter = False
+        o.light_linking.receiver_collection = rx
+        return o
+
+    # Front: from the side of both camera paths (direction to the camera at p 1, about 20 degrees down).
+    d = Vector((0.30, -0.89, 0.34)).normalized()
+    # Strong and orange because AgX bleaches bright warm tones: on top of the set light it gives the label
+    # paper sRGB 0.96 / 0.87 / 0.73 as in the photo (white light reached 0.91 / 0.87 / 0.78).
+    light('PRODUCT | soft front', (6.0, 6.0), jar_c + d * 12.0, jar_c, 9000, (1.0, 0.62, 0.0), front_rx)
+    # Flag (T-20261015-02): the set lights leave the flag bands out (exclude link), so the bright paper's bounce
+    # does not bleach them; a weak light of their own, cool and slightly green, keeps the gold from going orange.
+    no_flag = D.collections.new('LIGHT LINK | all but flag')
+    for o in flag_rx.objects:
+        no_flag.objects.link(o)
+    for co in no_flag.collection_objects:
+        co.light_linking.link_state = 'EXCLUDE'
+    for o in scene.objects:
+        if o.type == 'LIGHT' and o.light_linking.receiver_collection is None:
+            o.light_linking.receiver_collection = no_flag
+    light('PRODUCT | flag', (6.0, 6.0), jar_c + d * 12.0, jar_c, FLAG_LIGHT[0], FLAG_LIGHT[1], flag_rx)
+    # Fill (T-20261015-02): light from outside cannot reach it (the glass blocks shadow rays; shadow linking cost
+    # +42 % render time). So two panels stand just inside the front and right inner walls, facing in, and light only
+    # the packed threads and the core: the threads at the glass read red as in the website photo.
+    fill_rx = D.collections.new('LIGHT LINK | saffron fill')    # not the loose threads (same material)
+    for n in ((saffron_fill.FILL, saffron_fill.CORE) if saffron_fill else ()):
+        if n in D.objects:
+            fill_rx.objects.link(D.objects[n])
+    I = INTERIOR
+    a, z0, z1 = I['inner_half_width'], I['inner_floor_z'], I['fill_top_z']
+    zm, eps = (z0 + z1) / 2, FILL_PANEL[2]
+    for name, loc, tgt in [('PRODUCT | fill panel front', (0.0, -a + eps, zm), (0.0, 0.0, zm)),
+                           ('PRODUCT | fill panel right', (a - eps, 0.0, zm), (0.0, 0.0, zm))]:
+        o = light(name, (2 * a, z1 - z0), (0, 0, 0), (0, 0, -1), FILL_PANEL[0], FILL_PANEL[1], fill_rx)
+        o.parent = emp; o.matrix_parent_inverse.identity()
+        o.location = loc
+        o.rotation_euler = (Vector(tgt) - Vector(loc)).to_track_quat('-Z', 'Y').to_euler()
+        o.visible_glossy = False         # no highlight on the waxy threads, no panel in the glass
+        o.visible_transmission = False
+    # Edge strips in the jar's own frame (the jar stands at rotz -4 deg): left of the front-left edge and
+    # right in front of the front-right edge, inside the shade cards (0.5 BU away).
+    bb = [Vector(c) for c in glass.bound_box]
+    x0, x1 = min(c.x for c in bb), max(c.x for c in bb)
+    y0 = min(c.y for c in bb)
+    zt = (product_jar.OUT_WALL_TOP_MM / product_jar.MM_PER_BU) / glass.matrix_world.to_scale().x
+    h = zt + 0.1
+    sw, sd, se = 0.25, 0.35, 300      # width, distance from the wall, power
+    M = glass.matrix_world
+    for name, at, edge in [
+        ('PRODUCT | edge strip left', (x0 - sd, y0 + 0.10), (x0, y0)),
+        ('PRODUCT | edge strip right', (x1 + sd, y0 - 0.15), (x1, y0)),
+    ]:
+        loc = M @ Vector((at[0], at[1], h / 2))
+        tgt = M @ Vector((edge[0], edge[1], h / 2))
+        light(name, (sw, h), loc, tgt, se, (1.0, 1.0, 1.0), glass_rx, diffuse=False)
+    # Shoulder and neck mirror rays that run up and away from the camera: a soft panel behind and above the jar.
+    top = M @ Vector(((x0 + x1) / 2, 0.0, zt))
+    up = Vector((-0.30, 0.89, 0.34)).normalized()
+    light('PRODUCT | shoulder glint', (4.0, 2.0), top + up * 7.0, top, 200, (1.0, 1.0, 1.0), glass_rx, diffuse=False)
 
 # Hand-placed pinch of dried threads.
 # (x, y, yaw deg, length scale, curl deg, twist deg, kink A deg, kink B deg, lift)
@@ -793,7 +934,17 @@ def render(path):
     print(f'RENDERED {os.path.basename(path)} in {time.time() - t:.1f}s', flush=True)
 
 setup_scene()
+# product after the photo: glass + cork, front label, seal loop, packed fill (one material with the loose threads)
+INTERIOR = product_jar.build_jar()
+product_label.build_label(INTERIOR)
+product_seal.build_seal(INTERIOR)
+if saffron_fill is not None and arg('--fill', 'new') == 'new':
+    saffron_fill.build_fill(INTERIOR)
+    saffron_fill.retint_loose_threads()
+add_shade_cards()
+add_product_lights()
 setup_render()
+product_jar.tune_render_for_glass(scene)
 resolve_keys()
 # The macro pose of the stigma hold is taken from the untouched end, so the camera paths do not move;
 # then the ends are opened up (refine_stigma_ends).

@@ -31,10 +31,10 @@ const line = (max: number) =>
 const optionalLine = (max: number) => line(max).optional().default('');
 
 export const inquirySchema = z.object({
-  anliegen: z.enum(Object.keys(TOPICS) as [Topic, ...Topic[]], { message: 'Bitte wählen Sie ein Anliegen.' }),
-  name: line(100).min(2, 'Bitte nennen Sie Ihren Namen.'),
+  anliegen: z.enum(Object.keys(TOPICS) as [Topic, ...Topic[]], { message: 'Bitte wähle ein Anliegen.' }),
+  name: line(100).min(2, 'Bitte nenne deinen Namen.'),
   unternehmen: optionalLine(160),
-  email: line(180).refine((v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v), 'Bitte geben Sie eine gültige E-Mail-Adresse an.'),
+  email: line(180).refine((v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v), 'Bitte gib eine gültige E-Mail-Adresse an.'),
   telefon: optionalLine(40).refine((v) => /^[0-9+()/\s.-]*$/.test(v), 'Bitte nur Ziffern und die Zeichen + ( ) / - .'),
   land: optionalLine(80),
   format: z.enum(Object.keys(FORMATS) as [Format, ...Format[]]).optional().default(''),

@@ -1,25 +1,43 @@
 ---
 import Sprig from './Sprig.astro';
-import { site, primaryNav, secondaryNav, legalNav } from '@/config/site';
+import { site, footerExploreNav, footerInfoNav } from '@/config/site';
 ---
 
 <footer class="site-footer band-slate">
   <div class="wrap site-footer__grid">
     <div class="site-footer__brand">
+      {/* O5: royal-spices-atelier-logo-wide.png */}
       <a class="site-footer__wordmark" href="/" aria-label="Royal Spices – Startseite">
         <Sprig class="site-footer__sprig" />
-        <span>Royal Spices</span>
+        <span>ROYAL<br />SPICES</span>
       </a>
-      <p class="small">Safran aus Herat, Afghanistan.<br />In Deutschland abgefüllt.</p>
+      <p class="eyebrow site-footer__claim">THE ART OF SAFFRON</p>
+      <p class="small">Edler Safran aus Herat. Genuss für besondere Momente.</p>
     </div>
 
+    <nav class="site-footer__nav" aria-label="Entdecken">
+      <p class="eyebrow">Entdecken</p>
+      <ul>
+        {footerExploreNav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+    </nav>
+
+    <nav class="site-footer__nav" aria-label="Informationen">
+      <p class="eyebrow">Informationen</p>
+      <ul>
+        {footerInfoNav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+    </nav>
+
     <address class="site-footer__contact">
-      <p class="eyebrow">Kontakt</p>
+      <p class="eyebrow">Kontaktiere uns</p>
       <p>
-        {site.name} · {site.owner}<br />
+        {site.name}<br />
+        {site.owner}<br />
         {site.address.street}<br />
         {site.address.postalCode}
-        {site.address.city}
+        {site.address.city}<br />
+        {site.address.countryName}
       </p>
       <p>
         <a href={site.phone.href}>{site.phone.display}</a><br />
@@ -27,19 +45,17 @@ import { site, primaryNav, secondaryNav, legalNav } from '@/config/site';
       </p>
     </address>
 
-    <nav class="site-footer__nav" aria-label="Seiten">
-      <p class="eyebrow">Seiten</p>
-      <ul>
-        {[...primaryNav, ...secondaryNav].map((item) => <li><a href={item.href}>{item.label}</a></li>)}
-      </ul>
-    </nav>
+    {/* O4: the sign-up form follows once a newsletter service with double opt-in is connected. */}
+    <section class="site-footer__journal" aria-label="The Royal Journal">
+      <p class="eyebrow">THE ROYAL JOURNAL</p>
+      <p class="site-footer__journal-title">Genuss beginnt mit Inspiration.</p>
+      <p class="small">Safran-Rezepte und ausgewählte Neuigkeiten von Royal Spices.</p>
+    </section>
   </div>
 
   <div class="wrap site-footer__base">
-    <p class="small">© {new Date().getFullYear()} {site.name} · {site.owner}</p>
-    <ul class="site-footer__legal">
-      {legalNav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
-    </ul>
+    <p class="small">© {new Date().getFullYear()} {site.name} · Alle Rechte vorbehalten</p>
+    <p class="small site-footer__motto">HERAT · HAMBURG · THE ART OF SAFFRON</p>
   </div>
 </footer>
 
@@ -51,7 +67,7 @@ import { site, primaryNav, secondaryNav, legalNav } from '@/config/site';
 
   .site-footer__grid {
     display: grid;
-    grid-template-columns: 1.3fr 1fr 1fr;
+    grid-template-columns: 1.3fr 1fr 1fr 1.1fr;
     gap: var(--s-7) clamp(1.5rem, 4vw, 4rem);
   }
 
@@ -65,7 +81,7 @@ import { site, primaryNav, secondaryNav, legalNav } from '@/config/site';
     font-size: 1.625rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    line-height: 1;
+    line-height: 1.1;
   }
 
   .site-footer__sprig {
@@ -74,8 +90,13 @@ import { site, primaryNav, secondaryNav, legalNav } from '@/config/site';
     color: #c9bd9c;
   }
 
+  .site-footer__claim {
+    margin-top: var(--s-3);
+  }
+
   .site-footer__brand .small {
     margin-top: var(--s-4);
+    max-width: 22rem;
   }
 
   address {
@@ -99,8 +120,6 @@ import { site, primaryNav, secondaryNav, legalNav } from '@/config/site';
 
   .site-footer__nav ul {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 var(--s-5);
     margin-top: var(--s-3);
   }
 
@@ -117,6 +136,24 @@ import { site, primaryNav, secondaryNav, legalNav } from '@/config/site';
     text-underline-offset: 0.3em;
   }
 
+  .site-footer__journal {
+    grid-column: 1 / -1;
+    padding-top: var(--s-6);
+    border-top: 1px solid var(--rule);
+  }
+
+  .site-footer__journal-title {
+    margin-top: var(--s-3);
+    font-family: var(--font-display), Georgia, serif;
+    font-size: clamp(1.375rem, 2.4vw, 1.75rem);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .site-footer__journal .small {
+    margin-top: var(--s-3);
+  }
+
   .site-footer__base {
     display: flex;
     flex-wrap: wrap;
@@ -128,10 +165,8 @@ import { site, primaryNav, secondaryNav, legalNav } from '@/config/site';
     border-top: 1px solid var(--rule);
   }
 
-  .site-footer__legal {
-    display: flex;
-    gap: var(--s-5);
-    font-size: 0.875rem;
+  .site-footer__motto {
+    letter-spacing: 0.14em;
   }
 
   @media (max-width: 55.99rem) {

@@ -1,65 +1,96 @@
 ---
+// Q2 – Live-Text wörtlich und in Live-Reihenfolge wie /pages/catering (docs/LIVE-INVENTAR.md), V1-Aufbau.
+// Preisorientierung ist Live-Text (Prüfpunkt, siehe _agent/staging/T-20261015-05/ERGEBNIS.md).
+// Dazu aus V1 (T-20261016-05): Katalog und Pakete aus @/data/catering (bisheriger Webauftritt, ohne Preise;
+// PRODUCT-TRUTH: Catering-Katalog bestätigt 05.10.2026). Anrede an Live angepasst (du).
 import Base from '@/layouts/Base.astro';
 import Picture from '@/components/Picture.astro';
 import InquiryForm from '@/components/InquiryForm.astro';
 import Arrow from '@/components/Arrow.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import { categories, packages } from '@/data/catering';
-import { site } from '@/config/site';
+import stills from '@/data/stills.json';
+import { buildService } from '@/lib/seo/schema';
+
+const description =
+  'Catering und Live Cooking in Hamburg und Umgebung: Canapés, Flying Buffets und individuelle Menüs mit europäischen, afghanischen und persischen Aromen.';
+// Image for the Service schema: the largest WebP of the head photo.
+const serviceImage = stills['catering-photo'].webp.reduce((a, b) => (b.width > a.width ? b : a)).src;
 ---
 
 <Base
-  title="Catering in Hamburg – persönlich geplant, vor Ort serviert"
-  description="Royal Spices Catering in Hamburg und Umgebung: Canapés, Löffelgerichte, Platten, Menüs und Desserts für Firmenveranstaltungen, Empfänge und private Anlässe. Angebot auf Anfrage."
+  title="Royal Spices Catering & Live Cooking"
+  description={description}
+  schema={[
+    buildService({
+      origin: Astro.site ?? Astro.url.origin,
+      path: '/catering/',
+      name: 'Royal Spices Catering & Live Cooking',
+      description,
+      serviceType: 'Catering',
+      images: [serviceImage],
+    }),
+  ]}
 >
-  <section class="page-head cat-head">
+  <section class="page-head cat-head" aria-labelledby="cat-title">
     <div class="wrap grid">
       <div class="cat-head__body opener">
-        <p class="eyebrow">Catering · Hamburg &amp; Umgebung</p>
-        <h1 class="display-xl">Persönlich geplant.<br />Vor Ort serviert.</h1>
-        <p class="lead">{site.owner} begleitet Planung und Umsetzung als Inhaber und Koch. Für Firmenveranstaltungen, Empfänge und private Anlässe.</p>
-        <div class="actions">
-          <a class="btn" href="#anfrage">Catering anfragen <Arrow dir="down" /></a>
-          <a class="link" href="#katalog">Zum Katalog <Arrow dir="down" /></a>
-        </div>
+        <Breadcrumbs
+          items={[
+            { name: 'Start', path: '/' },
+            { name: 'Catering & Live Cooking', path: '/catering/' },
+          ]}
+        />
+        <h1 class="display-xl" id="cat-title">Royal Spices Catering &amp; Live Cooking</h1>
       </div>
       <figure class="cat-head__figure figure">
         <Picture name="catering-photo" alt="Royal-Spices-Catering bei einem Business-Event: Menükarte als Aufsteller, dahinter eine Theke mit angerichteten Löffelgerichten." sizes="(min-width: 64rem) 34vw, 92vw" loading="eager" fetchpriority="high" />
-        <figcaption>Business-Event im AMG Brand Center Hamburg.</figcaption>
       </figure>
     </div>
   </section>
 
-  <section class="section--tight" aria-labelledby="cat-leistung">
+  <section class="section--tight" aria-labelledby="cat-kulinarik">
     <div class="wrap split">
       <div class="split__a opener">
-        <p class="eyebrow">Leistungen</p>
-        <h2 class="display-l" id="cat-leistung">Vom Empfang bis zum Menü.</h2>
+        <p class="eyebrow">Royal Spices · Culinary Experiences</p>
+        <h2 class="display-l" id="cat-kulinarik">Exklusive Kulinarik für besondere Momente.</h2>
+      </div>
+      <div class="split__b">
+        <p class="lead">Von eleganten Canapés über Flying Buffets bis zu individuell komponierten Menüs: Royal Spices verbindet präzises Handwerk mit modernen europäischen, afghanischen und persischen Aromen. Persönlich konzipiert und auf Wunsch vor Ort vollendet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section band-deep" aria-labelledby="cat-formate">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <h2 class="display-l" id="cat-formate">Unsere Formate</h2>
       </div>
       <div class="split__b">
         <ul class="rows">
           <li>
-            <h3 class="display-s">Exklusiv-Catering</h3>
-            <p>Löffelgerichte, Canapés, Platten, Flying Buffet, Vier-Gänge-Menü und Mini-Desserts für Veranstaltungen und Empfänge.</p>
+            <h3 class="display-s">Flying Buffet &amp; Canapés</h3>
+            <p>Feine Fingerfood-Kreationen, saisonale Mini-Löffelgerichte und raffinierte Desserts – für Empfänge, Markenveranstaltungen und private Feste.</p>
+            <p><strong>Beispiele:</strong> Tuna Tatar · Avocado · Crispy Chili · Sesam / Burrata · Erbsenpesto · Safran-Zitrone / Geschmorte Rinderschulter · Trüffel-Kartoffelpüree / Rotgarnele · Basilikum-Hummus · Safran-Aioli.</p>
           </li>
           <li>
-            <h3 class="display-s">Office-Catering</h3>
-            <p>Frühstück, Lunch und Verpflegung für Meetings und Teams. Das Angebot richtet sich nach Anlass und Personenzahl.</p>
+            <h3 class="display-s">Business Lunch &amp; Office Catering</h3>
+            <p>Frühstück, Tagungsversorgung, individuell abgestimmte Lunchmenüs und kleine wie große Firmenveranstaltungen.</p>
           </li>
           <li>
-            <h3 class="display-s">Flying Buffet &amp; Etageren</h3>
-            <p>Warme und kalte Speisen am Gast serviert oder auf Etageren präsentiert. Zusammenstellung auf Anfrage.</p>
+            <h3 class="display-s">Live Cooking by Chef Sajad</h3>
+            <p>Persönlich zubereitete Menüs und kulinarisches Erlebnis vor Ort – klassisches Handwerk trifft auf kreative Neuinterpretationen.</p>
           </li>
         </ul>
       </div>
     </div>
   </section>
 
-  <section class="section band-deep" id="katalog" aria-labelledby="cat-katalog">
+  <section class="section" aria-labelledby="cat-katalog">
     <div class="wrap split split--wide">
       <div class="split__a opener">
         <p class="eyebrow">Aus dem Katalog</p>
-        <h2 class="display-l" id="cat-katalog">Eine Auswahl für Ihren Anlass.</h2>
-        <p class="lead">Auswahl und Mengen stimmen wir gemeinsam ab. Preise nennen wir im Angebot, passend zu Gästezahl und Umfang.</p>
+        <h2 class="display-l" id="cat-katalog">Eine Auswahl für deinen Anlass.</h2>
       </div>
       <div class="split__b menu">
         {
@@ -88,12 +119,11 @@ import { site } from '@/config/site';
     </div>
   </section>
 
-  <section class="section" aria-labelledby="cat-pakete">
+  <section class="section band-deep" aria-labelledby="cat-pakete">
     <div class="wrap split">
       <div class="split__a opener">
         <p class="eyebrow">Pakete</p>
         <h2 class="display-l" id="cat-pakete">Zwei Vorschläge zum Einstieg.</h2>
-        <p class="lead">Die Pakete enthalten die genannten Speisen. Lieferung, Personal, Equipment, Dekoration sowie Auf- und Abbau bieten wir separat an.</p>
       </div>
       <div class="split__b packs">
         {
@@ -105,14 +135,39 @@ import { site } from '@/config/site';
             </div>
           ))
         }
-        <p class="small packs__note">Angaben zu Allergenen erhalten Sie zur gewählten Menüauswahl.</p>
+        <p class="small packs__note">Angaben zu Allergenen erhältst du zur gewählten Menüauswahl.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="cat-preise">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <h2 class="display-l" id="cat-preise">Preisorientierung</h2>
+      </div>
+      <div class="split__b prose">
+        <p>Canapés ab 3,90 € · Mini-Löffelgerichte ab 4,20 € · Mini-Desserts ab 4,20 €, jeweils inklusive gesetzlicher Mehrwertsteuer. Verfügbarkeit, Mindestmengen, Personalkosten, Transport und Aufbau werden individuell angeboten.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section band-slate" aria-labelledby="cat-hamburg">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <h2 class="display-l" id="cat-hamburg">Für Hamburg und Umgebung</h2>
+      </div>
+      <div class="split__b prose">
+        <p>Du planst ein Event, einen Empfang oder eine Firmenveranstaltung? Wir freuen uns über eine unverbindliche Anfrage mit Datum, Veranstaltungsort, Gästezahl und deinen Wünschen.</p>
+        <div class="actions">
+          <a class="btn" href="#anfrage">CATERING ANFRAGEN <Arrow dir="down" /></a>
+        </div>
       </div>
     </div>
   </section>
 
   <div class="section band-deep">
     <div class="wrap">
-      <InquiryForm topic="catering" heading="Catering-Anfrage" intro="Termin, Ort, Gästezahl und Anlass genügen für den Anfang. Eine Speisenauswahl hilft uns bei der Planung." />
+      <InquiryForm topic="catering" heading="Catering-Anfrage" />
     </div>
   </div>
 </Base>
@@ -140,8 +195,8 @@ import { site } from '@/config/site';
     object-position: 50% 40%;
   }
 
-  .cat-head .actions {
-    margin-top: var(--s-4);
+  .rows strong {
+    color: var(--ink);
   }
 
   .menu {

@@ -1,47 +1,66 @@
 ---
+// Text verbatim from the live page royalspices.de/pages/contact (docs/LIVE-INVENTAR.md, row Q5), in live order.
+// One change: live says the message reaches us "direkt über Shopify". V1 keeps its own inquiry
+// form, which posts to this site's server (src/pages/api/anfrage.ts), so "über Shopify" is dropped.
+// The contact block is the live one: name, owner, phone, e-mail (no postal address; that stays in the Impressum).
+// Phone and e-mail appear once: the form is rendered without its own "Direkt" block (direct={false}).
 import Base from '@/layouts/Base.astro';
 import InquiryForm from '@/components/InquiryForm.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import { site } from '@/config/site';
 ---
 
 <Base
-  title="Kontakt – Anfrage an Royal Spices"
+  title="Kontakt & Anfragen"
   description="Anfrage an Royal Spices in Hamburg: Safran im Glas, Handel und Großhandel, Gastronomie oder Catering. Telefon 040 59374940, info@royalspices.de."
 >
-  <section class="page-head">
+  <section class="page-head" aria-labelledby="kontakt-title">
     <div class="wrap opener">
-      <p class="eyebrow">Kontakt</p>
-      <h1 class="display-xl">Was dürfen wir<br />für Sie tun?</h1>
-      <p class="lead">Ein Glas, ein Display, eine Handelsmenge oder ein Catering: Schreiben Sie uns, worum es geht. Wir antworten persönlich.</p>
+      <Breadcrumbs
+        items={[
+          { name: 'Start', path: '/' },
+          { name: 'Kontakt', path: '/kontakt/' },
+        ]}
+      />
+      <h1 class="display-xl" id="kontakt-title">Kontakt &amp; Anfragen</h1>
+    </div>
+  </section>
+
+  <section class="section--tight" aria-labelledby="kontakt-nachricht">
+    <div class="wrap split">
+      <div class="split__a">
+        <h2 class="display-l" id="kontakt-nachricht">Wir freuen uns auf deine Nachricht.</h2>
+      </div>
+      <div class="split__b">
+        <div class="prose">
+          <p>Du hast Fragen zu unserem Safran, möchtest ein B2B-Angebot anfordern oder planst ein Catering in Hamburg? Verwende dafür das Kontaktformular auf dieser Seite – deine Nachricht erreicht uns direkt.</p>
+          <address class="contact">
+            <strong>{site.name}</strong><br />
+            {site.owner} · Inhaber und Koch<br />
+            <a href={site.phone.href}>{site.phone.display}</a><br />
+            <a href={`mailto:${site.email}`}>{site.email}</a>
+          </address>
+          <p>Für ein Cateringangebot teile uns möglichst Datum, Ort, Anlass und Gästezahl mit. Für Handelsanfragen hilft die gewünschte Menge.</p>
+        </div>
+      </div>
     </div>
   </section>
 
   <div class="section--tight">
     <div class="wrap">
-      <InquiryForm heading="Ihre Anfrage" intro="Wählen Sie Ihr Anliegen. Das Formular zeigt dann nur die Felder, die dazu passen." />
+      <InquiryForm heading="Kontaktformular" direct={false} />
     </div>
   </div>
-
-  <section class="section" aria-labelledby="kontakt-daten">
-    <div class="wrap split">
-      <div class="split__a opener">
-        <p class="eyebrow">Direkt erreichbar</p>
-        <h2 class="display-l" id="kontakt-daten">Royal Spices, Hamburg.</h2>
-      </div>
-      <div class="split__b">
-        <dl class="facts">
-          <div><dt>Unternehmen</dt><dd>{site.name} · {site.owner}</dd></div>
-          <div><dt>Anschrift</dt><dd>{site.address.street}, {site.address.postalCode} {site.address.city}</dd></div>
-          <div><dt>Telefon</dt><dd><a href={site.phone.href}>{site.phone.display}</a></dd></div>
-          <div><dt>E-Mail</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></div>
-        </dl>
-      </div>
-    </div>
-  </section>
 </Base>
 
 <style>
-  .facts a {
+  .contact {
+    font-style: normal;
+    margin-block: var(--s-4);
+    max-width: var(--measure);
+  }
+
+  .contact a {
     display: inline-flex;
     align-items: center;
     min-height: 2.75rem;

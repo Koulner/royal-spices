@@ -1,10 +1,10 @@
-// Commerce UI: buy box on the product page and the cart panel.
+// Commerce UI: buy box on the product pages and the cart panel.
 // Loaded on demand and only when the site was built with a Shopify store configured.
 // Everything shown here comes from the Storefront API at view time; text is set via textContent.
 import { commerceConfig, commerceEnabled } from '@/lib/commerce/config';
 import { createStorefront } from '@/lib/commerce/storefront';
 import { createCart, formatMoney } from '@/lib/commerce/cart';
-import { CommerceError, type Cart, type Product, type Variant } from '@/lib/commerce/types';
+import { CommerceError, type Cart } from '@/lib/commerce/types';
 import '@/styles/commerce.css';
 
 if (commerceEnabled) init();
@@ -20,7 +20,7 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLEl
 
 function messageFor(error: unknown) {
   if (error instanceof CommerceError && error.kind === 'user') return error.message;
-  return 'Das hat gerade nicht geklappt. Bitte versuchen Sie es noch einmal.';
+  return 'Das hat gerade nicht geklappt. Bitte versuche es noch einmal.';
 }
 
 function init() {
@@ -31,7 +31,7 @@ function init() {
   const dialog = el('dialog', { class: 'cart' });
   dialog.setAttribute('aria-labelledby', 'cart-title');
   const list = el('ul', { class: 'cart__lines' });
-  const empty = el('p', { class: 'cart__empty' }, ['Ihr Warenkorb ist leer.']);
+  const empty = el('p', { class: 'cart__empty' }, ['Dein Warenkorb ist leer.']);
   const subtotal = el('p', { class: 'cart__subtotal' });
   const status = el('p', { class: 'cart__status' });
   status.setAttribute('role', 'status');
@@ -107,66 +107,55 @@ function init() {
   cart.restore().catch(() => renderCart(null));
 
   // ---------------------------------------------------------------- buy box
-  for (const box of document.querySelectorAll<HTMLElement>('[data-buybox]')) {
-    const body = box.querySelector<HTMLElement>('[data-buybox-body]')!;
-    const handle = box.dataset.handle!;
-    storefront
-      .product(handle)
-      .then((product) => (product ? renderBuyBox(body, product) : renderUnavailable(body)))
-      .catch(() => renderUnavailable(body));
-  }
+  // The markup (price, availability, variant id) is rendered at build time from the catalog.
+  // Here the button is wired to the cart, and price and availability are refreshed from Shopify.
+  for (const box of document.querySelectorAll<HTMLElement>('[data-buybox]')) wireBuyBox(box);
 
-  function renderUnavailable(body: HTMLElement) {
-    body.replaceChildren(el('p', {}, ['Der Kauf ist im Moment nicht möglich. Fragen Sie das Glas gern direkt bei uns an.']));
-  }
+  function wireBuyBox(box: HTMLElement) {
+    const variantId = box.dataset.variantId;
+    const handle = box.dataset.handle;
+    const price = box.querySelector<HTMLElement>('[data-buybox-price]');
+    const soldOut = box.querySelector<HTMLElement>('[data-buybox-soldout]');
+    const quantity = box.querySelector<HTMLInputElement>('[data-buybox-qty]');
+    const add = box.querySelector<HTMLButtonElement>('[data-buybox-add]');
+    const feedback = box.querySelector<HTMLElement>('[data-buybox-feedback]');
+    if (!variantId || !handle || !price || !soldOut || !quantity || !add || !feedback) return;
 
-  function renderBuyBox(body: HTMLElement, product: Product) {
-    let selected: Variant = product.variants.find((v) => v.availableForSale) ?? product.variants[0];
-    const price = el('p', { class: 'buybox__price display-m' });
-    const availability = el('p', { class: 'small' });
-    const feedback = el('p', { class: 'buybox__feedback' });
-    feedback.setAttribute('role', 'status');
-    const quantity = el('input', { type: 'number', min: '1', max: '99', value: '1', id: 'buy-qty', className: 'buybox__qty' });
-    const add = el('button', { type: 'button', className: 'btn' }, ['In den Warenkorb']);
-
-    const variants = el('fieldset', { class: 'buybox__variants' }, [el('legend', { class: 'eyebrow' }, ['Gebinde'])]);
-    product.variants.forEach((variant, index) => {
-      const id = `buy-variant-${index}`;
-      const input = el('input', { type: 'radio', name: 'variant', id, value: variant.id, checked: variant.id === selected.id, disabled: !variant.availableForSale });
-      input.addEventListener('change', () => {
-        selected = variant;
-        sync();
-      });
-      variants.append(el('div', { class: 'buybox__variant' }, [input, el('label', { htmlFor: id }, [variant.title])]));
-    });
-    variants.hidden = product.variants.length < 2;
-
-    function sync() {
-      price.textContent = formatMoney(selected.price);
-      availability.textContent = selected.availableForSale ? 'Verfügbar. Inklusive Mehrwertsteuer, zuzüglich Versand.' : 'Derzeit nicht verfügbar.';
-      add.disabled = !selected.availableForSale;
-    }
+    let available = box.dataset.available === 'true';
+    const sync = () => {
+      soldOut.hidden = available;
+      add.disabled = !available;
+    };
 
     add.addEventListener('click', async () => {
       add.disabled = true;
       feedback.textContent = '';
       try {
-        await cart.add(selected.id, Number(quantity.value));
+        await cart.add(variantId, Number(quantity.value));
         dialog.showModal();
       } catch (error) {
         feedback.textContent = messageFor(error);
       } finally {
-        add.disabled = !selected.availableForSale;
+        add.disabled = !available;
       }
     });
-
     sync();
-    body.replaceChildren(
-      price,
-      availability,
-      variants,
-      el('div', { class: 'buybox__row' }, [el('label', { htmlFor: 'buy-qty', className: 'buybox__qty-label' }, ['Menge']), quantity, add]),
-      feedback,
-    );
+
+    // A price or stock change after the build shows up here; the checkout always uses Shopify values.
+    storefront
+      .product(handle)
+      .then((product) => {
+        const variant = product?.variants.find((v) => v.id === variantId);
+        if (variant) {
+          price.textContent = formatMoney(variant.price);
+          available = variant.availableForSale;
+        } else {
+          available = false;
+        }
+        sync();
+      })
+      .catch(() => {
+        // Storefront not reachable right now: keep the values from the build.
+      });
   }
 }

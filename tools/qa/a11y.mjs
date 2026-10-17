@@ -6,7 +6,7 @@
 import { launch } from './browser.mjs';
 
 const base = process.argv[2] ?? 'http://127.0.0.1:4321';
-const PAGES = ['/', '/produkte/', '/produkte/safran-negin-1g/', '/herkunft-qualitaet/', '/handel/', '/gastronomie/', '/catering/', '/ueber-uns/', '/kontakt/', '/impressum/', '/datenschutz/', '/anfrage/gesendet/', '/anfrage/fehler/'];
+const PAGES = ['/', '/produkte/', '/produkte/herat-negin-safran-1-g-grade-a/', '/herkunft-qualitaet/', '/b2b/', '/catering/', '/ueber-uns/', '/kontakt/', '/faq/', '/versand-lieferung/', '/impressum/', '/datenschutz/', '/anfrage/gesendet/', '/anfrage/fehler/'];
 
 const structure = `(() => {
   const visible = (el) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none'; };

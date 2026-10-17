@@ -2,15 +2,28 @@
 // DRAFT. Based on the client's published privacy notice (royalspices.de/datenschutz.html,
 // "Stand: September 2026"), adapted to how this site actually works: the inquiry form now sends
 // data to the web server. Hosting and e-mail provider are not decided yet and are marked as open.
+// Section 6 (Shopify, M8 in docs/UEBERGABE-SHOPIFY.md) is a draft for review by the client; it is
+// rendered only when commerce is configured (PUBLIC_SHOPIFY_*), because without it the browser
+// never contacts Shopify. Unconfirmed statements carry a PRÜFEN source comment ({/* PRÜFEN: … */}),
+// which stays in this file and is not shipped in the HTML.
 // Must be completed and legally reviewed by the responsible party before launch.
 import Base from '@/layouts/Base.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import { site } from '@/config/site';
-import { commerceEnabled } from '@/lib/commerce/config';
+import { commerceEnabled, commerceConfig } from '@/lib/commerce/config';
+
+const rightsNumber = commerceEnabled ? 7 : 6;
 ---
 
-<Base title="Datenschutz" description="Datenschutzhinweise von Royal Spices: Verantwortlicher, Hosting, Anfragen, Speicherdauer, Cookies und Ihre Rechte.">
+<Base title="Datenschutzhinweise · Royal Spices, Hamburg" description="Datenschutzhinweise von Royal Spices: Verantwortlicher, Hosting, Anfragen, Speicherdauer, Cookies und Ihre Rechte.">
   <section class="page-head">
     <div class="wrap">
+      <Breadcrumbs
+        items={[
+          { name: 'Start', path: '/' },
+          { name: 'Datenschutz', path: '/datenschutz/' },
+        ]}
+      />
       <h1 class="display-l">Datenschutzhinweise</h1>
       <div class="longform">
         <p><span class="open">Entwurf – vor Veröffentlichung zu vervollständigen und rechtlich zu prüfen.</span></p>
@@ -45,21 +58,55 @@ import { commerceEnabled } from '@/lib/commerce/config';
         </p>
 
         <h2>5. Cookies, Analyse und Werbung</h2>
-        <p>
-          Diese Website setzt keine Cookies und enthält keine Analyse- oder Werbepixel. Es werden keine Inhalte von Drittanbietern nachgeladen; Schriften, Bilder und Skripte werden von dieser Website selbst ausgeliefert.
-        </p>
         {
           commerceEnabled ? (
             <p>
-              Für den Warenkorb speichert Ihr Browser eine Warenkorb-Kennung im lokalen Speicher Ihres Geräts. Produktdaten, Warenkorb und Bezahlvorgang werden über Shopify bereitgestellt.{' '}
-              <span class="open">Offen: Angaben zu Shopify als Dienstleister, Rechtsgrundlagen und Drittlandübermittlung ergänzen.</span>
+              Diese Website setzt keine Cookies und enthält keine Analyse- oder Werbepixel. Schriften und Skripte werden von dieser Website selbst ausgeliefert. Für den Shop lädt Ihr Browser Produktdaten, Produktbilder und den Warenkorb direkt von Shopify; Ihren Warenkorb erkennt die Website an einer Kennung im lokalen Speicher Ihres Geräts wieder. Einzelheiten stehen in Abschnitt 6.
+              {/* PRÜFEN: Ob Shopify beim Abruf von cdn.shopify.com oder der Storefront API Cookies setzt oder ausliest. Der Checkout und das Kundenkonto laufen auf Seiten von Shopify und setzen dort eigene Cookies. */}
             </p>
           ) : (
-            <p>Der lokale Browserspeicher wird nicht verwendet.</p>
+            <p>
+              Diese Website setzt keine Cookies und enthält keine Analyse- oder Werbepixel. Es werden keine Inhalte von Drittanbietern nachgeladen; Schriften, Bilder und Skripte werden von dieser Website selbst ausgeliefert. Der lokale Browserspeicher wird nicht verwendet.
+            </p>
           )
         }
 
-        <h2>6. Ihre Rechte</h2>
+        {
+          commerceEnabled && (
+            <Fragment>
+              {/* ENTWURF (T-20261015-06, M8): Abschnitt 6 zur Prüfung und Freigabe durch den Kunden bzw. seine Rechtsberatung. Mit PRÜFEN markierte Aussagen sind nicht belegt. */}
+              <h2>6. Shop, Warenkorb und Bestellung über Shopify</h2>
+              <p>
+                Für den Onlineshop nutzen wir die Plattform Shopify. Anbieter ist die Shopify International Limited, Dublin, Irland.
+                {/* PRÜFEN: Vertragspartner und vollständige Anschrift im Shopify-Konto bzw. in den Shopify-Nutzungsbedingungen nachsehen und eintragen. */}
+                Shopify verarbeitet personenbezogene Daten in unserem Auftrag als Auftragsverarbeiter (Art. 28 DSGVO), soweit sie für Warenkorb, Checkout, Bestellung und Kundenkonto benötigt werden.
+                {/* PRÜFEN: Auftragsverarbeitungsvertrag (Data Processing Addendum von Shopify) für dieses Shopify-Konto abgeschlossen bzw. akzeptiert? */}
+              </p>
+              <p>
+                <strong>Abruf aus Ihrem Browser.</strong> Wenn Sie Produktseiten aufrufen oder den Warenkorb nutzen, fragt Ihr Browser Produktdaten wie Preis und Verfügbarkeit sowie den Warenkorb direkt bei der Schnittstelle von Shopify ab ({commerceConfig.domain}). Produktbilder lädt Ihr Browser vom Bildserver von Shopify (cdn.shopify.com). Dabei erhält Shopify technisch bedingt Ihre IP-Adresse sowie Angaben zu Browser, angeforderter Ressource und Zeitpunkt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse liegt in aktuellen Preisen und Beständen und einem funktionierenden Warenkorb, bei einer Bestellung zusätzlich Art. 6 Abs. 1 lit. b DSGVO.
+                {/* PRÜFEN: Rechtsgrundlagen; ob und wie lange Shopify diese Verbindungsdaten speichert. */}
+              </p>
+              <p>
+                <strong>Warenkorb-Kennung im lokalen Speicher.</strong> Damit Ihr Warenkorb beim nächsten Seitenaufruf erhalten bleibt, speichert Ihr Browser die Kennung des Warenkorbs (Cart-ID) im lokalen Speicher Ihres Geräts (localStorage, Eintrag „royalspices.cart“). Weitere Angaben wie Produkte, Preise oder Daten zu Ihrer Person werden dort nicht abgelegt. Die Kennung wird nur an Shopify übermittelt, um den Warenkorb abzurufen und zu ändern. Kennt Shopify den Warenkorb nicht mehr, wird der Eintrag entfernt; Sie können ihn außerdem jederzeit über die Einstellungen Ihres Browsers löschen (Websitedaten). Die Speicherung ist für den von Ihnen gewünschten Warenkorb erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG).
+                {/* PRÜFEN: Rechtsgrundlage nach TDDDG; wie lange Shopify einen Warenkorb vorhält. */}
+              </p>
+              <p>
+                <strong>Checkout, Bestellung und Kundenkonto.</strong> Zum Bezahlen gelangen Sie zum Checkout von Shopify; das Kundenkonto stellt ebenfalls Shopify bereit. Dort verarbeitet Shopify die Angaben, die Sie für die Bestellung oder das Konto eingeben, etwa Name, Liefer- und Rechnungsanschrift, E-Mail-Adresse, Telefonnummer, Bestellinhalt sowie Zahlungs- und Versandinformationen. Wir erhalten diese Angaben, um Ihre Bestellung auszuführen und Sie dazu zu kontaktieren. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO; für aufbewahrungspflichtige Unterlagen Art. 6 Abs. 1 lit. c DSGVO. Für die Speicherdauer gilt Abschnitt 4. Ohne die im Checkout als Pflichtangaben gekennzeichneten Daten können wir eine Bestellung nicht ausführen.
+                {/* PRÜFEN: Datenkategorien mit den im Checkout tatsächlich abgefragten Feldern abgleichen; Zahlungsanbieter (z. B. Shopify Payments, PayPal) und deren Datenschutzhinweise ergänzen; Domain von Checkout und Kundenkonto nennen. */}
+              </p>
+              <p>
+                Für bestimmte eigene Funktionen ist Shopify nach eigenen Angaben selbst für die Verarbeitung verantwortlich. Weitere Informationen dazu und zu Ihren Rechten gegenüber Shopify finden Sie in der <a href="https://www.shopify.com/legal/privacy/app-users" rel="noopener">Datenschutzrichtlinie von Shopify für Verbraucher</a> und im <a href="https://privacy.shopify.com/en" rel="noopener">Datenschutzportal von Shopify</a>.
+                {/* PRÜFEN: Welche Funktionen das in diesem Shop betrifft (laut bisheriger Shopify-Datenschutzerklärung: erweiterte Shopify-Funktionen und personalisierte Werbung). */}
+              </p>
+              <p>
+                <strong>Übermittlung in Drittländer.</strong> Shopify kann Daten auch außerhalb der Europäischen Union verarbeiten, insbesondere in Kanada und in den USA. Für solche Übermittlungen stützt sich Shopify nach eigenen Angaben auf anerkannte Übermittlungsmechanismen wie die Standardvertragsklauseln der Europäischen Kommission, sofern nicht in ein Land mit angemessenem Schutzniveau übermittelt wird.
+                {/* PRÜFEN: Garantien laut aktuellem Shopify-Datenverarbeitungszusatz konkret benennen (z. B. Angemessenheitsbeschluss für Kanada, EU-US Data Privacy Framework, Standardvertragsklauseln) und die betroffenen Shopify-Gesellschaften nennen. */}
+              </p>
+            </Fragment>
+          )
+        }
+
+        <h2>{rightsNumber}. Ihre Rechte</h2>
         <p>
           Nach Maßgabe der DSGVO haben Sie Rechte auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung und Datenübertragbarkeit. Eine erteilte Einwilligung können Sie jederzeit mit Wirkung für die Zukunft widerrufen.
         </p>
@@ -78,6 +125,11 @@ import { commerceEnabled } from '@/lib/commerce/config';
 <style>
   .page-head {
     padding-bottom: var(--section-pad);
+  }
+
+  /* Breadcrumbs above the h1: the same gap as the .opener grid on the other pages (SEO-C). */
+  .page-head :global(.crumbs) {
+    margin-bottom: var(--s-5);
   }
 
   h1 {

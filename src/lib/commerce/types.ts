@@ -20,6 +20,20 @@ export type Product = {
   variants: Variant[];
 };
 
+export type ProductImage = { url: string; altText: string | null; width: number; height: number };
+
+/** One entry of the product list query (`products(first: 50)`), read at build time. */
+export type ListedProduct = {
+  id: string;
+  handle: string;
+  title: string;
+  /** Storefront `description`: plain text, HTML already stripped by Shopify. */
+  description: string;
+  images: ProductImage[];
+  /** The product's first variant; every Shopify product has at least one. */
+  firstVariant: { id: string; sku: string | null; availableForSale: boolean; price: Money } | null;
+};
+
 export type CartLine = {
   id: string;
   quantity: number;

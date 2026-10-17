@@ -1,3 +1,46 @@
+# Stand 17.10.2026, spätabends — Shopify-Restpunkte erledigt (M1, M5, M7, Auslieferung)
+
+Auftrag des Nutzers: die begonnenen Shopify-Anpassungen zu Ende bringen. Umgesetzt im Hauptchat als **T-20261017-09** und **-10**, geprüft und übernommen (`_agent/LOG.md`).
+- **T-20261017-09:** Interne Hinweise (O4, O5, Wakhan-Notiz, ENTWURF und 8 PRÜFEN-Marken im Datenschutz) stehen nur noch im Quelltext (`{/* … */}`), das ausgelieferte HTML hat keine Kommentare mehr, auch nicht im Build mit Store. `tools/qa/axtree.mjs` prüft wieder den heutigen Stand (h1 aus SEO-B, Menü wie Live): 19/19 ok. `LabelSheet.astro` und die nur dort genutzten Daten sind entfernt.
+- **T-20261017-10 (M1):** `tools/qa/live-text.mjs` (+ `tools/live/{compare,rules}.mjs`, 10 Tests) vergleicht den Live-Text wörtlich mit dem Build. Mit Fixture-Store 28 Zeilen, 0 offene Abweichungen; der Sprunglink heißt jetzt wie Live „Direkt zum Inhalt“. Stand je Zeile in `docs/LIVE-INVENTAR.md`.
+- **M5** (keine Schlüssel im Projekt) und **M7** (CSP nur `self`, Store-Domain, `cdn.shopify.com`; Shopify-Texte per `textContent`) geprüft, erfüllt.
+- Im Projekt `npm test` 115/115, Build 0/0/0.
+- **A1–A4** vom Nutzer am 17.10. bestätigt; in `docs/LIVE-INVENTAR.md` stehen jetzt alle Zeilen auf `geprüft`, außer K4 (entfällt, O3) und Q9 (Datenschutz-Entwurf, Freigabe durch den Kunden). **Offen beim Kunden:** O1 Hosting/Domain, O2 SMTP, O4 Newsletter, O6 Shopify-Korrekturen und Rechtstexte, O7 Headless-Kanal und Storefront-Schlüssel, Grundpreis 0,5 g, PRÜFEN-Marken Datenschutz; danach Build gegen den echten Store und Testkauf (M9). Wiedereinstieg: `docs/UEBERGABE-SHOPIFY.md`, Abschnitt „Stand 17.10.2026“.
+
+# Stand 17.10.2026, abends — SEO-Folgetransaktionen freigegeben, SEO-R, SEO-D, SEO-A, SEO-B und SEO-C übernommen, dazu S9 TBT
+
+Der Nutzer hat am 17.10. den Plan SEO-R/D/A/B/C freigegeben, dazu E5–E7 und den Vorschlag zur `h1` (Augenbraue „ROYAL SPICES · SAFRAN AUS HERAT, AFGHANISTAN“ als `<span>` in der `h1`). IDs: **T-20261017-03** SEO-R, **-04** SEO-D, **-05** SEO-A, **-06** SEO-B, **-07** SEO-C, nacheinander (Entscheidung 4). Stand je ID in `_agent/LOG.md`.
+- **T-20261017-03 (SEO-R) übernommen:** `/collections/frontpage` → 301 `/produkte/`. Im Projekt `npm test` 94/94; Nachmessung `seo.mjs --redirects` 33/35, nur die 2 absichtlichen 404 als Hinweis. S4 ist damit vor dem Launch erfüllt.
+- **T-20261017-04 (SEO-D) übernommen:** `Base.astro` mit `serializeJsonLd`, Props `ogType` und `ogImage` (Maße nur, wenn bekannt), `max-image-preview:large` auf indexierbaren Seiten, PNG-Favicons 48/96/192 + `apple-touch-icon`; neu `src/components/Breadcrumbs.astro` (sichtbar + JSON-LD), `pipeline/images/build-favicons.mjs`, `tests/favicons.test.mjs`. Im Projekt `npm test` 100/100; `seo.mjs` nur noch 2 Fehler (S2 `WebSite`, S10). S9 Labor mobil: LCP ≤ 1,4 s, CLS ≤ 0,0002, TBT nicht gemessen.
+- **T-20261017-05 (SEO-A) übernommen:** Produktseiten mit `buildProduct` (`sku` = `mpn` aus `firstVariant.sku`, Offer mit `itemCondition`), Brotkrumen über `Breadcrumbs.astro`, `og:type=product`, `og:image` mit Maßen (Shopify-Zuschnitt 1200 × 630, wenn die Quelle groß genug ist, sonst `og.jpg`; heute 1 g Zuschnitt, 0,5 g `og.jpg`). `/produkte/` mit Brotkrumen und freigegebener Beschreibung (134 Zeichen, E5). Im Projekt `npm test` 105/105; `seo.mjs` weiter 2 Fehler, 11 Hinweise; Build mit Fixture-Store geprüft.
+- **T-20261017-06 (SEO-B) übernommen:** Startseite mit `buildOrganization` (`OnlineStore`, ohne Versand und Rückgabe, E7) und `buildWebSite` statt Inline-Schema; die Augenbraue „ROYAL SPICES · SAFRAN AUS HERAT, AFGHANISTAN“ ist jetzt die erste Zeile der `h1` (`span`, als Block). Desktop optisch gleich (≤ 0,5 px), auf dem Handy bricht die Augenbraue in zwei Zeilen um (vom Nutzer so entschieden). `npm test` 105/105; `seo.mjs` nur noch 1 Fehler (S10).
+- **T-20261017-07 (SEO-C) übernommen:** Brotkrumen auf den 9 Unterseiten (B2B, Catering, Datenschutz, FAQ, Herkunft, Impressum, Kontakt, Über uns, Versand), `Service`-Schema auf `/catering/` (Hamburg aus `site.ts`), Titel und Beschreibungen in S1-Länge (vom Nutzer freigegeben, E5). `npm test` 105/105; `seo.mjs` 1 Fehler (S10), S1 ohne Hinweise.
+- **T-20261017-08 (S9 TBT) übernommen:** `tools/qa/perf.mjs` misst TBT (Long Tasks ab FCP bis zu 5 s Ruhe, Gegenprobe 300 ms → 250 ms). Labor mobil TBT 0 ms auf `/`, Produktseite und `/kontakt/`, LCP ≤ 1292 ms, CLS ≤ 0,0002: **S9 im Labor erfüllt**. `npm test` 105/105.
+- Damit sind alle SEO-Folgetransaktionen R/D/A/B/C und S9 übernommen. Offen: S10 (Urteil des Kunden, E6), E7 (Versand/Rückgabe im `OnlineStore` nach Bestätigung), Launch-Lauf mit Store und `SITE_INDEXABLE=1`. Wiedereinstieg: `docs/UEBERGABE-SEO.md`, Abschnitt „Wiedereinstieg (Stand 17.10.2026, nach SEO-C)“.
+
+# Stand 17.10.2026, nachmittags — SEO S0 übernommen
+
+S0 ist abgeschlossen: **T-20261017-01** (S0a: `src/lib/seo/schema.ts`, `tests/seo-schema.test.mjs`, `docs/SEO.md`) und **T-20261017-02** (S0b: `tools/qa/seo.mjs`, `tools/seo/{checks.mjs,indexnow.mjs,legacy-urls.txt}`, `tests/seo-checks.test.mjs`) sind geprüft und übernommen. Im Projekt läuft `npm test` mit 94/94 grün, der Build in der Prüfkopie ist grün. Die erste Messung mit `seo.mjs` steht als Status S1–S11 in `docs/SEO.md`, Abschnitt 4:
+- Lücken: S2 (`WebSite` auf der Startseite fehlt), S4 (`/collections/frontpage` liefert 404), S8 (PNG-Favicons fehlen)
+- offen: S10 („Große Wirkung.“, Urteil des Kunden), S9 (nicht gemessen)
+- erfüllt: S3, S6 und S11, dazu S5 und S7 vor dem Launch
+
+Offener Auftrag: **`docs/UEBERGABE-SEO.md`**, Abschnitt „Wiedereinstieg (Stand 17.10.2026, nach S0)“. Dort steht der Entwurf der Folgetransaktionen SEO-R/D/A/B/C mit den Entscheidungen E5–E7, noch nicht freigegeben.
+
+# Stand 17.10.2026 — SEO S0 neu gestartet
+
+S0 vom 16.10. (T-20261016-01 und -02) wurde vor dem Chatwechsel gestoppt und hat nichts erzeugt (im LOG jetzt `VERWORFEN`). Neu gestartet als **T-20261017-01** (S0a Schema und Doku) und **T-20261017-02** (S0b Prüfwerkzeuge), Kriterien unverändert aus `docs/UEBERGABE-SEO.md`, Abschnitt „S0“, angepasst an den Stand nach Shopify A–D. Stand in `_agent/LOG.md`. Die Website hat seit 16.10. du-Anrede und keine doppelten Kontaktdaten auf `/kontakt/` mehr (T-20261016-07). Die Glas-Demo steht unverändert bei `docs/UEBERGABE-E3-DEMO.md`, „Stand 16.10.“.
+
+# Stand 16.10.2026, 16:30 — Shopify A–D übernommen (headless, Preise aus Shopify)
+
+Produktliste und Produktseiten kommen per Handle aus der Storefront API (`src/lib/commerce/catalog.ts`, ohne Store mit Anfrageweg), die Startseite zeigt die Live-Abschnitte mit der V1-Journey, alle Seiten tragen den Live-Text plus belegte V1-Inhalte, `/b2b/`, `/faq/` und `/versand-lieferung/` sind neu, die früheren Seiten Handel und Gastronomie sowie die alte 1-g-Produktseite leiten per 301 weiter (`src/config/redirects.mjs`, `server.mjs`), der Kopf ist `sticky`. `npm test` 38/38, Build grün, Browser geprüft. Restverweise auf die alten Seiten sind bereinigt, `Journey.astro` ist entfernt (T-20261016-08). Offener Auftrag: **`docs/UEBERGABE-SHOPIFY.md`**, Abschnitt „Stand 16.10.2026, Ende Hauptchat 4“ (Kundenfragen, Punkte vor dem Deploy; Anrede du und Kontakt-Dopplung erledigt in T-20261016-07). Transaktionen: `_agent/LOG.md`.
+
+# Stand 16.10.2026 — SEO-Masterplan freigegeben, S0 läuft
+
+Offener Auftrag: **`docs/UEBERGABE-SEO.md`** (technisches SEO, Ratgeber-Hub, Offpage und Local, Messung nur über Server-Logs, alles DE/EU-konform). Die Entscheidungen 1–4 und die Musskriterien S1–S11 sind freigegeben. S0 lief als T-20261016-01 (Schema und Doku) und T-20261016-02 (Prüfwerkzeuge); beide wurden ohne Ergebnis gestoppt und am 17.10. neu gestartet (siehe oben). Shopify A–D sind seit 16.10. übernommen; die SEO-Ergänzungen dazu folgen als Folgetransaktionen.
+
+---
+
 # Stand 07.10.2026, 23:40 — Glas und Füllgut naturtreu: Kriterien freigegeben, Umsetzung in Arbeit (unterbrochen)
 
 Offener Auftrag: **`docs/UEBERGABE-GLAS.md`**, Abschnitt „Wiedereinstieg“. Die Kriterien sind freigegeben, und zwei Transaktionen haben einen Zwischenstand in `_agent/staging/` (siehe `_agent/LOG.md`). Im Projekt ist noch nichts übernommen, kein Blender läuft.

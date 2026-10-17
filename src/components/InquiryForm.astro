@@ -10,8 +10,10 @@ interface Props {
   topic?: Topic;
   heading?: string;
   intro?: string;
+  /** Show the phone and e-mail block beside the form. Off where the page already shows them (/kontakt/). */
+  direct?: boolean;
 }
-const { topic = 'produkt', heading = 'Ihre Anfrage', intro } = Astro.props;
+const { topic = 'produkt', heading = 'Deine Anfrage', intro, direct = true } = Astro.props;
 ---
 
 <section class="inquiry" id="anfrage" aria-labelledby="anfrage-title">
@@ -21,13 +23,15 @@ const { topic = 'produkt', heading = 'Ihre Anfrage', intro } = Astro.props;
       <h2 class="display-l" id="anfrage-title">{heading}</h2>
     </div>
     {intro && <p class="lead">{intro}</p>}
-    <address class="inquiry__direct">
-      <p class="eyebrow">Direkt</p>
-      <p>
-        <a href={site.phone.href}>{site.phone.display}</a><br />
-        <a href={`mailto:${site.email}`}>{site.email}</a>
-      </p>
-    </address>
+    {direct && (
+      <address class="inquiry__direct">
+        <p class="eyebrow">Direkt</p>
+        <p>
+          <a href={site.phone.href}>{site.phone.display}</a><br />
+          <a href={`mailto:${site.email}`}>{site.email}</a>
+        </p>
+      </address>
+    )}
   </div>
 
   <div class="inquiry__panel label">
@@ -143,7 +147,7 @@ const { topic = 'produkt', heading = 'Ihre Anfrage', intro } = Astro.props;
           <Arrow />
         </button>
         <p class="small">
-          Wir verwenden Ihre Angaben, um Ihre Anfrage zu beantworten. Mehr dazu in den <a href="/datenschutz/">Datenschutzhinweisen</a>.
+          Wir verwenden deine Angaben, um deine Anfrage zu beantworten. Mehr dazu in den <a href="/datenschutz/">Datenschutzhinweisen</a>.
         </p>
       </div>
 
@@ -152,8 +156,8 @@ const { topic = 'produkt', heading = 'Ihre Anfrage', intro } = Astro.props;
 
     <div class="inquiry__done" data-done hidden tabindex="-1">
       <p class="eyebrow">Gesendet</p>
-      <h3 class="display-m">Danke. Ihre Anfrage ist bei uns.</h3>
-      <p>Wir melden uns bei Ihnen unter der angegebenen E-Mail-Adresse. Wenn es eilt, erreichen Sie uns unter <a href={site.phone.href}>{site.phone.display}</a>.</p>
+      <h3 class="display-m">Danke. Deine Anfrage ist bei uns.</h3>
+      <p>Wir melden uns bei dir unter der angegebenen E-Mail-Adresse. Wenn es eilt, erreichst du uns unter <a href={site.phone.href}>{site.phone.display}</a>.</p>
     </div>
   </div>
 </section>

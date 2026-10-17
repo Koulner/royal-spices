@@ -72,6 +72,6 @@ export const stops = [0, ...chapters.map((c) => c.at), 1];
  * From the end of the stigma macro view to the dried threads the camera travels from the flower to
  * the ground; at the normal rate that read as a cut (client, 2026-10-06). The page is longer by
  * (factor - 1) * (to - from) of the travel, so every other stretch keeps its speed: the height of
- * the journey in Journey.astro follows from this.
+ * the journey in home/HomeJourney.astro follows from this.
  */
 export const slow: [number, number, number][] = [[0.425, 0.56, 2]];

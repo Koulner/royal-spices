@@ -1,0 +1,151 @@
+---
+// Q6 – Texte wörtlich wie Live /pages/faq (docs/LIVE-INVENTAR.md), V1-Aufbau.
+// Fragen als details/summary (Muster wie der Katalog auf der früheren Catering-Seite).
+import Base from '@/layouts/Base.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+---
+
+<Base
+  title="Häufige Fragen zu Safran, B2B und Versand"
+  description="Was ist Herat Negin Safran? Negin bezeichnet besonders sorgfältig sortierte Safranfäden. Unser Safran stammt aus der Region Herat in Afghanistan."
+>
+  <section class="page-head">
+    <div class="wrap opener">
+      <Breadcrumbs
+        items={[
+          { name: 'Start', path: '/' },
+          { name: 'Häufige Fragen', path: '/faq/' },
+        ]}
+      />
+      <h1 class="display-xl">Häufige Fragen</h1>
+    </div>
+  </section>
+
+  <div class="section--tight faq-section">
+    <div class="wrap">
+      <div class="faq">
+        <details class="faq__item">
+          <summary>
+            <span class="display-s">Was ist Herat Negin Safran?</span>
+            <span class="faq__icon" aria-hidden="true"></span>
+          </summary>
+          <div class="faq__body">
+            <p>Negin bezeichnet besonders sorgfältig sortierte Safranfäden. Unser Safran stammt aus der Region Herat in Afghanistan.</p>
+          </div>
+        </details>
+        <details class="faq__item">
+          <summary>
+            <span class="display-s">Wie verwende ich Safran?</span>
+            <span class="faq__icon" aria-hidden="true"></span>
+          </summary>
+          <div class="faq__body">
+            <p>Einige Fäden in wenig warmem Wasser ziehen lassen und die Flüssigkeit samt Fäden zu Reis, Saucen, Suppen oder Desserts geben. Die genaue Dosierung richtet sich nach Rezept und gewünschter Intensität.</p>
+          </div>
+        </details>
+        <details class="faq__item">
+          <summary>
+            <span class="display-s">Wie lagere ich Safran?</span>
+            <span class="faq__icon" aria-hidden="true"></span>
+          </summary>
+          <div class="faq__body">
+            <p>Trocken, gut verschlossen und vor Licht und Wärme geschützt lagern. Das Mindesthaltbarkeitsdatum findest du auf deiner Verpackung.</p>
+          </div>
+        </details>
+        <details class="faq__item">
+          <summary>
+            <span class="display-s">Kann ich Safran verschenken?</span>
+            <span class="faq__icon" aria-hidden="true"></span>
+          </summary>
+          <div class="faq__body">
+            <p>Unsere Geschenkbox mit 5 g befindet sich aktuell in Vorbereitung. Im Sortiment findest du bereits Safran im Glas.</p>
+          </div>
+        </details>
+        <details class="faq__item">
+          <summary>
+            <span class="display-s">Ist ein B2B-Angebot möglich?</span>
+            <span class="faq__icon" aria-hidden="true"></span>
+          </summary>
+          <div class="faq__body">
+            <p>Ja. Wir beraten Gastronomie, Feinkostgeschäfte und Handel gerne zu Mengen, Verpackungen und Konditionen. <a href="/b2b/">Mehr erfahren</a>.</p>
+          </div>
+        </details>
+        <details class="faq__item">
+          <summary>
+            <span class="display-s">Wo finde ich Angaben zum Versand?</span>
+            <span class="faq__icon" aria-hidden="true"></span>
+          </summary>
+          <div class="faq__body">
+            <p>Informationen findest du auf unserer <a href="/versand-lieferung/">Versandseite</a> sowie vor Abschluss deiner Bestellung im Checkout.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .faq-section {
+    padding-bottom: clamp(4rem, 8vw, 7rem);
+  }
+
+  .faq {
+    max-width: 52rem;
+  }
+
+  .faq__item {
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .faq__item:last-child {
+    border-bottom: 1px solid var(--rule-strong);
+  }
+
+  .faq__item summary {
+    display: grid;
+    grid-template-columns: 1fr 1.5rem;
+    align-items: center;
+    gap: var(--s-4);
+    min-height: 4rem;
+    padding-block: var(--s-4);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .faq__item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq__icon {
+    position: relative;
+    width: 1rem;
+    height: 1rem;
+    justify-self: end;
+  }
+
+  .faq__icon::before,
+  .faq__icon::after {
+    content: '';
+    position: absolute;
+    inset: 50% 0 auto 0;
+    height: 1.5px;
+    background: var(--saffron);
+    transition: transform 0.2s var(--ease-out);
+  }
+
+  .faq__icon::after {
+    transform: rotate(90deg);
+  }
+
+  .faq__item[open] .faq__icon::after {
+    transform: rotate(0deg);
+  }
+
+  .faq__body {
+    padding: 0 0 var(--s-5);
+  }
+
+  .faq__body p {
+    color: var(--ink-2);
+    max-width: var(--measure);
+  }
+</style>

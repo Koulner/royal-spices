@@ -1,0 +1,61 @@
+---
+// One product in the list /produkte/ (live collection card): image, title, price from Shopify.
+import ProductImage from './ProductImage.astro';
+import { formatPrice, type CatalogProduct } from '@/lib/commerce/catalog';
+
+interface Props {
+  product: CatalogProduct;
+  loading?: 'lazy' | 'eager';
+}
+const { product, loading = 'lazy' } = Astro.props;
+const href = `/produkte/${product.handle}/`;
+---
+
+<article class="pcard">
+  <div class="pcard__media figure">
+    <ProductImage product={product} sizes="(min-width: 48rem) 44vw, 92vw" loading={loading} />
+  </div>
+  <h3 class="display-m pcard__title"><a href={href}>{product.title}</a></h3>
+  {
+    product.price && (
+      <p class="pcard__price">
+        <span class="sr-only">Normaler Preis</span> {formatPrice(product.price)}
+      </p>
+    )
+  }
+  {product.available === false && <p class="small">Ausverkauft</p>}
+</article>
+
+<style>
+  .pcard {
+    position: relative;
+    display: grid;
+    gap: var(--s-3);
+    align-content: start;
+  }
+
+  .pcard__media :global(img) {
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  /* the title link covers the whole card: one link, one tab stop */
+  .pcard__title a {
+    text-decoration: none;
+  }
+
+  .pcard__title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .pcard__title a:hover,
+  .pcard__title a:focus-visible {
+    text-decoration: underline;
+  }
+
+  .pcard__price {
+    font-weight: 600;
+  }
+</style>

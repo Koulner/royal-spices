@@ -1,0 +1,78 @@
+{
+  "data": {
+    "products": {
+      "nodes": [
+        {
+          "id": "gid://shopify/Product/15559251165571",
+          "handle": "herat-negin-safran-1-g-grade-a",
+          "title": "Herat Negin Safran – 1 g (Grade A)",
+          "description": "Herat Negin – Safran mit CharakterEin außergewöhnliches Gewürz für die Momente, in denen jedes Detail zählt. Royal Spices präsentiert ganze Negin-Safranfäden aus Herat, Afghanistan: sorgfältig ausgewählt, intensiv in Farbe und unverwechselbar im Duft.Das ProduktProdukt: Safranfäden (Crocus sativus L.)Zutaten: 100 % SafranNettofüllmenge: 1 gHerkunft: Herat, AfghanistanQualität: Negin, Grade ASo genießt du ihnEinige Fäden in wenig warmem Wasser ziehen lassen. Den Safranaufguss anschließend zu Reis, Risotto, Saucen, Suppen oder Desserts geben und nach Geschmack dosieren.LagerungTrocken, gut verschlossen und vor Licht sowie Wärme geschützt lagern. Das Mindesthaltbarkeitsdatum und die Chargenkennzeichnung stehen auf der Verpackung.Royal Spices – The Art of Saffron.Verantwortlicher LebensmittelunternehmerRoyal Spices · Sajad AkramiHammerdeich 1020537 Hamburg, Deutschland",
+          "images": {
+            "nodes": [
+              {
+                "url": "https://cdn.shopify.com/s/files/1/0969/5628/5315/files/royal-spices-herat-negin-1g-premium_6c44d347-07dd-4963-a59a-680f23466abf.png?v=1791986504",
+                "altText": "Royal Spices 1 g Herat Negin Safran im Glas, Premium Produktfoto",
+                "width": 1254,
+                "height": 1254
+              },
+              {
+                "url": "https://cdn.shopify.com/s/files/1/0969/5628/5315/files/royal-spices-atelier-favicon.png?v=1791980531",
+                "altText": "Royal Spices goldenes Safranblüten-Symbol",
+                "width": 512,
+                "height": 512
+              }
+            ]
+          },
+          "variants": {
+            "nodes": [
+              {
+                "id": "gid://shopify/ProductVariant/57120616251779",
+                "sku": "RS-SAF-HN-1G",
+                "availableForSale": true,
+                "price": {
+                  "amount": "12.9",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "gid://shopify/Product/15568151347587",
+          "handle": "safran-herat-negin-0-5g",
+          "title": "Safran – Herat Negin Grade 1, 0,5 g",
+          "description": "Die Kunst des Safrans – im kleinen GlasHerat Negin Safran von Royal Spices bringt den Charakter Afghanistans in deine Küche. Ganze rote Safranfäden für fein abgestimmte Gerichte, von traditionellem Reis bis zur modernen Patisserie.ProduktdetailsProdukt: Safranfäden (Crocus sativus L.)Zutaten: 100 % SafranNettofüllmenge: 0,5 gHerkunft: Herat, AfghanistanQualität: Negin, Grade 1VerwendungWenige Fäden vor der Verwendung in warmem Wasser ziehen lassen und den Aufguss zusammen mit den Fäden zum Gericht geben.LagerungTrocken, gut verschlossen und lichtgeschützt lagern. Das Mindesthaltbarkeitsdatum ist auf der Verpackung angegeben.Verantwortlicher LebensmittelunternehmerRoyal Spices · Sajad AkramiHammerdeich 1020537 Hamburg, Deutschland",
+          "images": {
+            "nodes": [
+              {
+                "url": "https://cdn.shopify.com/s/files/1/0969/5628/5315/files/royal-spices-safran-herat-05-story_78ec6798-4218-47b3-9d69-1292c6fad6ed.png?v=1791979121",
+                "altText": "Royal Spices Herat Negin 0,5-g-Glas mit Herkunfts- und Qualitätsinformationen",
+                "width": 1024,
+                "height": 1536
+              },
+              {
+                "url": "https://cdn.shopify.com/s/files/1/0969/5628/5315/files/royal-spices-safran-herat-05-collection_c33c592c-f93a-42a4-9076-b0cfd1ff2db4.png?v=1791979121",
+                "altText": "Royal Spices 0,5-g-Safrangläser im Premium-Branding",
+                "width": 1086,
+                "height": 1448
+              }
+            ]
+          },
+          "variants": {
+            "nodes": [
+              {
+                "id": "gid://shopify/ProductVariant/57144277139843",
+                "sku": "RS-SAF-HN-05",
+                "availableForSale": true,
+                "price": {
+                  "amount": "8.9",
+                  "currencyCode": "EUR"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

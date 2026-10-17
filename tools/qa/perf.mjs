@@ -1,8 +1,9 @@
 // Lab performance run against a production build (node server.mjs).
 //   node tools/qa/perf.mjs <base-url> [label]
-// Measures per profile: LCP, CLS, interaction latency (Event Timing, the basis of INP), transfer
-// sizes by type, and — for the home page — frame pacing while the hero journey is scrolled,
-// JS heap after the scroll and the number of frame images requested.
+// Measures per profile: LCP, CLS, TBT (Long Tasks from FCP until 5 s without a long task),
+// interaction latency (Event Timing, the basis of INP), transfer sizes by type, and — for the
+// home page — frame pacing while the hero journey is scrolled, JS heap after the scroll and the
+// number of frame images requested.
 // These are lab values from this machine with emulated CPU/network; they are not field data.
 import { launch } from './browser.mjs';
 import { writeFile, mkdir } from 'node:fs/promises';
@@ -16,15 +17,17 @@ const PROFILES = [
   // "average phone": 4x CPU slowdown, ~9 Mbit/s down, 170 ms round trip (Lighthouse "slow 4G" class)
   { name: 'mobile-4xcpu-slow4g', width: 390, height: 844, dpr: 3, mobile: true, cpu: 4, network: { latency: 170, down: (9 * 1024 * 1024) / 8, up: (1.5 * 1024 * 1024) / 8 } },
 ];
-const PAGES = ['/', '/produkte/safran-negin-1g/', '/kontakt/'];
+const PAGES = ['/', '/produkte/herat-negin-safran-1-g-grade-a/', '/kontakt/'];
 
 const OBSERVERS = `
-  window.__vitals = { lcp: 0, lcpEl: '', cls: 0, events: [] };
+  window.__vitals = { lcp: 0, lcpEl: '', cls: 0, events: [], fcp: 0, longTasks: [] };
   // the hero loads several hundred frame files: the default buffer of 250 entries would cut the count short
   performance.setResourceTimingBufferSize(3000);
   new PerformanceObserver((list) => { for (const e of list.getEntries()) { __vitals.lcp = e.startTime; __vitals.lcpEl = (e.element?.tagName || '') + ' ' + (e.url || '').split('/').pop(); } }).observe({ type: 'largest-contentful-paint', buffered: true });
   new PerformanceObserver((list) => { for (const e of list.getEntries()) if (!e.hadRecentInput) __vitals.cls += e.value; }).observe({ type: 'layout-shift', buffered: true });
   new PerformanceObserver((list) => { for (const e of list.getEntries()) __vitals.events.push({ name: e.name, duration: e.duration }); }).observe({ type: 'event', durationThreshold: 16, buffered: true });
+  new PerformanceObserver((list) => { for (const e of list.getEntries()) if (e.name === 'first-contentful-paint') __vitals.fcp = e.startTime; }).observe({ type: 'paint', buffered: true });
+  new PerformanceObserver((list) => { for (const e of list.getEntries()) __vitals.longTasks.push({ start: e.startTime, end: e.startTime + e.duration }); }).observe({ type: 'longtask', buffered: true });
 `;
 
 const page = await launch();
@@ -43,6 +46,15 @@ try {
       await page.send('Network.clearBrowserCache');
       await page.goto(base + path, { settle: profile.network ? 6000 : 3000 });
       const row = { profile: profile.name, path };
+
+      // ---- TBT before any input: like Lighthouse, every long task after FCP counts with its share
+      // above 50 ms, up to the last long task before a 5 s quiet window (approximates TTI; the
+      // network-quiet condition of TTI is not checked). Waits up to 10 s more for that window.
+      row.tbt = await page.eval(`(async () => { const last = () => Math.max(0, ...__vitals.longTasks.map((t) => t.end)); const until = performance.now() + 10000;
+        while (performance.now() - last() < 5000 && performance.now() < until) await new Promise((r) => setTimeout(r, 250));
+        const fcp = __vitals.fcp; const tasks = __vitals.longTasks.filter((t) => t.end > fcp);
+        return { ms: Math.round(tasks.reduce((s, t) => s + Math.max(0, t.end - Math.max(t.start, fcp) - 50), 0)), tasks: tasks.length,
+          fcp: Math.round(fcp), lastEnd: Math.round(last()), quiet: performance.now() - last() >= 5000 }; })()`);
 
       // ---- interactions (basis of INP): real input events through the browser
       if (path === '/') {
@@ -101,7 +113,7 @@ try {
       Object.assign(row, vitals);
       results.push(row);
       const s = row.scroll;
-      console.log(`${profile.name.padEnd(22)} ${path.padEnd(28)} LCP ${String(row.lcp).padStart(5)} ms (${row.lcpEl.trim()})  CLS ${row.cls}  slowest interaction ${row.maxEvent} ms` +
+      console.log(`${profile.name.padEnd(22)} ${path.padEnd(28)} LCP ${String(row.lcp).padStart(5)} ms (${row.lcpEl.trim()})  CLS ${row.cls}  TBT ${row.tbt.ms} ms (${row.tbt.tasks} long tasks${row.tbt.quiet ? '' : ', no 5 s quiet window'})  slowest interaction ${row.maxEvent} ms` +
         `  | kB html ${row.kb.html} js ${row.kb.js} css ${row.kb.css} fonts ${row.kb.fonts} img ${row.kb.images} hero ${row.kb.hero}` +
         (s ? `\n${''.padEnd(22)} hero scroll: ${s.heroSet} tier=${s.tier} frames=${s.frames} median ${s.median.toFixed(1)} ms p95 ${s.p95.toFixed(1)} ms  >33ms: ${s.over33}  >50ms: ${s.over50}  heap ${s.heapMB?.toFixed(1)} MB  frame files ${s.heroRequests}` : ''));
     }

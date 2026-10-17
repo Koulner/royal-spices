@@ -1,0 +1,51 @@
+---
+// "Größere Mengen": the V1 trade formats (display, loose goods) that lead to the inquiry.
+// Not Shopify products; data in src/data/product.ts (formats), as on the V1 product page.
+import Arrow from '@/components/Arrow.astro';
+import { formats } from '@/data/product';
+
+const rows = formats.filter((f) => f.id !== 'glas');
+---
+
+<section class="section--tight more" aria-labelledby="mehr-title">
+  <div class="wrap">
+    <h2 class="eyebrow" id="mehr-title">Größere Mengen</h2>
+    <ul class="rows">
+      {
+        rows.map((f) => (
+          <li class="more__row">
+            <div>
+              <h3 class="display-m">{f.title}</h3>
+              <p>{f.spec}</p>
+            </div>
+            <a class="link" href={f.action.href}>
+              {f.action.label} <Arrow />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .more .eyebrow {
+    margin-bottom: var(--s-4);
+  }
+
+  .more__row {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: var(--s-5);
+  }
+
+  .section--tight.more {
+    padding-bottom: var(--section-pad);
+  }
+
+  @media (max-width: 63.99rem) {
+    .more__row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

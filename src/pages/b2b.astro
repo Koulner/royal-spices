@@ -1,0 +1,125 @@
+---
+// Q3 – Texte wörtlich wie Live /pages/b2b-zusammenarbeit (docs/LIVE-INVENTAR.md), V1-Aufbau.
+// Ersetzt /handel/ und /gastronomie/ (Entscheidung D6).
+import Base from '@/layouts/Base.astro';
+import Picture from '@/components/Picture.astro';
+import InquiryForm from '@/components/InquiryForm.astro';
+import Arrow from '@/components/Arrow.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+---
+
+<Base
+  title="B2B & Großhandel"
+  description="Du führst einen Feinkostladen, ein Restaurant oder einen Großhandel? Royal Spices bietet Negin-Safran aus Herat für Profiküchen und den Wiederverkauf an."
+>
+  <section class="page-head">
+    <div class="wrap opener">
+      <Breadcrumbs
+        items={[
+          { name: 'Start', path: '/' },
+          { name: 'B2B & Großhandel', path: '/b2b/' },
+        ]}
+      />
+      <h1 class="display-xl">B2B &amp; Großhandel</h1>
+    </div>
+  </section>
+
+  <section class="section--tight" aria-labelledby="b2b-partner">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <p class="eyebrow">ROYAL SPICES BUSINESS</p>
+        <h2 class="display-l" id="b2b-partner">Premium-Safran für anspruchsvolle Partner.</h2>
+      </div>
+      <div class="split__b">
+        <p class="lead">Du führst einen Feinkostladen, Supermarkt, ein Restaurant oder einen Großhandel? Royal Spices bietet Negin-Safran aus Herat für den professionellen Einsatz und den Wiederverkauf an.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="section band-deep">
+    <div class="wrap split">
+      <div class="split__a">
+        <figure class="figure b2b-figure">
+          <Picture name="jars-photo" alt="Reihen abgefüllter Royal-Spices-Gläser mit Korken, Siegelstreifen und Etikett." sizes="(min-width: 64rem) 38vw, 92vw" />
+        </figure>
+      </div>
+      <div class="split__b b2b-audiences">
+        <section aria-labelledby="b2b-handel">
+          <h2 class="display-m" id="b2b-handel">Für Einzelhandel &amp; Feinkost</h2>
+          <p>Unsere 1-g-Safrangläser eignen sich für hochwertige Sortimente. Theken-Displays und individuelle Abnahmemengen können angefragt werden.</p>
+        </section>
+        <section aria-labelledby="b2b-gastro">
+          <h2 class="display-m" id="b2b-gastro">Für Gastronomie &amp; Profiküchen</h2>
+          <p>Für Restaurants, Cateringunternehmen und professionelle Küchen bieten wir Safran in passenden Verpackungsgrößen und individuelle Angebote je nach Menge und Bedarf.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <section class="section band-slate" aria-labelledby="b2b-zusammenarbeit">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <h2 class="display-l" id="b2b-zusammenarbeit">Zusammenarbeit</h2>
+      </div>
+      <div class="split__b">
+        <ol class="steps">
+          <li><p>Teile uns deinen Bedarf und die geplante Menge mit.</p></li>
+          <li><p>Wir besprechen verfügbare Ware, Verpackungen und Konditionen.</p></li>
+          <li><p>Du erhältst ein individuelles Angebot mit allen relevanten Angaben.</p></li>
+        </ol>
+        <div class="actions">
+          <a class="btn" href="#anfrage">B2B-Anfrage senden <Arrow dir="down" /></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section band-deep">
+    <div class="wrap">
+      <InquiryForm topic="handel" heading="B2B-Anfrage" />
+    </div>
+  </div>
+</Base>
+
+<style>
+  .b2b-figure :global(img) {
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: 50% 80%;
+  }
+
+  .b2b-audiences {
+    align-content: center;
+    gap: 0;
+  }
+
+  .b2b-audiences > section {
+    display: grid;
+    gap: var(--s-3);
+    padding-block: var(--s-5);
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .b2b-audiences > section:last-child {
+    border-bottom: 1px solid var(--rule-strong);
+  }
+
+  .b2b-audiences p {
+    color: var(--ink-2);
+    max-width: 36rem;
+  }
+
+  .steps > li {
+    align-items: baseline;
+  }
+
+  .steps > li::before {
+    grid-row: auto;
+  }
+
+  @media (max-width: 63.99rem) {
+    .b2b-figure :global(img) {
+      aspect-ratio: 16 / 10;
+    }
+  }
+</style>

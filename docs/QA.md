@@ -197,7 +197,9 @@ Geprüft am 06.10. an allen 13 Seiten und der 404-Seite:
 - **Indexierung ist absichtlich gesperrt:** `robots.txt` mit `Disallow: /` und `noindex, nofollow` auf jeder Seite, bis mit `SITE_INDEXABLE=1` gebaut wird. Die Sitemap wird beim Build erzeugt.
 - Alle Produkt- und Herkunftsinformationen stehen als HTML im Dokument, nichts nur im Canvas.
 
-Beobachtung: Vier Titel sind länger als rund 60 Zeichen (`/handel/` 85, `/catering/` 73, `/produkte/` und `/herkunft-qualitaet/` 70) und werden in Suchergebnissen gekürzt; das Wichtige steht vorn. Die Beschreibung von `/catering/` hat 177 Zeichen.
+Beobachtung (06.10.): Vier Titel waren länger als rund 60 Zeichen (die damalige Handelsseite 85, `/catering/` 73, `/produkte/` und `/herkunft-qualitaet/` 70) und wurden in Suchergebnissen gekürzt; das Wichtige stand vorn. Die Beschreibung von `/catering/` hatte 177 Zeichen.
+
+Nachmessung 16.10. (T-20261016-08, Build ohne Store, Titel und Beschreibungen seit der Shopify-Übernahme wie Live): Alle 16 Titel haben höchstens 50 Zeichen, am längsten sind die beiden Produktseiten (49 und 50). Sechs Beschreibungen sind länger als rund 160 Zeichen und werden gekürzt: `/catering/` 283, `/ueber-uns/` 190, `/produkte/` 189, `/herkunft-qualitaet/` 183, `/b2b/` 181, `/versand-lieferung/` 164. Die übrigen Punkte oben (Canonical, Open Graph, eine `h1`, strukturierte Daten) sind seit der Übernahme nicht neu geprüft.
 
 ## Definition of Done
 

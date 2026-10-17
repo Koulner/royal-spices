@@ -1,41 +1,59 @@
 ---
 // Price / inquiry module of the product page (V1 specification §18, §20).
-//   store configured -> variant, quantity, cart, Shopify Checkout. Prices and availability are read
-//                       from the Storefront API when the page is viewed; none are written into this site.
+//   store configured -> price and availability from the catalog (Storefront API at build time),
+//                       refreshed from Shopify when the page is viewed; quantity, cart, Shopify Checkout.
+//                       Texts as on the live shop, plus the V1 line to the inquiry for larger quantities.
+//                       The cart gets the variant id of the catalog (data-variant-id), see scripts/commerce.ts.
 //   no store yet     -> the inquiry path. No placeholder prices, no simulated cart.
 import Arrow from './Arrow.astro';
 import { commerceEnabled } from '@/lib/commerce/config';
+import { formatPrice, type CatalogProduct } from '@/lib/commerce/catalog';
 
 interface Props {
-  handle: string;
+  product: CatalogProduct;
   inquiryHref: string;
 }
-const { handle, inquiryHref } = Astro.props;
+const { product, inquiryHref } = Astro.props;
+const buyable = commerceEnabled && product.variantId !== null && product.price !== null;
+const qtyId = `qty-${product.handle}`;
 ---
 
 <div class="buybox label">
   {
-    commerceEnabled ? (
-      <>
-        <p class="eyebrow">Kaufen</p>
-        <div class="buybox__body" data-buybox data-commerce data-handle={handle}>
-          <div data-buybox-body aria-live="polite">
-            <p class="small">Preis und Verfügbarkeit werden geladen …</p>
-          </div>
+    buyable ? (
+      <div
+        class="buybox__body"
+        data-buybox
+        data-commerce
+        data-handle={product.handle}
+        data-variant-id={product.variantId}
+        data-available={String(product.available === true)}
+      >
+        <p class="buybox__price display-m">
+          <span class="sr-only">Normaler Preis</span>
+          <span data-buybox-price>{formatPrice(product.price!)}</span>
+        </p>
+        <p class="small buybox__soldout" data-buybox-soldout hidden={product.available === true}>Ausverkauft</p>
+        <p class="small">Inkl. Steuern.</p>
+        <div class="buybox__row">
+          <label for={qtyId} class="buybox__qty-label">Anzahl</label>
+          <input id={qtyId} class="buybox__qty" type="number" name="quantity" min="1" max="99" value="1" inputmode="numeric" data-buybox-qty />
+          <button type="button" class="btn" data-buybox-add disabled>In den Warenkorb legen</button>
         </div>
+        <p class="buybox__feedback" role="status" data-buybox-feedback></p>
         <p class="small buybox__alt">
           Größere Mengen oder Fragen? <a href={inquiryHref}>Direkt anfragen</a>
         </p>
-      </>
+      </div>
     ) : (
       <>
         <p class="eyebrow">Preis &amp; Verfügbarkeit</p>
-        <p class="buybox__text">Den aktuellen Preis, die Verfügbarkeit und den Versand nennen wir Ihnen im Angebot – für ein einzelnes Glas ebenso wie für eine größere Stückzahl.</p>
+        <p class="buybox__text">Den aktuellen Preis, die Verfügbarkeit und den Versand nennen wir dir im Angebot – für ein einzelnes Glas ebenso wie für eine größere Stückzahl.</p>
         <div class="actions">
           <a class="btn" href={inquiryHref}>
             Glas anfragen <Arrow />
           </a>
-          <a class="link" href="/handel/">
+          <a class="link" href="/b2b/">
             Für den Handel <Arrow />
           </a>
         </div>
@@ -56,12 +74,19 @@ const { handle, inquiryHref } = Astro.props;
 
   .buybox__body {
     display: grid;
-    gap: var(--s-4);
+    gap: var(--s-3);
   }
 
-  .buybox__body :global([data-buybox-body]) {
-    display: grid;
-    gap: var(--s-4);
+  .buybox__soldout[hidden] {
+    display: none;
+  }
+
+  /* layout before the commerce stylesheet has loaded */
+  .buybox__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3) var(--s-4);
   }
 
   .buybox .actions {

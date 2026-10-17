@@ -27,12 +27,12 @@ Framework: Astro 7, `output: 'static'` mit Node-Adapter im Middleware-Modus. Kei
 | Pfad | Aufgabe |
 | --- | --- |
 | `src/pages/` | Eine Datei je Seite. `api/anfrage.ts` ist die einzige Server-Route. |
-| `src/components/` | `Journey` (Hero), `Header`, `Footer`, `LabelSheet` (Produktdaten als Etikett), `InquiryForm`, `BuyBox`, `Anatomy`, `Picture`, `Sprig`, `Arrow` |
+| `src/components/` | `Header`, `Footer`, `InquiryForm`, `BuyBox`, `Anatomy`, `Picture`, `Sprig`, `Arrow`, `Breadcrumbs`; `home/` (`HomeJourney` = Hero, `HomeCollection`), `product/` (Karte, Bild, Beschreibung, V1-Fakten, größere Mengen) |
 | `src/scripts/` | `journey.ts` (Hero-Fahrt), `nav.ts`, `forms.ts`, `commerce.ts` |
 | `src/lib/inquiry/` | Schema, Rate-Limit, Zustellung |
-| `src/lib/commerce/` | Storefront-Client, Cart-Store, Typen, Konfiguration |
+| `src/lib/commerce/` | Storefront-Client, Katalog (`catalog.ts`, Produkte per Handle), Cart-Store, Typen, Konfiguration |
 | `src/data/` | Inhalte: Produktfakten, Catering-Katalog, Hero-Kapitel; generierte Manifeste (`stills.json`, `hero-manifest.json`) |
-| `src/config/` | Firmendaten, Navigation, Launch-Schalter |
+| `src/config/` | Firmendaten, Navigation, Launch-Schalter, 301-Tabelle (`redirects.mjs`) |
 | `src/styles/global.css` | Design-Tokens und gemeinsame Muster |
 | `pipeline/blender/` | Web-Ableitung aus dem Blender-Master |
 | `pipeline/images/` | Renderings → WebP/AVIF + Manifeste |
@@ -40,22 +40,28 @@ Framework: Astro 7, `output: 'static'` mit Node-Adapter im Middleware-Modus. Kei
 | `tests/` | Unit-Tests |
 | `server.mjs` | Produktions-Einstieg |
 
-## Seiten (V1-Informationsarchitektur)
+## Seiten (Stand 16.10.2026: Struktur und Texte von royalspices.de plus V1-Inhalte)
+
+Seit der Shopify-Übernahme A–D folgen Seiten und Texte der Live-Seite (`docs/LIVE-INVENTAR.md`, Abgleichliste), ergänzt um belegte V1-Inhalte. Entscheidungen: `docs/UEBERGABE-SHOPIFY.md`.
 
 | URL | Aufgabe |
 | --- | --- |
-| `/` | Hero-Fahrt, Herkunft, Was Safran ist, Produkt, Qualität, Handel, Catering-Hinweis, Abschluss |
-| `/produkte/` | Drei Gebinde, redaktionell statt Raster |
-| `/produkte/safran-negin-1g/` | Produktdetail: Visual, Kauf-/Anfragemodul, Etikettdaten, Fäden, Verpackung, Dokumente |
-| `/herkunft-qualitaet/` | Herkunft, Pflanze (annotiert), frisch vs. getrocknet, Negin, Nachweise, Verpackung |
-| `/handel/` | Gebinde-Tabelle, Ablauf Anfrage → Angebot, Formular |
-| `/gastronomie/` | Gebinde für Betriebe, Lagerung, eigene Gerichte, Formular |
-| `/catering/` | Leistungen, Katalog ohne Preise, Pakete, Formular |
-| `/ueber-uns/`, `/kontakt/` | Unternehmen, Haltung, Kontaktdaten, Formular |
+| `/` | Hero-Fahrt mit dem Live-Hero-Text, dann die Live-Abschnitte (Warum Royal Spices, Markengeschichte, Kollektion aus dem Katalog, Wurzeln, Ritual, B2B) und zwei V1-Blöcke (Gebinde, Catering) |
+| `/produkte/` | Live-Kollektion „Safran“ aus dem Katalog, darunter die größeren Gebinde (Anfrage) |
+| `/produkte/<handle>/` | Eine Seite je Shopify-Handle (`produkte/[handle].astro`, heute 1 g und 0,5 g): Bild, Kauf- bzw. Anfragemodul, Beschreibung aus Shopify, V1-Fakten, größere Mengen |
+| `/herkunft-qualitaet/` | Live-Text; dazu V1: Pflanze (annotiert), frisch und getrocknet, Negin, Etikett, Glas/Kork/Siegel |
+| `/b2b/` | Live-Text für Einzelhandel, Feinkost und Gastronomie, Zusammenarbeit, Formular; ersetzt die früheren Seiten Handel und Gastronomie |
+| `/catering/` | Live-Text, Formate, Katalog ohne Preise, zwei Pakete, Preisorientierung, Formular |
+| `/ueber-uns/`, `/kontakt/` | Live-Text, Unternehmen, Kontaktdaten mit Anschrift, Formular |
+| `/faq/`, `/versand-lieferung/` | Live-Text: häufige Fragen, Versandtarife als fester Text |
 | `/impressum/`, `/datenschutz/` | Rechtliches (Datenschutz ist Entwurf) |
 | `/anfrage/gesendet/`, `/anfrage/fehler/` | Ergebnisseiten für Formulare ohne JavaScript |
 
-## Hero-Fahrt (`Journey.astro`, `journey.ts`)
+Alte Pfade (Shopify-Theme und frühere V1-Seiten) leiten per 301 weiter: Tabelle `src/config/redirects.mjs`, ausgeliefert von `server.mjs`, geprüft in `tests/redirects.test.mjs`.
+
+## Hero-Fahrt (`home/HomeJourney.astro`, `journey.ts`)
+
+Der Auftakt trägt den Live-Hero-Text (Entscheidung D5). Die frühere `Journey.astro` mit festem V1-Auftakt ist seit T-20261016-08 entfernt.
 
 Zwei Modi, entschieden vor dem ersten Paint durch ein Inline-Skript im `<head>`:
 

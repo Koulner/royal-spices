@@ -1,34 +1,41 @@
 ---
+// Q1 – Live-Text wörtlich und in Live-Reihenfolge wie /pages/herkunft-qualitat (docs/LIVE-INVENTAR.md).
+// Dazu V1-Blöcke mit Fakten, die Live fehlen (T-20261016-05): Abfüllung und Verantwortlicher,
+// Pflanze (Anatomie), frisch und getrocknet, Was Negin bedeutet, Etikett und Glas, Glas/Kork/Siegel.
+// Belege: docs/PRODUCT-TRUTH.md (Grade, Abfüllung, Verpackung, Etikett). Prüfpunkte PRODUCT-TRUTH Nr. 4 und 7.
 import Base from '@/layouts/Base.astro';
 import Picture from '@/components/Picture.astro';
 import Arrow from '@/components/Arrow.astro';
 import Anatomy from '@/components/Anatomy.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import { site } from '@/config/site';
-import { saffronJar } from '@/data/product';
 ---
 
 <Base
-  title="Herkunft & Qualität – Safran aus Herat, Afghanistan"
-  description="Woher der Safran von Royal Spices stammt, welcher Teil der Blüte verwendet wird, was Negin bedeutet und welche Nachweise Sie zu einer Lieferung erhalten."
+  title="Herkunft & Qualität"
+  description="Negin-Safran aus der Region Herat in Afghanistan: die Pflanze Crocus sativus, handverlesene ganze Fäden, Etikett, Glas mit Naturkork und Siegelstreifen."
 >
-  <section class="page-head">
+  <section class="page-head" aria-labelledby="hq-title">
     <div class="wrap opener">
-      <p class="eyebrow">Herkunft &amp; Qualität</p>
-      <h1 class="display-xl">Was wir sagen,<br />können wir zeigen.</h1>
-      <p class="lead">Herkunft, Pflanze, Verarbeitung, Nachweise. Auf dieser Seite steht, was wir über unseren Safran wissen – und was Sie dazu von uns bekommen.</p>
+      <Breadcrumbs
+        items={[
+          { name: 'Start', path: '/' },
+          { name: 'Herkunft & Qualität', path: '/herkunft-qualitaet/' },
+        ]}
+      />
+      <h1 class="display-xl" id="hq-title">Herkunft &amp; Qualität</h1>
     </div>
   </section>
 
-  <section class="section--tight" aria-labelledby="hq-herkunft">
+  <section class="section--tight" aria-labelledby="hq-ursprung">
     <div class="wrap split">
       <div class="split__a opener">
-        <p class="eyebrow">Herkunft</p>
-        <h2 class="display-l" id="hq-herkunft">Herat, Afghanistan.</h2>
+        <p class="eyebrow">HERAT, AFGHANISTAN</p>
+        <h2 class="display-l" id="hq-ursprung">Wo unsere Geschichte beginnt</h2>
       </div>
       <div class="split__b">
-        <p class="lead">Der Safran stammt aus Herat im Westen Afghanistans. In Deutschland wird er abgefüllt.</p>
+        <p class="lead">Der Safran von Royal Spices hat seinen Ursprung in der Region Herat in Afghanistan. Dort wird Crocus sativus L. angebaut – eine Pflanze, deren Blüten die begehrten Safranfäden tragen.</p>
         <dl class="facts">
-          <div><dt>Herkunft</dt><dd>{saffronJar.origin}</dd></div>
           <div><dt>Abfüllung</dt><dd>Deutschland</dd></div>
           <div><dt>Verantwortlich</dt><dd>{site.name} · {site.owner}, {site.address.street}, {site.address.postalCode} {site.address.city}</dd></div>
         </dl>
@@ -64,26 +71,36 @@ import { saffronJar } from '@/data/product';
           <figcaption><b>Getrocknet.</b> Das Gewebe fällt zusammen und dreht sich. Die Fäden werden dunkler, die geweitete Spitze bleibt erkennbar.</figcaption>
         </figure>
       </div>
-      <div class="split negin">
-        <div class="split__a">
+    </div>
+  </section>
+
+  <section class="section band-deep" aria-labelledby="hq-negin">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <h2 class="display-l" id="hq-negin">Handverlesene Negin-Fäden</h2>
+      </div>
+      <div class="split__b">
+        <p class="lead">Für unsere Negin-Qualität werden die roten Narben sorgfältig ausgewählt. Das Ergebnis ist Safran in ganzen Fäden mit dem charakteristischen Duft und der intensiven goldgelben Färbekraft, für die dieses Gewürz geschätzt wird.</p>
+        <div class="hq-sub">
           <h3 class="display-m">Was Negin bedeutet</h3>
-        </div>
-        <div class="split__b prose">
-          <p>Negin nennt der Handel ganze, rote Fäden. Auf unserem Etikett steht: {saffronJar.grade}.</p>
-          <p>Ganze Fäden haben einen praktischen Vorteil: Man sieht, was man kauft. Form, Farbe und die geweitete Spitze lassen sich am einzelnen Faden prüfen.</p>
+          <div class="prose">
+            <p>Negin nennt der Handel ganze, rote Fäden. Auf unserem Etikett steht: Negin · Grade 1.</p>
+            <p>Ganze Fäden haben einen praktischen Vorteil: Man sieht, was man kauft. Form, Farbe und die geweitete Spitze lassen sich am einzelnen Faden prüfen.</p>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section band-slate" aria-labelledby="hq-nachweise">
+  <section class="section band-slate" aria-labelledby="hq-transparenz">
     <div class="wrap split">
       <div class="split__a opener">
-        <p class="eyebrow">Nachweise</p>
-        <h2 class="display-l" id="hq-nachweise">Zur Lieferung, nicht zur Dekoration.</h2>
-        <p class="lead">Wir veröffentlichen keine Siegel und keine Laborwerte, die sich nicht auf eine konkrete Charge beziehen.</p>
+        <h2 class="display-l" id="hq-transparenz">Qualität transparent machen</h2>
       </div>
       <div class="split__b">
+        <div class="prose">
+          <p>Bei der Auswahl unserer Ware berücksichtigen wir Herkunft, Sortierung und verfügbare Qualitätsanalysen. Informationen und Laborunterlagen zu konkreten Chargen können auf Anfrage bereitgestellt werden.</p>
+        </div>
         <ol class="steps">
           <li>
             <h3 class="display-s">Auf dem Etikett</h3>
@@ -91,11 +108,7 @@ import { saffronJar } from '@/data/product';
           </li>
           <li>
             <h3 class="display-s">Auf jedem Glas</h3>
-            <p>Mindesthaltbarkeitsdatum und Los. Über das Los lässt sich jedes Glas seiner Charge zuordnen.</p>
-          </li>
-          <li>
-            <h3 class="display-s">Auf Anfrage</h3>
-            <p>Verfügbare Labor- und Herkunftsunterlagen zur angebotenen Lieferung. Wir klären mit Ihnen, auf welches Produkt und welche Charge sie sich beziehen.</p>
+            <p>Mindesthaltbarkeitsdatum und Los.</p>
           </li>
         </ol>
         <div class="actions">
@@ -110,12 +123,12 @@ import { saffronJar } from '@/data/product';
       <div class="split__a">
         <figure class="figure jars">
           <Picture name="jars-photo" alt="Reihen abgefüllter Royal-Spices-Gläser mit Korken, Siegelstreifen und Etikett." sizes="(min-width: 64rem) 38vw, 92vw" />
-          <figcaption>Originalaufnahme aus der Abfüllung. Abgebildet ist die 0,5-g-Ausführung; angeboten wird das 1-g-Glas.</figcaption>
+          <figcaption>Originalaufnahme aus der Abfüllung. Abgebildet ist die 0,5-g-Ausführung.</figcaption>
         </figure>
       </div>
-      <div class="split__b">
+      <div class="split__b hq-text">
         <div class="opener">
-          <p class="eyebrow">Verpackung &amp; Lagerung</p>
+          <p class="eyebrow">Verpackung</p>
           <h2 class="display-l" id="hq-glas">Glas, Kork, Siegel.</h2>
         </div>
         <ul class="rows">
@@ -127,13 +140,20 @@ import { saffronJar } from '@/data/product';
             <h3 class="display-s">Naturkork und Siegelstreifen</h3>
             <p>Der Streifen läuft über den Korken. Ist er unversehrt, wurde das Glas nicht geöffnet.</p>
           </li>
-          <li>
-            <h3 class="display-s">Lagerung</h3>
-            <p>{saffronJar.storage}</p>
-          </li>
         </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section band-slate" aria-labelledby="hq-aroma">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <h2 class="display-l" id="hq-aroma">So bewahrst du das Aroma</h2>
+      </div>
+      <div class="split__b prose">
+        <p>Safran trocken, lichtgeschützt und gut verschlossen lagern. Für die Zubereitung einige Fäden kurz in warmem Wasser ziehen lassen und den Aufguss zum Gericht geben.</p>
         <div class="actions">
-          <a class="link" href="/produkte/safran-negin-1g/">Zum Produkt <Arrow /></a>
+          <a class="btn" href="/produkte/">Safran entdecken <Arrow /></a>
         </div>
       </div>
     </div>
@@ -179,9 +199,10 @@ import { saffronJar } from '@/data/product';
     color: var(--ink);
   }
 
-  .negin {
-    margin-top: var(--s-8);
-    padding-top: var(--s-6);
+  .hq-sub {
+    display: grid;
+    gap: var(--s-4);
+    padding-top: var(--s-5);
     border-top: 1px solid var(--rule);
   }
 
@@ -189,6 +210,10 @@ import { saffronJar } from '@/data/product';
     aspect-ratio: 4 / 5;
     object-fit: cover;
     object-position: 50% 80%;
+  }
+
+  .hq-text {
+    align-content: center;
   }
 
   @media (max-width: 63.99rem) {

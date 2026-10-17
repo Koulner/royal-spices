@@ -1,0 +1,47 @@
+---
+// V1 facts below the Shopify description (V1/Live rule, 16.10.2026): what the live text does not say.
+// Section as on the V1 product page ("Die Fäden"); rows from product.ts, per handle.
+import Picture from '@/components/Picture.astro';
+import Arrow from '@/components/Arrow.astro';
+import type { ProductFacts } from '@/data/product';
+
+interface Props {
+  facts: ProductFacts;
+}
+const { facts } = Astro.props;
+---
+
+{
+  facts.more.length > 0 && (
+    <section class="section band-deep" aria-labelledby="faeden-title">
+      <div class="wrap split">
+        <div class="split__a">
+          <div class="opener">
+            <p class="eyebrow">Die Fäden</p>
+            <h2 class="display-l" id="faeden-title">Ganz, rot, getrocknet.</h2>
+          </div>
+          <figure class="figure">
+            <Picture name="saffron" alt="Getrocknete Safranfäden in der Nahaufnahme: dunkelrot, gedreht, mit verbreiterten Enden." sizes="(min-width: 64rem) 38vw, 92vw" />
+          </figure>
+        </div>
+        <div class="split__b">
+          <ul class="rows">
+            {facts.more.map((fact) => (
+              <li>
+                <h3 class="display-s">{fact.heading}</h3>
+                <p>{fact.text}</p>
+                {fact.link && (
+                  <p>
+                    <a class="link" href={fact.link.href}>
+                      {fact.link.label} <Arrow />
+                    </a>
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  )
+}

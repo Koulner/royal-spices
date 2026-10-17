@@ -3,17 +3,17 @@
 // Validation here mirrors the server for convenience; the server remains the authority.
 
 const MESSAGES: Record<string, string> = {
-  valueMissing: 'Bitte füllen Sie dieses Feld aus.',
-  typeMismatch: 'Bitte prüfen Sie die Schreibweise.',
-  patternMismatch: 'Bitte prüfen Sie die Schreibweise.',
+  valueMissing: 'Bitte fülle dieses Feld aus.',
+  typeMismatch: 'Bitte prüfe die Schreibweise.',
+  patternMismatch: 'Bitte prüfe die Schreibweise.',
   tooShort: 'Diese Angabe ist zu kurz.',
   tooLong: 'Diese Angabe ist zu lang.',
   rangeUnderflow: 'Der Wert ist zu klein.',
   rangeOverflow: 'Der Wert ist zu groß.',
   stepMismatch: 'Bitte eine ganze Zahl angeben.',
-  badInput: 'Bitte prüfen Sie die Eingabe.',
+  badInput: 'Bitte prüfe die Eingabe.',
 };
-const FALLBACK_ERROR = 'Die Anfrage konnte gerade nicht gesendet werden. Bitte schreiben Sie uns direkt oder rufen Sie an.';
+const FALLBACK_ERROR = 'Die Anfrage konnte gerade nicht gesendet werden. Bitte schreib uns direkt oder ruf an.';
 
 type Field = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -75,7 +75,7 @@ function enhance(form: HTMLFormElement) {
     let message = '';
     if (!validity.valid) {
       const key = Object.keys(MESSAGES).find((k) => validity[k as keyof ValidityState]);
-      message = field.type === 'email' && !validity.valueMissing ? 'Bitte geben Sie eine gültige E-Mail-Adresse an.' : MESSAGES[key ?? 'badInput'];
+      message = field.type === 'email' && !validity.valueMissing ? 'Bitte gib eine gültige E-Mail-Adresse an.' : MESSAGES[key ?? 'badInput'];
     }
     setError(field, field.name, message);
     return !message;

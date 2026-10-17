@@ -1,6 +1,6 @@
 // Shopify Storefront API client: products, variants, cart, checkout hand-over.
 // Framework-free and dependency-free so it can be unit-tested with a stand-in fetch.
-import { CommerceError, type Cart, type CommerceConfig, type Product } from './types.ts';
+import { CommerceError, type Cart, type CommerceConfig, type ListedProduct, type Product } from './types.ts';
 
 type Fetch = typeof fetch;
 type Raw = Record<string, any>;
@@ -29,6 +29,28 @@ const CART_FIELDS = /* GraphQL */ `
 `;
 
 const QUERIES = {
+  // Build time: the catalog behind /produkte/ and the product pages. 50 is the page size (two products today).
+  products: /* GraphQL */ `
+    query Products {
+      products(first: 50) {
+        nodes {
+          id
+          handle
+          title
+          description
+          images(first: 10) { nodes { url altText width height } }
+          variants(first: 1) {
+            nodes {
+              id
+              sku
+              availableForSale
+              price { amount currencyCode }
+            }
+          }
+        }
+      }
+    }
+  `,
   product: /* GraphQL */ `
     query Product($handle: String!) {
       product(handle: $handle) {
@@ -135,6 +157,22 @@ export function createStorefront(config: CommerceConfig, fetchImpl: Fetch = fetc
   }
 
   return {
+    /** Every product published to this sales channel, each with its first variant. */
+    async products(): Promise<ListedProduct[]> {
+      const data = await request(QUERIES.products, {});
+      if (!data.products) throw new CommerceError('Product list missing in response', 'graphql');
+      return data.products.nodes.map((p: Raw) => {
+        const v = p.variants?.nodes?.[0];
+        return {
+          id: p.id,
+          handle: p.handle,
+          title: p.title,
+          description: p.description ?? '',
+          images: (p.images?.nodes ?? []).map((i: Raw) => ({ url: i.url, altText: i.altText ?? null, width: i.width, height: i.height })),
+          firstVariant: v ? { id: v.id, sku: v.sku ?? null, availableForSale: v.availableForSale, price: v.price } : null,
+        };
+      });
+    },
     async product(handle: string): Promise<Product | null> {
       const data = await request(QUERIES.product, { handle });
       const p = data.product;

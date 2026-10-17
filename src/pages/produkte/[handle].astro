@@ -1,0 +1,132 @@
+---
+// Product page per Shopify handle. With a store the pages come from the Storefront API at build time;
+// without one from the handles in src/data/product.ts (no price, inquiry path).
+import Base from '@/layouts/Base.astro';
+import BuyBox from '@/components/BuyBox.astro';
+import ProductImage from '@/components/product/ProductImage.astro';
+import ProductDescription from '@/components/product/ProductDescription.astro';
+import ProductMore from '@/components/product/ProductMore.astro';
+import LargerQuantities from '@/components/product/LargerQuantities.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import { getCatalog, productOgImage, productPlainText, productSchemaInput, type CatalogProduct } from '@/lib/commerce/catalog';
+import { buildProduct } from '@/lib/seo/schema';
+
+// Build time. With a store: one page per product of the Storefront catalog; an API error rejects here
+// and stops the build. Without a store: one page per handle in product.ts.
+export async function getStaticPaths() {
+  const catalog = await getCatalog();
+  return catalog.map((product) => ({ params: { handle: product.handle }, props: { product } }));
+}
+
+interface Props {
+  product: CatalogProduct;
+}
+const { product } = Astro.props;
+const inquiryHref = '/kontakt/?anliegen=produkt&format=glas#anfrage';
+
+// Meta description: the opening paragraph when the structure is known, otherwise the Shopify text.
+const plain = productPlainText(product);
+const cut = plain.lastIndexOf(' ', 157);
+const metaDescription = plain.length > 160 ? `${plain.slice(0, cut > 80 ? cut : 157)} …` : plain;
+const hasMedia = Boolean(product.image || product.facts);
+---
+
+<Base
+  title={product.title}
+  description={metaDescription}
+  ogType="product"
+  ogImage={productOgImage(product) ?? undefined}
+  schema={[buildProduct(productSchemaInput(product, Astro.site ?? Astro.url.origin))]}
+>
+  <section class="pdp-head">
+    <div class="wrap grid">
+      {
+        hasMedia && (
+          <figure class="pdp-head__figure figure">
+            <ProductImage product={product} sizes="(min-width: 64rem) 54vw, 100vw" loading="eager" fetchpriority="high" />
+          </figure>
+        )
+      }
+      <div class:list={['pdp-head__body', { 'pdp-head__body--solo': !hasMedia }]}>
+        <Breadcrumbs
+          items={[
+            { name: 'Start', path: '/' },
+            { name: 'Safran', path: '/produkte/' },
+            { name: product.title, path: `/produkte/${product.handle}/` },
+          ]}
+        />
+        <h1 class="display-l">{product.title}</h1>
+        <BuyBox product={product} inquiryHref={inquiryHref} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-label="Produktbeschreibung">
+    <div class="wrap">
+      <ProductDescription product={product} />
+    </div>
+  </section>
+
+  {
+    product.facts && (
+      <>
+        <ProductMore facts={product.facts} />
+        <LargerQuantities />
+      </>
+    )
+  }
+</Base>
+
+<style>
+  .pdp-head {
+    padding-top: var(--header-h);
+  }
+
+  .pdp-head .grid {
+    align-items: center;
+    row-gap: var(--s-6);
+  }
+
+  .pdp-head__figure {
+    grid-column: 1 / span 7;
+    margin-left: calc(var(--gutter) * -1);
+  }
+
+  .pdp-head__figure :global(img) {
+    border-radius: 0 0.375rem 0.375rem 0;
+    aspect-ratio: 1 / 1;
+    max-height: calc(100svh - var(--header-h));
+    object-fit: cover;
+  }
+
+  .pdp-head__body {
+    grid-column: 8 / span 5;
+    display: grid;
+    gap: var(--s-5);
+    padding-block: var(--s-6);
+  }
+
+  .pdp-head__body--solo {
+    grid-column: 1 / span 8;
+  }
+
+  @media (max-width: 63.99rem) {
+    .pdp-head__figure,
+    .pdp-head__body {
+      grid-column: 1 / -1;
+    }
+
+    .pdp-head__figure {
+      margin-right: calc(var(--gutter) * -1);
+    }
+
+    .pdp-head__figure :global(img) {
+      border-radius: 0;
+      aspect-ratio: 4 / 3;
+    }
+
+    .pdp-head__body {
+      padding-top: 0;
+    }
+  }
+</style>

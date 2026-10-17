@@ -1,0 +1,256 @@
+---
+// Live S5 "Die Kollektion": theme text word for word, quality as on the label: Grade 1 (D3/D4).
+// Prices and product images come only from the catalog (src/lib/commerce/catalog.ts, T-20261016-03).
+// Without a store the catalog has no price: the price line is left out, the link to the product stays.
+// Gift box (D7): not a Shopify product yet, so the card says "In Vorbereitung" and shows no price.
+// As soon as the customer creates it in Shopify (handle or title containing "Geschenkbox"),
+// the card shows the Shopify title, the catalog price and the link to its product page.
+import Arrow from '@/components/Arrow.astro';
+import Picture from '@/components/Picture.astro';
+import { getCatalog, formatPrice } from '@/lib/commerce/catalog';
+
+const catalog = await getCatalog();
+const find = (handle: string) => catalog.find((p) => p.handle === handle);
+const gift = catalog.find((p) => /geschenkbox/i.test(`${p.handle} ${p.title}`));
+
+const cards = [
+  {
+    href: '/produkte/herat-negin-safran-1-g-grade-a/',
+    product: find('herat-negin-safran-1-g-grade-a'),
+    badge: 'UNSER ORIGINAL',
+    eyebrow: 'HERAT NEGIN · GRADE 1',
+    title: 'Premium Safran – 1 g',
+    text: 'Ganze, handverlesene Fäden.',
+    imageAlt: 'Ganze Premium-Safranfäden aus Herat – 1-g-Produkt',
+    still: 'jar',
+    stillAlt:
+      'Royal-Spices-Glas von vorn: cremefarbenes Etikett mit „Royal Spices, Saffron, Herat Negin, Grade 1, 1 g, Packed in Germany“, davor getrocknete Safranfäden.',
+  },
+  {
+    href: '/produkte/safran-herat-negin-0-5g/',
+    product: find('safran-herat-negin-0-5g'),
+    badge: 'KLASSIKER',
+    eyebrow: 'HERAT NEGIN · GRADE 1',
+    title: 'Premium Safran – 0,5 g',
+    text: 'Das Original im kleinen Glas.',
+    imageAlt: 'Royal Spices Safran im 0,5-g-Glas',
+    still: 'jars-photo',
+    stillAlt: 'Reihen abgefüllter Royal-Spices-Gläser mit Korken, grauem Siegelstreifen und Etikett auf einem Tisch.',
+  },
+];
+const SIZES = '(min-width: 64rem) 30vw, (min-width: 40rem) 46vw, 92vw';
+---
+
+<section class="section collection" id="kollektion" aria-labelledby="kollektion-title">
+  <div class="wrap">
+    <div class="collection__head opener">
+      <p class="eyebrow">DIE KOLLEKTION</p>
+      <h2 class="display-l" id="kollektion-title">Kleine Menge.<br />Große Wirkung.</h2>
+      <p class="lead">Entdecke die Welt von Royal Spices – von der täglichen Genussküche bis zum besonderen Geschenk.</p>
+    </div>
+
+    <ul class="collection__cards">
+      {
+        cards.map((c) => (
+          <li class="card">
+            <div class="card__visual">
+              {c.product?.image ? (
+                <img
+                  src={c.product.image.url}
+                  alt={c.product.image.altText ?? c.imageAlt}
+                  width={c.product.image.width}
+                  height={c.product.image.height}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <Picture name={c.still} alt={c.stillAlt} sizes={SIZES} />
+              )}
+              <p class="card__badge">{c.badge}</p>
+            </div>
+            <div class="card__info">
+              <p class="eyebrow">{c.eyebrow}</p>
+              <h3 class="display-s">{c.title}</h3>
+              <p class="card__text">{c.text}</p>
+              {c.product?.price && (
+                <p class="card__price">
+                  <span class="card__amount">{formatPrice(c.product.price)}</span>
+                  <span class="small">inkl. MwSt.</span>
+                </p>
+              )}
+              <a class="link" href={c.href}>
+                Produkt ansehen <Arrow />
+              </a>
+            </div>
+          </li>
+        ))
+      }
+
+      <li class="card card--gift">
+        <div class="card__visual card__visual--gift">
+          {!gift && <p class="card__badge">COMING SOON</p>}
+          <div class="gift">
+            <p class="gift__wordmark">ROYAL<br />SPICES</p>
+            <p class="gift__line">THE SAFFRON COLLECTION</p>
+            <span class="gift__reflection" aria-hidden="true"></span>
+          </div>
+        </div>
+        <div class="card__info">
+          <p class="eyebrow">THE ROYAL GIFT</p>
+          {
+            gift ? (
+              <>
+                <h3 class="display-s">{gift.title}</h3>
+                {gift.price && (
+                  <p class="card__price">
+                    <span class="card__amount">{formatPrice(gift.price)}</span>
+                    <span class="small">inkl. MwSt.</span>
+                  </p>
+                )}
+                <a class="link" href={`/produkte/${gift.handle}/`}>
+                  Produkt ansehen <Arrow />
+                </a>
+              </>
+            ) : (
+              <>
+                <h3 class="display-s">Safran Geschenkbox – 5 g</h3>
+                <p class="card__text">Ein besonderes Geschenk in Vorbereitung.</p>
+                <p class="card__status">In Vorbereitung</p>
+              </>
+            )
+          }
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<style>
+  .collection__head {
+    max-width: 40rem;
+  }
+
+  .collection__cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-6) clamp(1rem, 2.4vw, 2.5rem);
+    margin: var(--s-7) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .card {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: var(--s-5);
+  }
+
+  .card__visual {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--paper-deep);
+  }
+
+  .card__visual :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .card__badge {
+    position: absolute;
+    top: var(--s-4);
+    left: var(--s-4);
+    padding: 0.375rem 0.625rem;
+    background: var(--paper-soft);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--ink);
+  }
+
+  .card__info {
+    display: grid;
+    gap: var(--s-3);
+    align-content: start;
+    justify-items: start;
+  }
+
+  .card__text {
+    color: var(--ink-2);
+  }
+
+  .card__price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .card__amount {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .card__status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--bronze);
+  }
+
+  /* the gift box is drawn in CSS: no picture of it exists yet */
+  .card__visual--gift {
+    display: grid;
+    place-items: center;
+    background: var(--slate);
+  }
+
+  .gift {
+    position: relative;
+    display: grid;
+    gap: var(--s-3);
+    justify-items: center;
+    width: 62%;
+    aspect-ratio: 1;
+    place-content: center;
+    background: var(--saffron-deep);
+    border: 1px solid color-mix(in srgb, var(--cork) 70%, transparent);
+    box-shadow: 0 1.5rem 3rem rgb(0 0 0 / 0.35);
+    text-align: center;
+    color: #e4cf9e;
+  }
+
+  .gift__wordmark {
+    font-family: var(--font-display), Georgia, serif;
+    font-size: clamp(1.25rem, 2vw, 1.75rem);
+    line-height: 1.05;
+    letter-spacing: 0.12em;
+  }
+
+  .gift__line {
+    font-size: 0.5625rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+  }
+
+  .gift__reflection {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgb(255 255 255 / 0.14), transparent 45%);
+    pointer-events: none;
+  }
+
+  @media (max-width: 63.99rem) {
+    .collection__cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 39.99rem) {
+    .collection__cards {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

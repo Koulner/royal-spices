@@ -1,0 +1,71 @@
+---
+// Product description, word for word as in Shopify (only Grade A -> Grade 1, see catalog.ts).
+//   Shopify text = product.ts text -> rendered with the structure from product.ts (headings, rows, breaks)
+//   otherwise (text changed in Shopify, product unknown to product.ts) -> the Shopify text as it is
+// Everything is text: Astro escapes it, nothing from Shopify is ever rendered as HTML.
+import { structuredDescription, type CatalogProduct } from '@/lib/commerce/catalog';
+
+interface Props {
+  product: CatalogProduct;
+}
+const { product } = Astro.props;
+const facts = structuredDescription(product);
+const paragraphs = product.description.split('\n').map((p) => p.trim()).filter(Boolean);
+const lines = (text: string) => text.split('\n');
+---
+
+<div class="pdesc prose">
+  {
+    facts ? (
+      <>
+        <h2 class="display-l">{facts.intro.heading}</h2>
+        <p class="lead">{facts.intro.text}</p>
+        {facts.sections.map((section) => (
+          <section class="pdesc__section">
+            <h3 class="display-s">{section.heading}</h3>
+            {section.rows && (
+              <ul class="pdesc__rows">
+                {section.rows.map((row) => (
+                  <li>
+                    <strong>{row.label}:</strong> {row.value}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {section.paragraphs?.map((paragraph) => (
+              <p>{lines(paragraph).map((line, i) => (i === 0 ? line : [<br />, line]))}</p>
+            ))}
+          </section>
+        ))}
+      </>
+    ) : (
+      paragraphs.map((paragraph) => <p>{paragraph}</p>)
+    )
+  }
+</div>
+
+<style>
+  .pdesc {
+    display: grid;
+    gap: var(--s-5);
+    max-width: 44rem;
+  }
+
+  .pdesc__section {
+    display: grid;
+    gap: var(--s-3);
+  }
+
+  /* the live list "Produkt: …" (Shopify <ul><li><strong>) */
+  .pdesc__rows {
+    display: grid;
+    gap: var(--s-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pdesc__rows strong {
+    font-weight: 600;
+  }
+</style>

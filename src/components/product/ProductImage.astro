@@ -1,0 +1,49 @@
+---
+// Product image: the first Shopify image when the store delivers one (Storefront API, cdn.shopify.com),
+// otherwise the existing V1 still named in product.ts, otherwise nothing.
+import Picture from '@/components/Picture.astro';
+import type { CatalogProduct } from '@/lib/commerce/catalog';
+
+interface Props {
+  product: CatalogProduct;
+  sizes: string;
+  loading?: 'lazy' | 'eager';
+  fetchpriority?: 'high' | 'low' | 'auto';
+}
+const { product, sizes, loading = 'lazy', fetchpriority } = Astro.props;
+
+// Only absolute https URLs are used; the Shopify CDN scales by the "width" parameter.
+function sized(url: string, width: number): string | null {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== 'https:') return null;
+    u.searchParams.set('width', String(width));
+    return u.href;
+  } catch {
+    return null;
+  }
+}
+
+const image = product.image && sized(product.image.url, product.image.width) ? product.image : null;
+const widths = image ? [...[480, 768, 1080, 1440].filter((w) => w < image.width), image.width] : [];
+const srcset = image ? widths.map((w) => `${sized(image.url, w)} ${w}w`).join(', ') : '';
+const src = image ? sized(image.url, Math.min(1080, image.width)) : null;
+---
+
+{
+  image && src ? (
+    <img
+      src={src}
+      srcset={srcset}
+      sizes={sizes}
+      width={image.width}
+      height={image.height}
+      alt={image.altText ?? product.title}
+      loading={loading}
+      decoding="async"
+      fetchpriority={fetchpriority}
+    />
+  ) : product.facts ? (
+    <Picture name={product.facts.picture.name} alt={product.facts.picture.alt} sizes={sizes} loading={loading} fetchpriority={fetchpriority} />
+  ) : null
+}

@@ -88,6 +88,12 @@ Wie stark sich das Bild von einem Hero-Frame zum nächsten ändert:
 node tools/qa/frame-steps.mjs
 ```
 
+Text der früheren Shopify-Seite wörtlich gegen den Build (M1, ohne Browser; braucht `.raw/live-20261015/outline.md`, Regeln in `tools/live/rules.mjs`, ohne Store mit `--ohne-store`):
+
+```bash
+node tools/qa/live-text.mjs dist/client
+```
+
 ## Assets neu erzeugen
 
 Die Bilder entstehen aus dem Blender-Master (`../Projektübergabe/royal-spices/blender/royal-spices-master.blend`, Blender 4.5 LTS). Der Master wird nie überschrieben; alle Web-Anpassungen stehen in `pipeline/blender/web_hero.py`.

@@ -49,7 +49,10 @@ const names = (list, role) => list.filter((n) => n.role === role).map((n) => n.n
 // names are compared without case: CSS upper-casing reaches the accessible name
 const position = (list, role, name, exact = false) => list.findIndex((n) => n.role === role && (exact ? n.name.toLowerCase() === name.toLowerCase() : n.name.toLowerCase().includes(name.toLowerCase())));
 
-const JOURNEY = ['Safran aus Herat.', 'Crocus sativus', 'Die Narbe', 'Safran', 'Im Glas'];
+// the h1 carries the eyebrow as its first line (SEO-B, T-20261017-06); menu as on royalspices.de (K2, K3)
+const H1 = 'ROYAL SPICES · SAFRAN AUS HERAT, AFGHANISTAN The Art of Saffron.';
+const JOURNEY = [H1, 'Crocus sativus', 'Die Narbe', 'Safran', 'Im Glas'];
+const MENU = ['Startseite', 'Safran', 'Herkunft', 'Catering', 'B2B', 'Über uns', 'Kontakt', 'Einloggen'];
 
 try {
   await mkdir('.raw/qa', { recursive: true });
@@ -69,7 +72,7 @@ try {
   check(names(top, 'banner').length === 1 && names(top, 'main').length === 1 && names(top, 'contentinfo').length === 1, 'landmarks: one banner, one main, one contentinfo');
   check(names(top, 'navigation').every(Boolean), `navigation landmarks are named: ${names(top, 'navigation').join(', ')}`);
   const h1 = top.filter((n) => n.role === 'heading' && n.level === 1);
-  check(h1.length === 1 && h1[0].name === 'Safran aus Herat.', `one h1: ${h1.map((n) => n.name).join(' | ')}`);
+  check(h1.length === 1 && h1[0].name === H1, `one h1: ${h1.map((n) => n.name).join(' | ')}`);
   const order = JOURNEY.map((name) => position(top, 'heading', name, true));
   check(order.every((i) => i >= 0) && order.every((i, k) => k === 0 || i > order[k - 1]), 'opening and all four chapters are exposed, in story order');
   const arrivalAt = position(top, 'heading', 'Ein Gramm im Glas');
@@ -93,7 +96,7 @@ try {
   check(stillOrder.every((i) => i >= 0) && stillOrder.every((i, k) => k === 0 || i > stillOrder[k - 1]), 'opening and all four chapters are exposed, in story order');
   check(position(still, 'button', 'Vom Crocus zum Glas') < 0 && position(still, 'link', 'Reise überspringen') < 0, 'no journey controls where there is no journey');
   check(position(still, 'heading', 'Ein Gramm im Glas') < 0, 'the arrival statement is not announced twice');
-  check(position(still, 'link', 'Zum Produkt') > 0 && position(still, 'link', 'Für den Handel') > 0, 'both actions of the opening are exposed');
+  check(position(still, 'link', 'Safran entdecken') > 0 && position(still, 'link', 'Unsere Herkunft') > 0, 'both actions of the opening are exposed');
   await page.media({});
 
   // ---- compact menu
@@ -101,14 +104,16 @@ try {
   await page.viewport(390, 844, { dpr: 2, mobile: true });
   await page.goto(base + '/', { settle: 2000 });
   const closed = await outline();
-  check(position(closed, 'link', 'Herkunft & Qualität') < 0 || position(closed, 'link', 'Herkunft & Qualität') > position(closed, 'heading', 'Safran aus Herat.'), 'closed menu: its links are out of reach');
+  // a menu name may come back later on the page (footer "Kontakt"), but not before the h1
+  const closedH1 = position(closed, 'heading', H1, true);
+  check(closedH1 >= 0 && MENU.every((name) => position(closed, 'link', name, true) < 0 || position(closed, 'link', name, true) > closedH1), 'closed menu: its links are out of reach');
   check(position(closed, 'button', 'Menü') >= 0, 'closed menu: the toggle is exposed by name');
   await page.eval(`document.querySelector('[data-menu-toggle]').click()`);
   await page.wait(700);
   const open = await outline();
   await writeFile('.raw/qa/axtree-menu-open.txt', text(open) + '\n');
-  check(['Produkte', 'Herkunft & Qualität', 'Handel', 'Gastronomie', 'Catering', 'Über uns', 'Kontakt'].every((name) => position(open, 'link', name) >= 0), 'open menu: all seven destinations are exposed');
-  check(position(open, 'heading', 'Safran aus Herat.') < 0, 'open menu: the page behind it is closed off');
+  check(MENU.every((name) => position(open, 'link', name, true) >= 0), 'open menu: all seven destinations and the sign-in are exposed');
+  check(position(open, 'heading', H1, true) < 0, 'open menu: the page behind it is closed off');
   check(position(open, 'button', 'Schließen') >= 0, 'open menu: the toggle says how to close it');
 } finally {
   await page.close();

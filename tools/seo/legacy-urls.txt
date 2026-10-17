@@ -1,0 +1,56 @@
+# Old URLs for `node tools/qa/seo.mjs <base-url> --redirects` (S4: 301, exactly one hop, target 200).
+# Format: <old path>[ <target>]  – without target only "301 → one hop → 200" is checked.
+# Target 404: deliberately not redirected (docs/UEBERGABE-SEO.md, Abgleich point 3); reported as a hint.
+# Sources: live shop dump .raw/live-20261015/ (html/, products.json, collections.json),
+# plan table in docs/UEBERGABE-SEO.md (Phase 1 C) with the product handle paths (Abgleich point 8),
+# current table src/config/redirects.mjs. Still missing: the Search Console export (Phase 2).
+
+# Shopify collections (P1, Q11, W1)
+/collections/safran /produkte/
+/collections/all /produkte/
+/collections/frontpage /produkte/
+
+# Shopify products (P2, P3), with variant query and collection-scoped paths
+/products/herat-negin-safran-1-g-grade-a /produkte/herat-negin-safran-1-g-grade-a/
+/products/safran-herat-negin-0-5g /produkte/safran-herat-negin-0-5g/
+/products/herat-negin-safran-1-g-grade-a?variant=57120616251779 /produkte/herat-negin-safran-1-g-grade-a/?variant=57120616251779
+/products/safran-herat-negin-0-5g?variant=57144277139843 /produkte/safran-herat-negin-0-5g/?variant=57144277139843
+/collections/safran/products/herat-negin-safran-1-g-grade-a /produkte/herat-negin-safran-1-g-grade-a/
+/collections/safran/products/safran-herat-negin-0-5g /produkte/safran-herat-negin-0-5g/
+/collections/all/products/herat-negin-safran-1-g-grade-a /produkte/herat-negin-safran-1-g-grade-a/
+/collections/frontpage/products/herat-negin-safran-1-g-grade-a /produkte/herat-negin-safran-1-g-grade-a/
+/collections/safran/products/safran-herat-negin-0-5g?variant=57144277139843 /produkte/safran-herat-negin-0-5g/?variant=57144277139843
+
+# Shopify pages (Q1–Q8)
+/pages/herkunft-qualitat /herkunft-qualitaet/
+/pages/catering /catering/
+/pages/b2b-zusammenarbeit /b2b/
+/pages/ueber-uns /ueber-uns/
+/pages/contact /kontakt/
+/pages/faq /faq/
+/pages/versand-lieferung /versand-lieferung/
+/pages/impressum /impressum/
+
+# Shopify policies (Q9, Q10)
+/policies/privacy-policy /datenschutz/
+/policies/legal-notice /impressum/
+/policies/shipping-policy /versand-lieferung/
+/policies/contact-information /kontakt/
+# no terms and withdrawal page in V1 yet: 404 on purpose; later /agb/ and /widerruf/
+/policies/terms-of-service 404
+/policies/refund-policy 404
+
+# cart, search, blog (Q11). Plan: /cart → /, /blogs/news → /ratgeber/; the table of T-06 applies
+/cart /produkte/
+/search /produkte/
+/blogs/news /
+
+# retired V1 paths
+/handel/ /b2b/
+/gastronomie/ /b2b/
+/produkte/safran-negin-1g/ /produkte/herat-negin-safran-1-g-grade-a/
+
+# spelling variants: case and trailing slash
+/pages/contact/ /kontakt/
+/Pages/Impressum /impressum/
+/Products/Herat-Negin-Safran-1-g-Grade-A /produkte/herat-negin-safran-1-g-grade-a/

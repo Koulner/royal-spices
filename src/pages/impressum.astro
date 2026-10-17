@@ -1,16 +1,24 @@
 ---
-// Company details as published by the client on royalspices.de/impressum.html (checked 2026-10-05).
+// Text verbatim from the live page royalspices.de/pages/impressum (docs/LIVE-INVENTAR.md, row Q8,
+// retrieved 2026-10-15); company details from src/config/site.ts, identical to the live text.
 // Legal review by the responsible party is required before launch (docs/PRODUCT-TRUTH.md).
 import Base from '@/layouts/Base.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import { site } from '@/config/site';
 ---
 
-<Base title="Impressum" description="Impressum von Royal Spices, Sajad Akrami, Hammerdeich 10, 20537 Hamburg.">
+<Base title="Impressum · Royal Spices, Hamburg" description="Impressum von Royal Spices, Sajad Akrami, Hammerdeich 10, 20537 Hamburg.">
   <section class="page-head">
     <div class="wrap">
+      <Breadcrumbs
+        items={[
+          { name: 'Start', path: '/' },
+          { name: 'Impressum', path: '/impressum/' },
+        ]}
+      />
       <h1 class="display-l">Impressum</h1>
       <div class="longform">
-        <p>Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)</p>
+        <p><strong>Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)</strong></p>
 
         <h2>Betreiber</h2>
         <p>
@@ -29,9 +37,17 @@ import { site } from '@/config/site';
         </p>
 
         <h2>Umsatzsteuer-ID</h2>
-        <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz: DE459334343</p>
+        <p>
+          Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz:<br />
+          <strong>DE459334343</strong>
+        </p>
 
         <h2>Bildnachweis</h2>
+        {/* Live text kept as published. V1 uses no "Wakhan" photograph (grep over src/, public/, assets-src/ on 2026-10-16); whether the credit stays is the client's decision. */}
+        <p>
+          Für die auf royalspices.de verwendete Bergfotografie: „Wakhan, Tajikistan“ von Ninara, lizenziert unter
+          <a href="https://creativecommons.org/licenses/by/2.0/deed.de" rel="noopener">Creative Commons CC BY 2.0</a>; Darstellung als Bildausschnitt mit Farbüberlagerung. Dieser Nachweis bezieht sich auf die Originalwebsite. Die hier verwendeten Produkt- und Markenbilder können abweichen.
+        </p>
         <p>
           Darstellungen von Blüte, Safranfäden und Glas: 3D-Visualisierungen im Auftrag von Royal Spices. Fotografien der abgefüllten Gläser und der Veranstaltung: Royal Spices.
         </p>
@@ -43,6 +59,11 @@ import { site } from '@/config/site';
 <style>
   .page-head {
     padding-bottom: var(--section-pad);
+  }
+
+  /* Breadcrumbs above the h1: the same gap as the .opener grid on the other pages (SEO-C). */
+  .page-head :global(.crumbs) {
+    margin-bottom: var(--s-5);
   }
 
   h1 {

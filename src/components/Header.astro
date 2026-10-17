@@ -1,6 +1,6 @@
 ---
 import Sprig from './Sprig.astro';
-import { primaryNav, secondaryNav } from '@/config/site';
+import { primaryNav, secondaryNav, announcement, shopifyAccountUrl } from '@/config/site';
 import { commerceEnabled } from '@/lib/commerce/config';
 
 const path = Astro.url.pathname;
@@ -8,7 +8,12 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
 ---
 
 <header class="site-header" data-header>
+  <div class="announcement">
+    <p class="announcement__text wrap">{announcement}</p>
+  </div>
+
   <div class="site-header__bar wrap">
+    {/* O5: royal-spices-atelier-logo-wide.png */}
     <a class="wordmark" href="/" aria-label="Royal Spices – Startseite">
       <Sprig class="wordmark__sprig" />
       <span class="wordmark__text">Royal Spices</span>
@@ -50,16 +55,25 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
           ))
         }
       </ul>
+      <ul class="site-nav__account">
+        <li>
+          <a href={shopifyAccountUrl}>Einloggen</a>
+        </li>
+      </ul>
     </nav>
   </div>
 </header>
 
 <style>
+  /* The header sits in the flow (sticky) so the announcement above the bar scrolls away and the bar
+     stays. The negative bottom margin lets the page start under the bar, as with the former fixed
+     header: pages keep their var(--header-h) offsets. */
   .site-header {
-    position: fixed;
-    inset: 0 0 auto 0;
+    --announce-h: 2rem;
+    position: sticky;
+    top: calc(-1 * var(--announce-h));
     z-index: 50;
-    height: var(--header-h);
+    margin-bottom: calc(-1 * var(--header-h));
     color: var(--ink);
     transition:
       background-color 0.25s var(--ease-out),
@@ -72,9 +86,29 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
     box-shadow: 0 1px 0 var(--rule);
   }
 
+  .announcement {
+    height: var(--announce-h);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: var(--slate);
+    color: var(--paper-soft);
+  }
+
+  .announcement__text {
+    width: 100%;
+    margin: 0;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0.14em;
+    text-align: center;
+    text-wrap: balance;
+  }
+
   .site-header__bar {
     max-width: none;
-    height: 100%;
+    height: var(--header-h);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -139,7 +173,8 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
     background-size: 100% 1px;
   }
 
-  .site-nav__secondary {
+  .site-nav__secondary,
+  .site-nav__account {
     padding-left: clamp(1.25rem, 2.6vw, 2.75rem) !important;
     border-left: 1px solid var(--rule-strong);
   }
@@ -178,6 +213,42 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
     background: var(--ink);
     color: var(--paper-soft);
     font-size: 0.75rem;
+  }
+
+  /* Seven entries, login and cart in one bar: tighter spacing until the bar has room. */
+  @media (min-width: 64rem) and (max-width: 84.99rem) {
+    .site-header__bar {
+      gap: var(--s-4);
+    }
+
+    .wordmark__text {
+      font-size: 1.125rem;
+      letter-spacing: 0.12em;
+    }
+
+    .site-nav {
+      gap: 1rem;
+    }
+
+    .site-nav ul {
+      gap: 0.875rem;
+    }
+
+    .site-nav__secondary,
+    .site-nav__account {
+      padding-left: 1rem !important;
+    }
+  }
+
+  /* On narrow screens the announcement takes two lines. */
+  @media (max-width: 47.99rem) {
+    .site-header {
+      --announce-h: 2.75rem;
+    }
+
+    .announcement__text {
+      letter-spacing: 0.1em;
+    }
   }
 
   /* ------------------------------------------------------------ compact navigation */
@@ -243,7 +314,8 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
       align-items: stretch;
       justify-content: flex-start;
       gap: var(--s-6);
-      padding: calc(var(--header-h) + 2rem) var(--gutter) 2rem;
+      /* clears the bar also while the announcement is still in view above it */
+      padding: calc(var(--announce-h) + var(--header-h) + 1.5rem) var(--gutter) 2rem;
       background: var(--paper);
       overflow-y: auto;
       visibility: hidden;
@@ -284,12 +356,14 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
       color: var(--saffron-deep);
     }
 
-    .site-nav__secondary {
+    .site-nav__secondary,
+    .site-nav__account {
       padding-left: 0 !important;
       border-left: 0;
     }
 
-    .site-nav__secondary a {
+    .site-nav__secondary a,
+    .site-nav__account a {
       font-size: 1.0625rem;
       min-height: 3rem;
     }
@@ -299,10 +373,11 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
   @media (max-width: 63.99rem) {
     :global(html:not(.js)) .site-header {
       position: static;
-      height: auto;
+      margin-bottom: 0;
     }
 
     :global(html:not(.js)) .site-header__bar {
+      height: auto;
       flex-wrap: wrap;
       padding-block: var(--s-3);
     }

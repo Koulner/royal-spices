@@ -1,0 +1,53 @@
+---
+// Breadcrumb trail: visible navigation plus its BreadcrumbList JSON-LD, both from the same items, so the
+// names in the structured data are exactly the visible text. `items` is the whole trail: first
+// { name: 'Start', path: '/' }, last the current page (rendered as text, not as a link).
+import { buildBreadcrumbList, serializeJsonLd, type Crumb } from '@/lib/seo/schema';
+
+interface Props {
+  items: Crumb[];
+  class?: string;
+}
+
+const { items, class: className } = Astro.props;
+const trail = items.map((crumb) => ({ name: crumb.name.trim(), path: crumb.path }));
+const last = trail.length - 1;
+const jsonLd = serializeJsonLd(buildBreadcrumbList({ origin: Astro.site ?? Astro.url.origin, items: trail }));
+---
+
+<nav aria-label="Brotkrumen" class:list={['crumbs', 'small', className]}>
+  <ol>
+    {
+      trail.map((crumb, i) =>
+        i < last ? (
+          <li>
+            <a href={crumb.path}>{crumb.name}</a><span aria-hidden="true"> / </span>
+          </li>
+        ) : (
+          <li>
+            <span aria-current="page">{crumb.name}</span>
+          </li>
+        ),
+      )
+    }
+  </ol>
+</nav>
+<script type="application/ld+json" is:inline set:html={jsonLd} />
+
+<style>
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: inline;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+</style>

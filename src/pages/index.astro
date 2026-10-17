@@ -1,14 +1,23 @@
 ---
+// Home page (T-20261016-04, Shopify B). Live sections S1–S10 of royalspices.de word for word
+// (docs/LIVE-INVENTAR.md; quality as on the label: Grade 1, D3/D4), in Live order:
+//   S1 hero        -> HomeJourney (V1 render sequence with the Live hero text, D5)
+//   S2 ticker, S3 "Warum Royal Spices?", S4 brand story
+//   S5 collection  -> HomeCollection (prices only from the catalog, gift box without price, D7)
+//   S6 picture break + S7 "Unsere Wurzeln" (one block on Live: picture beside copy)
+//   S8 ritual, S9 business, then two V1 blocks (V1/Live rule, see ERGEBNIS.md), S10 last line.
+// Live arrows "↗" are the V1 <Arrow />.
 import Base from '@/layouts/Base.astro';
-import Journey from '@/components/Journey.astro';
+import HomeJourney from '@/components/home/HomeJourney.astro';
+import HomeCollection from '@/components/home/HomeCollection.astro';
 import Picture from '@/components/Picture.astro';
-import LabelSheet from '@/components/LabelSheet.astro';
-import Anatomy from '@/components/Anatomy.astro';
+import Sprig from '@/components/Sprig.astro';
 import Arrow from '@/components/Arrow.astro';
 import stills from '@/data/stills.json';
 import { site } from '@/config/site';
 import { formats } from '@/data/product';
 import { saffronDishes } from '@/data/catering';
+import { buildOrganization, buildWebSite } from '@/lib/seo/schema';
 
 type Variant = { src: string; width: number };
 const s = stills as Record<string, { avif: Variant[] }>;
@@ -22,139 +31,162 @@ const preloads = [
   { href: s['arrival-mobile'].avif[0].src, type: 'image/avif', media: `${STILL} and (max-aspect-ratio: 4/5)`, imagesrcset: set('arrival-mobile'), imagesizes: '100vw' },
 ];
 
-const organization = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: site.name,
-  url: Astro.site?.href,
-  email: site.email,
-  telephone: '+49 40 59374940',
-  address: {
-    '@type': 'PostalAddress',
-    streetAddress: site.address.street,
-    postalCode: site.address.postalCode,
-    addressLocality: site.address.city,
-    addressCountry: site.address.country,
-  },
-};
+// SEO-B: company and site from the schema builders; NAP comes from site.ts. OnlineStore without
+// shipping and returns until the customer confirms them (E7).
+const origin = Astro.site ?? Astro.url.origin;
+const schema = [buildOrganization({ origin }), buildWebSite({ origin })];
+
+// S2
+const trust = ['Sorgfältig ausgewählt', 'Herkunft Herat', 'Ganze Safranfäden', 'Genuss mit Charakter'];
+
+// S3
+const benefits = [
+  { sign: '✧', title: 'Reiner Safran', text: '100 % Safranfäden, ohne Zusätze und Füllstoffe.' },
+  { sign: '❀', title: 'Handverlesen', text: 'Sorgfältig ausgewählte ganze Negin-Fäden.' },
+  { sign: '⌁', title: 'Aus Herat', text: 'Verbunden mit der Tradition Afghanistans.' },
+  { sign: '◇', title: 'Qualität', text: 'Chargenbezogene Analysen auf Anfrage.' },
+];
+
+// S8
+const ritual = [
+  { no: '01', title: 'Fäden dosieren', text: 'Einige Fäden genügen, um deinen Kreationen Farbe und Charakter zu verleihen.' },
+  { no: '02', title: 'Sanft ziehen lassen', text: 'Die Fäden in etwas warmem Wasser ziehen lassen – so lösen sich Farbe und Aroma.' },
+  { no: '03', title: 'Gerichte veredeln', text: 'Den Aufguss zu Reis, Saucen oder Desserts geben und bewusst genießen.' },
+];
 ---
 
 <Base
   title="Royal Spices – Safran aus Herat"
-  description="Ganze Negin-Safranfäden aus Herat, Afghanistan, in Deutschland abgefüllt. Im 1-g-Glas, im Display für den Handel und als lose Ware ab 10 kg."
+  description="Ein kostbares Gewürz. Eine außergewöhnliche Herkunft. Handverlesene Safranfäden aus Herat – für Momente, die in Erinnerung bleiben."
   preloads={preloads}
-  schema={[organization]}
+  schema={schema}
 >
-  <Journey />
+  <HomeJourney />
 
-  <div class="story">
-    <div class="story__thread" aria-hidden="true"><i></i></div>
+  {/* id="herkunft": scripts/journey.ts (unchanged) scrolls here after the last chapter. */}
+  <div class="home" id="herkunft">
+    {/* S2 */}
+    <div class="ticker band-slate">
+      <ul class="ticker__list wrap">
+        {
+          trust.map((t) => (
+            <li>
+              <span aria-hidden="true">✧</span> {t}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
 
-    <section class="section origin" id="herkunft" aria-labelledby="herkunft-title">
-      <div class="wrap grid">
-        <div class="origin__head opener">
-          <p class="eyebrow">Herkunft</p>
-          <h2 class="display-l" id="herkunft-title">Herat,<br />Afghanistan.</h2>
+    {/* S3 */}
+    <section class="section why" id="warum" aria-labelledby="warum-title">
+      <div class="wrap">
+        <div class="why__head opener">
+          <p class="eyebrow">DAS MACHT UNS AUS</p>
+          <h2 class="display-l" id="warum-title">Warum Royal Spices?</h2>
         </div>
-        <div class="origin__body prose">
+        <ul class="why__grid">
+          {
+            benefits.map((b) => (
+              <li>
+                <span class="why__sign" aria-hidden="true">{b.sign}</span>
+                <h3 class="display-s">{b.title}</h3>
+                <p>{b.text}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    {/* S4 */}
+    <section class="section band-deep story" id="geschichte" aria-labelledby="geschichte-title">
+      <div class="wrap grid">
+        <div class="story__copy opener">
+          <p class="eyebrow">WARUM ROYAL SPICES</p>
+          <h2 class="display-l" id="geschichte-title">Reine Zutaten.<br />Echter Geschmack.</h2>
           <p class="lead">
-            Unser Safran stammt aus Herat im Westen Afghanistans. Abgefüllt wird er in Deutschland, verantwortlich dafür ist Royal Spices in Hamburg.
+            Von Herat direkt in deine kulinarische Welt: handverlesene Safranfäden, charaktervoll und sorgfältig ausgewählt. Unsere Liebe zur Gastronomie und unsere Verbindung zur Herkunft prägen Royal Spices.
           </p>
-          <p>
-            Mehr behaupten wir an dieser Stelle nicht. Was zu einer Lieferung an Herkunfts- und Laborunterlagen vorliegt, erhalten Sie auf Anfrage – bezogen auf das Produkt und die Charge, um die es geht.
-          </p>
+          <p><a class="link" href="/herkunft-qualitaet/">Entdecke unsere Geschichte <Arrow /></a></p>
+          {/* O5: Live-Markenzeichen royal-spices-atelier-logo-square.png erst nach Freigabe; bis dahin das V1-Zeichen vom Etikett */}
+          <Sprig class="story__mark" />
         </div>
-        <ol class="route" aria-label="Weg des Safrans">
-          <li>
-            <span class="route__place display-s">Herat, Afghanistan</span>
-            <span class="route__role eyebrow">Herkunft</span>
-          </li>
-          <li>
-            <span class="route__place display-s">Deutschland</span>
-            <span class="route__role eyebrow">Abfüllung</span>
-          </li>
-          <li>
-            <span class="route__place display-s">Hamburg</span>
-            <span class="route__role eyebrow">Royal Spices · {site.owner}</span>
-          </li>
+        <figure class="story__photo figure">
+          <Picture
+            name="jars-photo"
+            alt="Reihen abgefüllter Royal-Spices-Gläser mit Korken, grauem Siegelstreifen und Etikett auf einem Tisch."
+            sizes="(min-width: 64rem) 40vw, 92vw"
+          />
+          <figcaption>Abbildung zeigt die 0,5-g-Ausführung.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    {/* S5 */}
+    <HomeCollection />
+
+    {/* S6 + S7 */}
+    <section class="section band-deep roots" id="wurzeln" aria-labelledby="wurzeln-title">
+      <div class="wrap grid">
+        <figure class="roots__figure figure">
+          <Picture
+            name="saffron"
+            alt="Getrocknete Safranfäden auf hellem Papier: dunkelrot, unregelmäßig gedreht, mit verbreiterten Enden."
+            sizes="(min-width: 64rem) 50vw, 92vw"
+          />
+          <figcaption class="roots__caption">HERAT · 34°20' N</figcaption>
+        </figure>
+        <div class="roots__copy opener">
+          <p class="eyebrow">DIE GESCHICHTE HINTER JEDEM FADEN</p>
+          <h2 class="display-l" id="wurzeln-title">Unsere Wurzeln.<br />Dein Genuss.</h2>
+          <p class="lead">
+            In der Region Herat hat Safran Tradition. Hier beginnt unsere Geschichte – mit Sorgfalt, Handarbeit und dem Respekt vor einer außergewöhnlichen Zutat.
+          </p>
+          <p>Wir bringen den Charakter dieser Herkunft in deine Küche. Für Risotto, Reisgerichte, Desserts und die ganz besonderen Augenblicke.</p>
+          <p><a class="link" href="/herkunft-qualitaet/">Mehr über Herkunft &amp; Qualität <Arrow /></a></p>
+        </div>
+      </div>
+    </section>
+
+    {/* S8 */}
+    <section class="section ritual" id="ritual" aria-labelledby="ritual-title">
+      <div class="wrap">
+        <div class="opener">
+          <p class="eyebrow">DAS SAFRAN-RITUAL</p>
+          <h2 class="display-l" id="ritual-title">Entfalte das Aroma.</h2>
+        </div>
+        <ol class="ritual__steps">
+          {
+            ritual.map((r) => (
+              <li>
+                <span class="ritual__no" aria-hidden="true">{r.no}</span>
+                <h3 class="display-s">{r.title}</h3>
+                <p>{r.text}</p>
+              </li>
+            ))
+          }
         </ol>
       </div>
     </section>
 
-    <section class="section band-deep saffron" id="safran" aria-labelledby="safran-title">
-      <div class="wrap grid">
-        <div class="saffron__head opener">
-          <p class="eyebrow">Was Safran ist</p>
-          <h2 class="display-l" id="safran-title">Drei Narben<br />pro Blüte.</h2>
-          <p class="lead">Safran ist kein Blütenblatt und kein Samen. Es sind die roten Narben in der Mitte von <em>Crocus sativus</em>, getrocknet.</p>
+    {/* S9 */}
+    <section class="section band-slate business" id="business" aria-labelledby="business-title">
+      <div class="wrap">
+        <div class="business__head opener">
+          <p class="eyebrow">ROYAL SPICES BUSINESS</p>
+          <h2 class="display-l" id="business-title">Für Küchen, die<br />mehr erwarten.</h2>
+          <p class="lead">Safran für Gastronomie und Handel. Exklusive kulinarische Erlebnisse und Catering für Unternehmen und Veranstaltungen.</p>
         </div>
-        <Anatomy class="saffron__figure" sizes="(min-width: 64rem) 56vw, 92vw" />
-        <dl class="saffron__points">
-          <div>
-            <dt class="display-s">Welcher Teil?</dt>
-            <dd>Vom hellen Griffel zweigen drei rote Äste ab: die Narben. Nur sie werden verwendet. Die gelben Staubbeutel daneben gehören nicht dazu.</dd>
-          </div>
-          <div>
-            <dt class="display-s">Warum diese Form?</dt>
-            <dd>Jede Narbe weitet sich zur Spitze hin wie ein kleiner Trichter. Beim Trocknen fällt das Gewebe zusammen und dreht sich. Die geweitete Spitze bleibt.</dd>
-          </div>
-          <div>
-            <dt class="display-s">Was heißt Negin?</dt>
-            <dd>So nennt der Handel ganze, rote Fäden. Auf unserem Etikett steht deshalb: Negin · Grade 1.</dd>
-          </div>
-        </dl>
-      </div>
-    </section>
-
-    <section class="section product" id="produkt" aria-labelledby="produkt-title">
-      <div class="wrap grid">
-        <figure class="product__figure figure">
-          <Picture name="jar" alt="Royal-Spices-Glas von vorn: cremefarbenes Etikett mit „Royal Spices, Saffron, Herat Negin, Grade 1, 1 g, Packed in Germany“, davor getrocknete Safranfäden." sizes="(min-width: 64rem) 50vw, 92vw" />
-        </figure>
-        <div class="product__body">
-          <div class="opener">
-            <p class="eyebrow">Das Produkt</p>
-            <h2 class="display-l" id="produkt-title">Ein Gramm,<br />ganze Fäden.</h2>
-          </div>
-          <p class="lead">Ein kleines, schweres Glas mit Naturkork und Siegelstreifen. Was darin ist, steht auf dem Etikett – und hier.</p>
-          <LabelSheet />
-          <div class="actions">
-            <a class="btn" href="/produkte/safran-negin-1g/">Produkt ansehen <Arrow /></a>
-            <a class="link" href="/produkte/">Alle Gebinde <Arrow /></a>
-          </div>
+        <div class="actions">
+          <a class="btn" href="/b2b/">B2B kennenlernen <Arrow /></a>
+          <a class="link" href="/catering/">Catering entdecken</a>
         </div>
       </div>
     </section>
 
-    <section class="section band-deep trust" id="qualitaet" aria-labelledby="qualitaet-title">
-      <div class="wrap grid">
-        <div class="trust__head opener">
-          <p class="eyebrow">Qualität</p>
-          <h2 class="display-l" id="qualitaet-title">Nachweise statt Superlative.</h2>
-        </div>
-        <ol class="trust__list">
-          <li>
-            <h3 class="display-s">Auf dem Etikett</h3>
-            <p>Herkunft, Sorte, Füllmenge, Zutaten, Abfüllort und das verantwortliche Unternehmen mit Anschrift.</p>
-          </li>
-          <li>
-            <h3 class="display-s">Auf jedem Glas</h3>
-            <p>Mindesthaltbarkeitsdatum und Los. Damit lässt sich jedes Glas seiner Charge zuordnen.</p>
-          </li>
-          <li>
-            <h3 class="display-s">Auf Anfrage</h3>
-            <p>Verfügbare Labor- und Herkunftsunterlagen zur angebotenen Lieferung. Wir klären mit Ihnen, auf welche Charge sie sich beziehen.</p>
-          </li>
-        </ol>
-        <figure class="trust__figure figure">
-          <Picture name="jars-photo" alt="Reihen abgefüllter Royal-Spices-Gläser mit Korken, grauem Siegelstreifen und Etikett auf einem Tisch." sizes="(min-width: 64rem) 30vw, 92vw" />
-          <figcaption>Originalaufnahme aus der Abfüllung. Abgebildet ist die 0,5-g-Ausführung; angeboten wird das 1-g-Glas.</figcaption>
-        </figure>
-        <p class="trust__link"><a class="link" href="/herkunft-qualitaet/">Herkunft &amp; Qualität im Detail <Arrow /></a></p>
-      </div>
-    </section>
-
-    <section class="section band-slate trade" id="handel" aria-labelledby="handel-title">
+    {/* V1: trade formats (facts PRODUCT-TRUTH Nr. 43/44, missing on Live) */}
+    <section class="section trade" id="handel" aria-labelledby="handel-title">
       <div class="wrap grid">
         <div class="trade__head opener">
           <p class="eyebrow">Handel &amp; Gastronomie</p>
@@ -174,12 +206,12 @@ const organization = {
         </ul>
         <div class="trade__actions actions">
           <a class="btn" href="/kontakt/?anliegen=handel#anfrage">Handelsanfrage senden <Arrow /></a>
-          <a class="link" href="/handel/">So läuft eine Anfrage ab <Arrow /></a>
         </div>
       </div>
     </section>
 
-    <section class="section kitchen" id="kueche" aria-labelledby="kueche-title">
+    {/* V1: catering kitchen with the saffron dishes of the catalogue (PRODUCT-TRUTH Nr. 46) */}
+    <section class="section band-deep kitchen" id="kueche" aria-labelledby="kueche-title">
       <div class="wrap grid">
         <div class="kitchen__head opener">
           <p class="eyebrow">Catering · Hamburg</p>
@@ -203,233 +235,166 @@ const organization = {
       </div>
     </section>
 
-    <section class="section closing" aria-labelledby="closing-title">
-      <div class="wrap closing__inner">
-        <h2 class="display-l" id="closing-title">Ein Gramm oder zehn Kilo.</h2>
-        <p class="lead">Sagen Sie uns, was Sie brauchen. Für das Glas führt der Weg zum Produkt, für alles Größere zu einem Angebot.</p>
-        <div class="actions">
-          <a class="btn" href="/produkte/safran-negin-1g/">Produkt ansehen <Arrow /></a>
-          <a class="btn btn--quiet" href="/kontakt/?anliegen=handel#anfrage">Handelsanfrage senden <Arrow /></a>
-        </div>
-      </div>
-    </section>
+    {/* S10 */}
+    <div class="lastline">
+      <p class="wrap">ROYAL SPICES — FROM HERAT WITH CHARACTER — THE ART OF SAFFRON</p>
+    </div>
   </div>
 </Base>
 
 <style>
-  /* ---------------------------------------------------------------- the red thread */
-  .story {
-    position: relative;
+  .home > [id] {
+    scroll-margin-top: var(--header-h);
   }
 
-  .story__thread {
-    position: absolute;
-    top: 0;
-    bottom: clamp(9rem, 16vw, 15rem);
-    left: calc(max(var(--gutter), (100% - var(--wrap)) / 2) - var(--gutter) / 2);
-    width: 1px;
-    z-index: 2;
-    pointer-events: none;
+  /* ---------------------------------------------------------------- S2 ticker */
+  .ticker {
+    padding-block: var(--s-4);
   }
 
-  .story__thread i {
-    display: block;
-    width: 100%;
-    height: 100%;
-    background: var(--saffron);
-    transform-origin: 50% 0;
-  }
-
-  /* the thread ends the way a saffron thread does: slightly flared */
-  .story__thread::after {
-    content: '';
-    position: absolute;
-    left: -3px;
-    bottom: -9px;
-    width: 7px;
-    height: 10px;
-    background: var(--saffron);
-    clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
-  }
-
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      .story__thread i {
-        animation: thread-grow linear both;
-        animation-timeline: view();
-        animation-range: entry 10% exit 60%;
-      }
-
-      .story__thread::after {
-        animation: thread-tip linear both;
-        animation-timeline: view();
-        animation-range: exit 52% exit 60%;
-      }
-    }
-  }
-
-  @keyframes thread-grow {
-    from {
-      transform: scaleY(0);
-    }
-    to {
-      transform: scaleY(1);
-    }
-  }
-
-  @keyframes thread-tip {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  /* ---------------------------------------------------------------- origin */
-  .origin__head {
-    grid-column: 1 / span 5;
-  }
-
-  .origin__body {
-    grid-column: 7 / span 6;
-    align-self: end;
-  }
-
-  .origin__body p + p {
-    margin-top: var(--s-5);
-    color: var(--ink-2);
-  }
-
-  .route {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    margin-top: var(--s-6);
-    border-top: 1px solid var(--saffron);
-  }
-
-  .route li {
-    position: relative;
-    display: grid;
-    gap: 0.375rem;
-    padding: var(--s-5) var(--s-5) 0 0;
-  }
-
-  .route li::before {
-    content: '';
-    position: absolute;
-    top: -4px;
-    left: 0;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--saffron);
-  }
-
-  /* ---------------------------------------------------------------- what saffron is */
-  .saffron__head {
-    grid-column: 1 / span 5;
-    align-content: start;
-  }
-
-  .saffron :global(.saffron__figure) {
-    grid-column: 6 / span 7;
-    grid-row: span 2;
-  }
-
-  .saffron__points {
-    grid-column: 1 / span 4;
-    display: grid;
-    gap: var(--s-6);
-    align-content: start;
-    margin: 0;
-  }
-
-  .saffron__points dd {
-    margin-top: var(--s-2);
-    color: var(--ink-2);
-    max-width: 26rem;
-  }
-
-  /* ---------------------------------------------------------------- product */
-  .product__figure {
-    grid-column: 1 / span 6;
-    align-self: start;
-    position: sticky;
-    top: calc(var(--header-h) + 1.5rem);
-  }
-
-  .product__figure :global(img) {
-    aspect-ratio: 5 / 6;
-    object-fit: cover;
-    object-position: 62% 50%;
-  }
-
-  .product__body {
-    grid-column: 8 / span 5;
-    display: grid;
-    gap: var(--s-6);
-    align-content: start;
-  }
-
-  /* ---------------------------------------------------------------- trust */
-  .trust__head {
-    grid-column: 1 / span 7;
-  }
-
-  .trust__list {
-    grid-column: 1 / span 7;
-    display: grid;
-    margin: 0;
-    padding: 0;
+  .ticker__list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--s-2) var(--s-6);
+    margin: 0 auto;
     list-style: none;
-    counter-reset: trust;
-  }
-
-  .trust__list li {
-    display: grid;
-    grid-template-columns: 3.5rem 1fr;
-    column-gap: var(--s-4);
-    padding-block: var(--s-5);
-    border-top: 1px solid var(--rule-strong);
-    counter-increment: trust;
-  }
-
-  .trust__list li::before {
-    content: '0' counter(trust);
-    grid-row: span 2;
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.14em;
-    color: var(--bronze);
-    padding-top: 0.5rem;
+    text-transform: uppercase;
   }
 
-  .trust__list p {
-    margin-top: var(--s-2);
+  .ticker__list span {
+    color: #c9bd9c;
+  }
+
+  /* ---------------------------------------------------------------- S3 why */
+  .why__head {
+    max-width: 40rem;
+  }
+
+  .why__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--s-6) clamp(1rem, 2.4vw, 2.5rem);
+    margin: var(--s-7) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .why__grid li {
+    display: grid;
+    gap: var(--s-3);
+    align-content: start;
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .why__grid p {
     color: var(--ink-2);
-    max-width: 32rem;
   }
 
-  .trust__figure {
-    grid-column: 9 / span 4;
-    grid-row: 1 / span 2;
-    align-self: end;
+  .why__sign {
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--saffron);
   }
 
-  .trust__figure :global(img) {
-    aspect-ratio: 3 / 4;
+  /* ---------------------------------------------------------------- S4 story */
+  .story__copy {
+    grid-column: 1 / span 6;
+    align-content: center;
+  }
+
+  .story :global(.story__mark) {
+    width: 3.5rem;
+    height: auto;
+    color: var(--bronze);
+  }
+
+  .story__photo {
+    grid-column: 8 / span 5;
+  }
+
+  .story__photo :global(img) {
+    aspect-ratio: 4 / 5;
     object-fit: cover;
     object-position: 50% 78%;
   }
 
-  .trust__link {
-    grid-column: 1 / -1;
-    margin-top: calc(var(--s-5) * -1);
+  /* ---------------------------------------------------------------- S6 + S7 roots */
+  .roots__figure {
+    grid-column: 1 / span 6;
+    position: relative;
   }
 
-  /* ---------------------------------------------------------------- trade */
+  .roots__figure :global(img) {
+    aspect-ratio: 5 / 4;
+    object-fit: cover;
+  }
+
+  .roots__caption {
+    position: absolute;
+    left: var(--s-4);
+    bottom: var(--s-4);
+    margin: 0;
+    padding: 0.375rem 0.625rem;
+    background: var(--paper-soft);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--ink);
+  }
+
+  .roots__copy {
+    grid-column: 8 / span 5;
+    align-content: center;
+  }
+
+  .roots__copy p:not(.eyebrow):not(.lead) {
+    color: var(--ink-2);
+  }
+
+  /* ---------------------------------------------------------------- S8 ritual */
+  .ritual__steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-6) clamp(1rem, 2.4vw, 2.5rem);
+    margin: var(--s-7) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ritual__steps li {
+    display: grid;
+    gap: var(--s-3);
+    align-content: start;
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .ritual__no {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--bronze);
+  }
+
+  .ritual__steps p {
+    color: var(--ink-2);
+  }
+
+  /* ---------------------------------------------------------------- S9 business */
+  .business__head {
+    max-width: 44rem;
+  }
+
+  .business .actions {
+    margin-top: var(--s-6);
+  }
+
+  /* ---------------------------------------------------------------- V1 trade */
   .trade__head {
     grid-column: 1 / span 7;
   }
@@ -456,7 +421,7 @@ const organization = {
     grid-column: 1 / -1;
   }
 
-  /* ---------------------------------------------------------------- kitchen */
+  /* ---------------------------------------------------------------- V1 kitchen */
   .kitchen__head {
     grid-column: 1 / span 6;
     align-content: start;
@@ -483,96 +448,46 @@ const organization = {
     border-bottom: 1px solid var(--rule);
   }
 
-  /* ---------------------------------------------------------------- closing */
-  .closing {
-    padding-top: 0;
-  }
-
-  .closing__inner {
-    display: grid;
-    gap: var(--s-5);
-    justify-items: start;
-    padding-top: var(--section-pad);
+  /* ---------------------------------------------------------------- S10 last line */
+  .lastline {
+    padding-block: var(--s-6);
     border-top: 1px solid var(--rule);
   }
 
-  .closing .actions {
-    margin-top: var(--s-3);
+  .lastline p {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-align: center;
+    color: var(--bronze);
   }
 
   /* ---------------------------------------------------------------- responsive composition */
   @media (max-width: 63.99rem) {
-    .origin__head,
-    .origin__body,
-    .saffron__head,
-    .saffron :global(.saffron__figure),
-    .saffron__points,
-    .product__figure,
-    .product__body,
-    .trust__head,
-    .trust__list,
-    .trust__figure,
+    .why__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .story__copy,
+    .story__photo,
+    .roots__figure,
+    .roots__copy,
     .trade__head,
     .kitchen__head,
     .kitchen__dishes {
       grid-column: 1 / -1;
-      grid-row: auto;
     }
 
-    .product__figure {
-      position: static;
-    }
-
-    .product__figure :global(img) {
-      aspect-ratio: 4 / 3;
-    }
-
-    .trust__figure {
-      max-width: 26rem;
-    }
-
-    .saffron__points {
-      grid-template-columns: repeat(3, 1fr);
+    .ritual__steps,
+    .trade__formats {
+      grid-template-columns: 1fr;
       gap: var(--s-5);
     }
   }
 
-  @media (max-width: 47.99rem) {
-    .story__thread {
-      display: none;
-    }
-
-    .route {
+  @media (max-width: 35.99rem) {
+    .why__grid {
       grid-template-columns: 1fr;
-      border-top: 0;
-      border-left: 1px solid var(--saffron);
-      margin-top: 0;
-    }
-
-    .route li {
-      padding: 0 0 var(--s-5) var(--s-5);
-    }
-
-    .route li:last-child {
-      padding-bottom: 0;
-    }
-
-    .route li::before {
-      top: 0.5rem;
-      left: -4px;
-    }
-
-    .saffron__points,
-    .trade__formats {
-      grid-template-columns: 1fr;
-    }
-
-    .trade__formats {
-      gap: var(--s-6) 0;
-    }
-
-    .trust__list li {
-      grid-template-columns: 2.5rem 1fr;
     }
   }
 </style>

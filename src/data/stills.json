@@ -6,34 +6,34 @@
       {
         "src": "/img/origin-desktop-960.avif",
         "width": 960,
-        "bytes": 5852
+        "bytes": 5856
       },
       {
         "src": "/img/origin-desktop-1440.avif",
         "width": 1440,
-        "bytes": 8832
+        "bytes": 8878
       },
       {
         "src": "/img/origin-desktop-1920.avif",
         "width": 1920,
-        "bytes": 11763
+        "bytes": 11755
       }
     ],
     "webp": [
       {
         "src": "/img/origin-desktop-960.webp",
         "width": 960,
-        "bytes": 9310
+        "bytes": 9408
       },
       {
         "src": "/img/origin-desktop-1440.webp",
         "width": 1440,
-        "bytes": 15500
+        "bytes": 15608
       },
       {
         "src": "/img/origin-desktop-1920.webp",
         "width": 1920,
-        "bytes": 22004
+        "bytes": 22284
       }
     ]
   },
@@ -44,44 +44,44 @@
       {
         "src": "/img/arrival-desktop-960.avif",
         "width": 960,
-        "bytes": 15364
+        "bytes": 18329
       },
       {
         "src": "/img/arrival-desktop-1440.avif",
         "width": 1440,
-        "bytes": 24738
+        "bytes": 30652
       },
       {
         "src": "/img/arrival-desktop-1920.avif",
         "width": 1920,
-        "bytes": 33930
+        "bytes": 43072
       },
       {
         "src": "/img/arrival-desktop-2560.avif",
         "width": 2560,
-        "bytes": 46821
+        "bytes": 60033
       }
     ],
     "webp": [
       {
         "src": "/img/arrival-desktop-960.webp",
         "width": 960,
-        "bytes": 22562
+        "bytes": 29346
       },
       {
         "src": "/img/arrival-desktop-1440.webp",
         "width": 1440,
-        "bytes": 38492
+        "bytes": 50330
       },
       {
         "src": "/img/arrival-desktop-1920.webp",
         "width": 1920,
-        "bytes": 55610
+        "bytes": 71074
       },
       {
         "src": "/img/arrival-desktop-2560.webp",
         "width": 2560,
-        "bytes": 78956
+        "bytes": 100796
       }
     ]
   },
@@ -92,34 +92,34 @@
       {
         "src": "/img/origin-mobile-540.avif",
         "width": 540,
-        "bytes": 7279
+        "bytes": 7324
       },
       {
         "src": "/img/origin-mobile-810.avif",
         "width": 810,
-        "bytes": 10973
+        "bytes": 11031
       },
       {
         "src": "/img/origin-mobile-1080.avif",
         "width": 1080,
-        "bytes": 14457
+        "bytes": 14718
       }
     ],
     "webp": [
       {
         "src": "/img/origin-mobile-540.webp",
         "width": 540,
-        "bytes": 12134
+        "bytes": 12270
       },
       {
         "src": "/img/origin-mobile-810.webp",
         "width": 810,
-        "bytes": 19462
+        "bytes": 19434
       },
       {
         "src": "/img/origin-mobile-1080.webp",
         "width": 1080,
-        "bytes": 27758
+        "bytes": 28004
       }
     ]
   },
@@ -130,34 +130,34 @@
       {
         "src": "/img/arrival-mobile-540.avif",
         "width": 540,
-        "bytes": 11127
+        "bytes": 13081
       },
       {
         "src": "/img/arrival-mobile-810.avif",
         "width": 810,
-        "bytes": 18197
+        "bytes": 22575
       },
       {
         "src": "/img/arrival-mobile-1080.avif",
         "width": 1080,
-        "bytes": 25880
+        "bytes": 31772
       }
     ],
     "webp": [
       {
         "src": "/img/arrival-mobile-540.webp",
         "width": 540,
-        "bytes": 16460
+        "bytes": 21070
       },
       {
         "src": "/img/arrival-mobile-810.webp",
         "width": 810,
-        "bytes": 28706
+        "bytes": 35938
       },
       {
         "src": "/img/arrival-mobile-1080.webp",
         "width": 1080,
-        "bytes": 41722
+        "bytes": 52620
       }
     ]
   },
@@ -168,24 +168,24 @@
       {
         "src": "/img/crocus-640.avif",
         "width": 640,
-        "bytes": 12097
+        "bytes": 12300
       },
       {
         "src": "/img/crocus-960.avif",
         "width": 960,
-        "bytes": 19311
+        "bytes": 19468
       }
     ],
     "webp": [
       {
         "src": "/img/crocus-640.webp",
         "width": 640,
-        "bytes": 18420
+        "bytes": 18700
       },
       {
         "src": "/img/crocus-960.webp",
         "width": 960,
-        "bytes": 30036
+        "bytes": 30360
       }
     ]
   },
@@ -196,34 +196,34 @@
       {
         "src": "/img/stigma-640.avif",
         "width": 640,
-        "bytes": 8059
+        "bytes": 8308
       },
       {
         "src": "/img/stigma-960.avif",
         "width": 960,
-        "bytes": 12090
+        "bytes": 12444
       },
       {
         "src": "/img/stigma-1440.avif",
         "width": 1440,
-        "bytes": 18335
+        "bytes": 18854
       }
     ],
     "webp": [
       {
         "src": "/img/stigma-640.webp",
         "width": 640,
-        "bytes": 12300
+        "bytes": 12476
       },
       {
         "src": "/img/stigma-960.webp",
         "width": 960,
-        "bytes": 19808
+        "bytes": 20438
       },
       {
         "src": "/img/stigma-1440.webp",
         "width": 1440,
-        "bytes": 31312
+        "bytes": 32470
       }
     ]
   },
@@ -234,24 +234,24 @@
       {
         "src": "/img/saffron-640.avif",
         "width": 640,
-        "bytes": 10372
+        "bytes": 9960
       },
       {
         "src": "/img/saffron-960.avif",
         "width": 960,
-        "bytes": 15550
+        "bytes": 15049
       }
     ],
     "webp": [
       {
         "src": "/img/saffron-640.webp",
         "width": 640,
-        "bytes": 17282
+        "bytes": 16570
       },
       {
         "src": "/img/saffron-960.webp",
         "width": 960,
-        "bytes": 26342
+        "bytes": 25634
       }
     ]
   },
@@ -262,34 +262,34 @@
       {
         "src": "/img/jar-640.avif",
         "width": 640,
-        "bytes": 13296
+        "bytes": 16493
       },
       {
         "src": "/img/jar-960.avif",
         "width": 960,
-        "bytes": 20231
+        "bytes": 25199
       },
       {
         "src": "/img/jar-1440.avif",
         "width": 1440,
-        "bytes": 30690
+        "bytes": 38429
       }
     ],
     "webp": [
       {
         "src": "/img/jar-640.webp",
         "width": 640,
-        "bytes": 19872
+        "bytes": 25756
       },
       {
         "src": "/img/jar-960.webp",
         "width": 960,
-        "bytes": 31492
+        "bytes": 40222
       },
       {
         "src": "/img/jar-1440.webp",
         "width": 1440,
-        "bytes": 49986
+        "bytes": 63588
       }
     ]
   },
@@ -300,44 +300,44 @@
       {
         "src": "/img/anatomy-640.avif",
         "width": 640,
-        "bytes": 23069
+        "bytes": 23007
       },
       {
         "src": "/img/anatomy-960.avif",
         "width": 960,
-        "bytes": 44088
+        "bytes": 43720
       },
       {
         "src": "/img/anatomy-1440.avif",
         "width": 1440,
-        "bytes": 82402
+        "bytes": 81497
       },
       {
         "src": "/img/anatomy-1920.avif",
         "width": 1920,
-        "bytes": 124772
+        "bytes": 123822
       }
     ],
     "webp": [
       {
         "src": "/img/anatomy-640.webp",
         "width": 640,
-        "bytes": 34848
+        "bytes": 35498
       },
       {
         "src": "/img/anatomy-960.webp",
         "width": 960,
-        "bytes": 66356
+        "bytes": 65972
       },
       {
         "src": "/img/anatomy-1440.webp",
         "width": 1440,
-        "bytes": 122290
+        "bytes": 121374
       },
       {
         "src": "/img/anatomy-1920.webp",
         "width": 1920,
-        "bytes": 182072
+        "bytes": 179076
       }
     ]
   },

@@ -1,5 +1,9 @@
 # Shopify: Status und Anschluss
 
+**Stand 16.10.2026:** Der Store existiert (`izt0j1-cw.myshopify.com`, bisher mit Shopify-Theme auf royalspices.de). Entscheidung des Nutzers: headless, Preise aus Shopify, Grade 1. Umgesetzt mit Shopify A (T-20261016-03): `src/lib/commerce/catalog.ts` lädt beim Build die Produkte aus der Storefront API, daraus entstehen `/produkte/` und je Handle `/produkte/<handle>/` (heute `herat-negin-safran-1-g-grade-a` und `safran-herat-negin-0-5g`). Ein API-Fehler bricht den Build ab. Ohne Store entstehen die Seiten aus den Handles in `src/data/product.ts`, ohne Preis und mit Anfrageweg. Gegen den echten Store ist noch nicht gebaut worden (kein Token), nur gegen eine Fixture. Der Abschnitt „Status (06.10.2026)“ unten beschreibt die Lage vor dem Store. Entscheidungen und offene Punkte: `docs/UEBERGABE-SHOPIFY.md`; Live-Inventar mit Abgleichliste: `docs/LIVE-INVENTAR.md`.
+
+**Stand 17.10.2026:** Die technischen Shopify-Punkte aus `docs/UEBERGABE-SHOPIFY.md` sind erledigt (T-20261017-09, -10). M1: `tools/qa/live-text.mjs` vergleicht den Live-Text wörtlich mit dem Build, mit Fixture-Store 0 offene Abweichungen; vier begründete Abweichungen (A1–A4 in `docs/LIVE-INVENTAR.md`) warten auf die Bestätigung des Nutzers. M5: keine Schlüssel im Projekt, nur `.env.example` mit Platzhaltern. M7: CSP wie unten unter „Security“, Shopify-Texte per `textContent`. Interne Hinweise (O4, O5, PRÜFEN) stehen nur noch im Quelltext, nicht im ausgelieferten HTML. Offen bleibt nur, was der Kunde in Shopify erledigt (O1, O2, O4, O6, O7) und der Testkauf (M9) mit echtem Store.
+
 **Status (06.10.2026): vorbereitet, nicht aktiv.** Es gibt noch keinen Store und keine Zugangsdaten. Die Website enthält deshalb keine Preise, keinen Warenkorb und keine simulierten Commerce-Daten. Das Produkt führt in die Anfrage.
 
 Grundsatz der Spezifikation (§19–§21): Shopify ist die Commerce-Infrastruktur, die Website bleibt das Royal-Spices-Frontend. Produkte, Varianten, Preise, Verfügbarkeit, Warenkorb, Checkout und Bestellungen liegen in Shopify. Nichts davon wird im Frontend dupliziert.
@@ -48,7 +52,7 @@ Zahlung und Bestellabwicklung werden nicht selbst entwickelt. Die Website überg
 
 ## Anschluss in fünf Schritten
 
-1. **Store einrichten.** Produkt „Safranfäden" mit dem Handle `safran-negin-1g` anlegen (so erwartet es `src/data/product.ts`, Feld `shopifyHandle`). Variante(n) über die Option „Gebinde", z. B. „1 g". Preis, Bestand, SKU und Versandprofil in Shopify pflegen.
+1. **Store prüfen.** Die Produkte existieren (Handles `herat-negin-safran-1-g-grade-a` und `safran-herat-negin-0-5g`). Jedes Produkt des Kanals bekommt eine Seite. `src/data/product.ts` ergänzt per Handle die V1-Fakten und liefert die Handles für den Build ohne Store. Ein Produkt ohne Eintrag dort zeigt nur Titel und Beschreibung aus Shopify. Preis, Bestand, SKU und Versandprofil in Shopify pflegen.
 2. **Vertriebskanal „Headless" hinzufügen**, das Produkt für diesen Kanal veröffentlichen und einen öffentlichen Storefront-API-Token erzeugen. Benötigte Rechte: Produkte lesen, Carts schreiben und lesen.
 3. **Umgebungsvariablen beim Build setzen** (`.env.example`):
 
@@ -66,13 +70,13 @@ Zahlung und Bestellabwicklung werden nicht selbst entwickelt. Die Website überg
 
 | Punkt | Warum |
 | --- | --- |
-| Preis, SKU, Versandkosten, Lieferländer | Pflichtangaben für den Verkauf; stehen noch nicht fest (`docs/PRODUCT-TRUTH.md`) |
+| Grundpreis, Versandkosten, Lieferländer | Preise und SKUs stehen in Shopify (Stand 15.10.: 8,90 € / RS-SAF-HN-05, 12,90 € / RS-SAF-HN-1G) und kommen von dort. Offen: Grundpreis je kg für das 0,5-g-Glas (`unitPrice` fehlt in der Query, rechtlich klären), Versandtarife in Shopify und auf `/versand-lieferung/` gleich halten |
 | Welche Gebinde direkt kaufbar sind | Vorgesehen: das 1-g-Glas. Display und lose Ware bleiben beim Anfrageweg (Spezifikation §22) |
 | Shopify-Plan | Erst nach den realen Anforderungen entscheiden: Preisgruppen, Märkte, Firmenkonditionen (Spezifikation §23) |
 | Produktdaten als Metafelder | Herkunft, Region, Grade, Gebinde, MOQ sollen in Shopify gepflegt werden (§21). Das Frontend liest bisher Titel, Varianten, Preis und Verfügbarkeit; die beschreibenden Fakten stehen noch in `src/data/product.ts` und ziehen um, sobald die Metafelder existieren |
-| Strukturierte Daten | Das `Product`-JSON-LD enthält bewusst kein Angebot (`offers`). Es wird ergänzt, sobald Preis und Verfügbarkeit aus Shopify kommen |
+| Strukturierte Daten | Erledigt mit SEO-A (T-20261017-05): `Product` mit `Offer` aus dem Katalog, nur im Build mit Store und Preis > 0 |
 
 ## Später möglich, nicht Teil von V1
 
-- **B2B:** Kataloge, Mengenregeln und Firmenpreise über Shopify B2B. Der Anfrageweg auf `/handel/` bleibt bis dahin der Handelseinstieg.
+- **B2B:** Kataloge, Mengenregeln und Firmenpreise über Shopify B2B. Der Anfrageweg auf `/b2b/` bleibt bis dahin der Handelseinstieg.
 - **Kundenkonten:** über Shopifys Customer Account API; kein eigenes Login-System (Spezifikation §24).

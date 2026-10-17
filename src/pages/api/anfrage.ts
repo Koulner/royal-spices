@@ -22,11 +22,11 @@ type Outcome =
   | { status: number; body: { ok: false; error: string; message: string; fields?: Record<string, string> }; retryAfter?: number };
 
 const MESSAGES = {
-  validation: 'Bitte prüfen Sie die markierten Angaben.',
-  rate: 'Das waren viele Anfragen in kurzer Zeit. Bitte versuchen Sie es später noch einmal oder rufen Sie uns an.',
+  validation: 'Bitte prüfe die markierten Angaben.',
+  rate: 'Das waren viele Anfragen in kurzer Zeit. Bitte versuche es später noch einmal oder ruf uns an.',
   type: 'Die Anfrage konnte so nicht verarbeitet werden.',
-  size: 'Die Anfrage ist zu umfangreich. Bitte kürzen Sie Ihre Nachricht.',
-  unavailable: 'Die Anfrage konnte gerade nicht zugestellt werden. Bitte schreiben Sie uns direkt oder rufen Sie an.',
+  size: 'Die Anfrage ist zu umfangreich. Bitte kürze deine Nachricht.',
+  unavailable: 'Die Anfrage konnte gerade nicht zugestellt werden. Bitte schreib uns direkt oder ruf an.',
 };
 
 async function readBody(request: Request): Promise<string | null> {

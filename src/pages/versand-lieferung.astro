@@ -1,0 +1,64 @@
+---
+// Q7 – Texte wörtlich wie Live /pages/versand-lieferung (docs/LIVE-INVENTAR.md), V1-Aufbau.
+// Die Versandtarife sind fester Text wie Live. Sie müssen zu den Shopify-Versandeinstellungen
+// passen; bei jeder Tarifänderung in Shopify hier mit anpassen.
+import Base from '@/layouts/Base.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+---
+
+<Base
+  title="Versand & Lieferung"
+  description="Wir möchten, dass dein Royal-Spices-Paket sicher bei dir ankommt. Maßgeblich sind die im Checkout angezeigten Lieferoptionen und Kosten."
+>
+  <section class="page-head">
+    <div class="wrap opener">
+      <Breadcrumbs
+        items={[
+          { name: 'Start', path: '/' },
+          { name: 'Versand & Lieferung', path: '/versand-lieferung/' },
+        ]}
+      />
+      <h1 class="display-xl">Versand &amp; Lieferung</h1>
+    </div>
+  </section>
+
+  <section class="section--tight ship-section" aria-labelledby="ship-title">
+    <div class="wrap split">
+      <div class="split__a opener">
+        <h2 class="display-l" id="ship-title">Versand &amp; Lieferung</h2>
+        <p class="lead">Wir möchten, dass dein Royal-Spices-Paket sicher bei dir ankommt. Die aktuell im Shop hinterlegten Versandtarife lauten:</p>
+      </div>
+      <div class="split__b">
+        <ul class="rows">
+          <li>
+            <h3 class="display-s">Deutschland</h3>
+            <p>Standardversand: <strong>4,99 €</strong>. Ab einem Warenwert von <strong>50,00 €</strong> wird innerhalb Deutschlands eine kostenlose Standardversandoption angeboten.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Europäische Union</h3>
+            <p>Standardversand in die im Checkout angebotenen EU-Länder: <strong>13,99 €</strong>.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Weitere internationale Lieferziele</h3>
+            <p>Für weitere im Checkout angebotene Lieferländer ist ein Standardtarif von <strong>19,99 €</strong> hinterlegt. Ob wir deine Adresse beliefern, wird im Checkout angezeigt.</p>
+          </li>
+          <li>
+            <h3 class="display-s">Lieferzeiten</h3>
+            <p>Die Bearbeitungs- und Transportzeit hängt von Verfügbarkeit, Lieferland und Versanddienstleister ab. Weitere Versandinformationen erhältst du im Bestellprozess. Bei Fragen zur Lieferung nutze bitte unser <a href="/kontakt/">Kontaktformular</a>.</p>
+          </li>
+        </ul>
+        <p class="small">Maßgeblich sind die im Checkout für die konkrete Bestellung angezeigten Lieferoptionen und Kosten.</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .ship-section {
+    padding-bottom: clamp(4rem, 8vw, 7rem);
+  }
+
+  .rows strong {
+    color: var(--ink);
+  }
+</style>

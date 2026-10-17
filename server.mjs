@@ -1,13 +1,15 @@
 // Production entry. One small Node server:
 //   1. sets the security headers on every response,
-//   2. serves the prerendered site from dist/client (with caching and compression),
-//   3. hands everything else (the inquiry endpoint) to the Astro request handler.
+//   2. answers retired paths (old Shopify shop, old V1 pages) with a 301 (src/config/redirects.mjs),
+//   3. serves the prerendered site from dist/client (with caching and compression),
+//   4. hands everything else (the inquiry endpoint) to the Astro request handler.
 // Put a TLS-terminating proxy or platform in front of it; HSTS is sent once HTTPS is detected.
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { brotliCompressSync, gzipSync, constants as zlib } from 'node:zlib';
 import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { redirectTarget } from './src/config/redirects.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), 'dist', 'client');
 const { handler } = await import('./dist/server/entry.mjs');
@@ -137,6 +139,12 @@ const server = createServer(async (req, res) => {
     if (!pathname.startsWith('/api/')) {
       if (req.method !== 'GET' && req.method !== 'HEAD') {
         res.writeHead(405, { allow: 'GET, HEAD' }).end();
+        return;
+      }
+      // old shop and page URLs: one permanent hop to the current page, query string kept
+      const target = redirectTarget(pathname);
+      if (target) {
+        res.writeHead(301, { location: target + url.search }).end();
         return;
       }
       const found = await resolveFile(pathname);
