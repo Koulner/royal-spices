@@ -1,3 +1,10 @@
+# Stand 17.10.2026, spätabends — Übertrag nach `dev` (lokal committet, Push offen)
+
+Stand von `royal-spices-v1/` als **T-20261017-11** in den Worktree `royal-spices/royal-spices/` übertragen: Commit `a94d591` auf `dev` (Basis `cc4bb4a` = `origin/dev`), 917 Pfade (50 neu, 862 geändert, 5 gelöscht), davon 820 neu gerenderte Hero- und Standbilder. Vorher geprüft: `npm test` 115/115, Build wie in der CI (`astro check` 0/0/0, Pages-Kopie) grün, keine Schlüssel, keine ignorierten Dateien im Commit. `.gitignore` ignoriert jetzt `__pycache__/`.
+- **Noch nicht gepusht.** Das Repo `Koulner/royal-spices` ist öffentlich, ein Push auf `dev` startet `.github/workflows/static.yml` (GitHub-Pages-Vorschau, ohne Store, also ohne Preise). Push nur nach Freigabe des Nutzers.
+- Git auf E: (exFAT) meldet „dubious ownership“: Befehle mit `git -c safe.directory=* -C <Pfad>` aufrufen, ohne globale Änderung.
+- Übertrag künftig: `robocopy royal-spices-v1 royal-spices\royal-spices /E /XD node_modules dist dist-pages .astro .raw .data __pycache__ .git /XF .env`, im Projekt gelöschte Dateien per `git rm`, dann `git add -A` und die gestagte Liste gegen den Vergleich `--work-tree=royal-spices-v1` prüfen.
+
 # Stand 17.10.2026, spätabends — Shopify-Restpunkte erledigt (M1, M5, M7, Auslieferung)
 
 Auftrag des Nutzers: die begonnenen Shopify-Anpassungen zu Ende bringen. Umgesetzt im Hauptchat als **T-20261017-09** und **-10**, geprüft und übernommen (`_agent/LOG.md`).
