@@ -2,17 +2,25 @@
 import { defineConfig, envField, fontProviders } from 'astro/config';
 import node from '@astrojs/node';
 import sitemap from '@astrojs/sitemap';
+import { loadEnv } from 'vite';
 
 // No usage data leaves the machine from this project's tooling.
 process.env.ASTRO_TELEMETRY_DISABLED = '1';
+
+// This file runs before Astro loads .env, so process.env alone misses the values set there
+// (the Shopify domain would reach astro:env but not the CSP below). loadEnv reads .env and
+// .env.<mode> plus the process environment (which wins), as astro:env does. Astro sets NODE_ENV
+// to the mode (build: production, dev: development) before loading this file.
+const env = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '');
 
 const FONTSOURCE = './node_modules/@fontsource';
 
 // Shopify is optional until the store exists. When the public env vars are set, the
 // Storefront API host is added to connect-src; otherwise the policy stays same-origin only.
-const shopDomain = process.env.PUBLIC_SHOPIFY_STORE_DOMAIN;
+const shopDomain = env.PUBLIC_SHOPIFY_STORE_DOMAIN;
 
 export default defineConfig({
+  // Read from the process environment only: tools/qa/seo.mjs and tools/seo/indexnow.mjs parse this line.
   site: process.env.SITE_URL ?? 'https://royalspices.de',
   trailingSlash: 'always',
   // Pages are prerendered HTML. Only the inquiry endpoint runs on the server.

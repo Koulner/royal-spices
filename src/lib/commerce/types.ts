@@ -29,6 +29,8 @@ export type ListedProduct = {
   title: string;
   /** Storefront `description`: plain text, HTML already stripped by Shopify. */
   description: string;
+  /** Storefront `descriptionHtml`: editor HTML. Only read into text blocks (rich-text.ts), never output as HTML. */
+  descriptionHtml: string;
   images: ProductImage[];
   /** The product's first variant; every Shopify product has at least one. */
   firstVariant: { id: string; sku: string | null; availableForSale: boolean; price: Money } | null;

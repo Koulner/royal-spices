@@ -1,0 +1,27 @@
+---
+// Inline text of a description block (rich-text.ts): spans as strong/em, line breaks as <br />.
+// Text only: Astro escapes it.
+import type { Inline } from '@/lib/commerce/rich-text';
+
+interface Props {
+  inline: Inline[];
+}
+const { inline } = Astro.props;
+---
+
+{
+  inline.map((node) =>
+    'br' in node ? (
+      <br />
+    ) : node.strong && node.em ? (
+      // one line: Astro keeps a space for a line break between tags
+      <strong><em>{node.text}</em></strong>
+    ) : node.strong ? (
+      <strong>{node.text}</strong>
+    ) : node.em ? (
+      <em>{node.text}</em>
+    ) : (
+      node.text
+    ),
+  )
+}

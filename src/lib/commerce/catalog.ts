@@ -6,12 +6,14 @@ import { createStorefront } from './storefront.ts';
 import { formatMoney } from './cart.ts';
 import { CommerceError, type CommerceConfig, type ListedProduct } from './types.ts';
 import { productFacts, factsToText, type ProductFacts } from '../../data/product.ts';
+import { htmlToBlocks, textToBlocks, blocksToText, mapText, type Block } from './rich-text.ts';
 import type { Origin, ProductInput } from '../seo/schema.ts';
 
 export interface CatalogProduct {
   handle: string;
   title: string; // mit Store Shopify-Titel, ohne Store aus product.ts
   description: string; // Klartext (Storefront `description`), nie HTML
+  body: Block[]; // Beschreibung als Textblöcke (aus `descriptionHtml`, sonst aus dem Klartext), nie HTML
   price: { amount: string; currencyCode: string } | null; // null ohne Store
   available: boolean | null; // null ohne Store
   variantId: string | null; // erste Variante
@@ -42,10 +44,14 @@ export function toGrade1(text: string): string {
 function fromShopify(p: ListedProduct, facts: ProductFacts | null): CatalogProduct {
   const v = p.firstVariant;
   const image = p.images[0] ?? null;
+  const description = toGrade1(p.description);
+  // The structure comes from the editor HTML; without it (or with an empty one) one paragraph per line of text.
+  const body = mapText(htmlToBlocks(p.descriptionHtml), toGrade1);
   return {
     handle: p.handle,
     title: toGrade1(p.title),
-    description: toGrade1(p.description),
+    description,
+    body: body.length ? body : textToBlocks(description),
     price: v ? { amount: v.price.amount, currencyCode: v.price.currencyCode } : null,
     available: v ? v.availableForSale : false,
     variantId: v ? v.id : null,
@@ -62,6 +68,7 @@ export async function loadCatalog({ config, fetchImpl = fetch, facts = productFa
       handle,
       title: f.title,
       description: factsToText(f),
+      body: textToBlocks(factsToText(f)),
       price: null,
       available: null,
       variantId: null,
@@ -102,10 +109,11 @@ export function structuredDescription(product: CatalogProduct): ProductFacts | n
 
 /**
  * Plain text of a product for the meta description and the Product schema, so both say the same:
- * the opening paragraph when the structure is known, otherwise the Shopify text; whitespace collapsed.
+ * the opening paragraph when the structure is known, otherwise the description blocks joined with
+ * spaces (the plain Shopify text glues them together); whitespace collapsed.
  */
 export function productPlainText(product: CatalogProduct): string {
-  return (structuredDescription(product)?.intro.text ?? product.description).replace(/\s+/g, ' ').trim();
+  return (structuredDescription(product)?.intro.text ?? blocksToText(product.body)).replace(/\s+/g, ' ').trim();
 }
 
 /**

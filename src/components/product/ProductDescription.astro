@@ -1,16 +1,19 @@
 ---
 // Product description, word for word as in Shopify (only Grade A -> Grade 1, see catalog.ts).
 //   Shopify text = product.ts text -> rendered with the structure from product.ts (headings, rows, breaks)
-//   otherwise (text changed in Shopify, product unknown to product.ts) -> the Shopify text as it is
+//   otherwise (text changed in Shopify, product unknown to product.ts) -> the blocks read from the
+//   Shopify editor HTML (rich-text.ts) in the same look: h2 with a lead, h3 sections, rows
 // Everything is text: Astro escapes it, nothing from Shopify is ever rendered as HTML.
 import { structuredDescription, type CatalogProduct } from '@/lib/commerce/catalog';
+import { groupByHeading } from '@/lib/commerce/rich-text';
+import DescriptionInline from './DescriptionInline.astro';
 
 interface Props {
   product: CatalogProduct;
 }
 const { product } = Astro.props;
 const facts = structuredDescription(product);
-const paragraphs = product.description.split('\n').map((p) => p.trim()).filter(Boolean);
+const groups = facts ? [] : groupByHeading(product.body);
 const lines = (text: string) => text.split('\n');
 ---
 
@@ -39,7 +42,48 @@ const lines = (text: string) => text.split('\n');
         ))}
       </>
     ) : (
-      paragraphs.map((paragraph) => <p>{paragraph}</p>)
+      groups.map(({ heading, blocks }) => {
+        const content = blocks.map((block, i) =>
+          block.kind === 'paragraph' ? (
+            <p class={heading?.level === 2 && i === 0 ? 'lead' : undefined}>
+              <DescriptionInline inline={block.inline} />
+            </p>
+          ) : block.kind === 'list' && block.ordered ? (
+            <ol>
+              {block.items.map((item) => (
+                <li>
+                  <DescriptionInline inline={item} />
+                </li>
+              ))}
+            </ol>
+          ) : block.kind === 'list' ? (
+            <ul class="pdesc__rows">
+              {block.items.map((item) => (
+                <li>
+                  <DescriptionInline inline={item} />
+                </li>
+              ))}
+            </ul>
+          ) : null,
+        );
+        return heading?.level === 3 ? (
+          <section class="pdesc__section">
+            <h3 class="display-s">
+              <DescriptionInline inline={heading.inline} />
+            </h3>
+            {content}
+          </section>
+        ) : (
+          <>
+            {heading && (
+              <h2 class="display-l">
+                <DescriptionInline inline={heading.inline} />
+              </h2>
+            )}
+            {content}
+          </>
+        );
+      })
     )
   }
 </div>
@@ -65,7 +109,8 @@ const lines = (text: string) => text.split('\n');
     list-style: none;
   }
 
-  .pdesc__rows strong {
+  /* :global, as the strong of the Shopify blocks comes from DescriptionInline */
+  .pdesc__rows :global(strong) {
     font-weight: 600;
   }
 </style>

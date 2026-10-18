@@ -1,4 +1,23 @@
-# Stand 17.10.2026, spätabends — Übertrag nach `dev` (lokal committet, Push offen)
+# Stand 18.10.2026, abends — Übertrag der Shopify-Fixes nach `dev`, nicht gepusht
+
+T-20261018-01 und -02 als **T-20261018-04** in den Desktop-Klon `C:\Users\lukas\Desktop\royal-spices\royal-spices` übertragen (Branch `dev`). Vorher `git pull --ff-only` von `01a5d94` auf `1d7954a` = `origin/dev`. Ein Commit mit 14 Pfaden (4 neu, 10 geändert, keine gelöscht): `astro.config.mjs`, `src/lib/commerce/{rich-text,catalog,storefront,types}.ts`, `src/components/product/{ProductDescription,DescriptionInline}.astro`, `tests/{build-env,commerce,rich-text}.test.mjs`, `tests/fixtures/storefront-products.json`, `docs/{SHOPIFY,STATUS,UEBERGABE-SHOPIFY}.md`. Commit-Hash in `_agent/LOG.md`.
+- **Bewusst nicht dabei:** `docs/UEBERGABE-E3-DEMO.md` (Wunsch des Nutzers) und die Glas-Übernahme T-20261018-03 (`web_hero.py`, `saffron_fill.py`, `ASSETS.md`), die erst nach dem Kopieren auf H: kam. Beides geht mit dem nächsten Übertrag.
+- Im Worktree geprüft: `npm ci`, `npm test` 132/132, Build wie in der CI (`SITE_URL` = Pages-Origin, ohne Store) mit `astro check` 0/0/0, Pages-Kopie grün. Schlüsselsuche leer, keine ignorierten Dateien im Commit.
+- **Noch nicht gepusht.** Das Repo ist öffentlich, ein Push auf `dev` startet den Pages-Deploy. Push nur nach Freigabe des Nutzers.
+- In Git Bash `MSYS_NO_PATHCONV=1` vor `tools/pages/prepare.mjs --base /royal-spices` setzen, sonst wird der Pfad zu `C:/Program Files/Git/...`.
+
+# Stand 18.10.2026 — Prüfung von `dev`, Shopify-Fixes T-20261018-01 und -02
+
+Der Nutzer hat `origin/dev` (`1d7954a`) am 17.10. prüfen lassen: sauber gebaut, `npm test` 115/115, gegen den echten Store aber noch nie gelaufen. Zwei Fehler waren per Build belegt. Der Nutzer hat ihre Behebung freigegeben; beide sind übernommen (Stand je ID in `_agent/LOG.md`).
+- **T-20261018-01 (CSP mit `.env`):** `astro.config.mjs` liest die Store-Domain über `loadEnv`. Damit stimmen `connect-src` und `img-src` auch, wenn die Werte nur in `.env` stehen. Test: `tests/build-env.test.mjs`.
+- **T-20261018-02 (Produktbeschreibung):** Bisher zerfiel die Beschreibung zu einem verklebten Absatz („…im kleinen Glas.Herat Negin…“), sobald der Kunde den Text in Shopify änderte; Meta und JSON-LD ebenso. Jetzt kommt die Struktur aus `descriptionHtml`, beim Build in reinen Text zerlegt (`src/lib/commerce/rich-text.ts`, nie HTML in die Seite). Build mit geänderter Fixture: h2, h3 und Liste wie gewohnt, genau eine `h1`, kein „Glas.Herat“ in Seite, Meta oder JSON-LD. Details in `docs/SHOPIFY.md`, „Stand 18.10.2026, Produktbeschreibung“.
+- Im Projekt `npm test` 132/132, `astro check` 0/0/0. Build mit Fixture-Store: `live-text.mjs` meldet 0 offen. Build ohne Store grün.
+- Weitere Befunde der Prüfung sind noch nicht beauftragt: kein automatischer Neubau, Handles fest im Code, nur die erste Variante kaufbar, Grundpreis fehlt, API-Version, `seo.mjs` liest nur die Prozessumgebung. Sie stehen in `docs/UEBERGABE-SHOPIFY.md`, Abschnitt „Wiedereinstieg (Stand 18.10.2026)“.
+- T-01 und T-02 liegen nur auf H:, noch nicht in `dev`.
+
+# Stand 17.10.2026, spätabends — Übertrag nach `dev`, gepusht
+
+Nachtrag: `origin/dev` war beim Push schon `01a5d94` (10.10., ältere Glas-Dateien, alle vom Projekt überholt). Der Nutzer hat ihn gemergt (`1d7954a`, Baum identisch mit `69d7a18` und dem Projekt) und gepusht; der Pages-Deploy für `1d7954a` lief am 17.10. um 18:30 erfolgreich. `dev` = `origin/dev` = `1d7954a`. Dieser Nachtrag selbst ist noch nicht in `dev`, er geht mit dem nächsten Übertrag mit. Vor jedem Übertrag erst `git fetch` und `git status -sb` im Worktree prüfen.
 
 Stand von `royal-spices-v1/` als **T-20261017-11** in den Worktree `royal-spices/royal-spices/` übertragen: Commit `a94d591` auf `dev` (Basis `cc4bb4a` = `origin/dev`), 917 Pfade (50 neu, 862 geändert, 5 gelöscht), davon 820 neu gerenderte Hero- und Standbilder. Vorher geprüft: `npm test` 115/115, Build wie in der CI (`astro check` 0/0/0, Pages-Kopie) grün, keine Schlüssel, keine ignorierten Dateien im Commit. `.gitignore` ignoriert jetzt `__pycache__/`.
 - **Noch nicht gepusht.** Das Repo `Koulner/royal-spices` ist öffentlich, ein Push auf `dev` startet `.github/workflows/static.yml` (GitHub-Pages-Vorschau, ohne Store, also ohne Preise). Push nur nach Freigabe des Nutzers.

@@ -132,3 +132,37 @@ Für einen Build mit Fixture-Store ohne Netz: `_agent/staging/T-20261017-10/hilf
 **A1–A4 bestätigt (Nutzer, 17.10.2026):** Die Zeilen K5, F1, P1–P3, Q2, Q3 und Q5 stehen auf `geprüft` (P1 und P3 behalten den Hinweis auf den Grundpreis). M1 ist damit erfüllt bis auf Q9 (Datenschutz-Entwurf, Freigabe durch den Kunden). Neue Abweichungen brauchen weiter eine Bestätigung des Nutzers und einen Eintrag mit Begründung in `tools/live/rules.mjs`.
 
 **Offen beim Kunden (unverändert):** O1, O2, O4, O6, O7, Grundpreis 0,5 g (`unitPrice`), PRÜFEN-Marken im Datenschutz, PRODUCT-TRUTH Nr. 4 und 7, Catering-Katalog. Danach: Build gegen den echten Store, M1 erneut laufen lassen, Testkauf (M9), Launch mit `SITE_INDEXABLE=1`.
+
+## Wiedereinstieg (Stand 18.10.2026): Prüfung von dev, Fixes T-20261018-01/-02
+
+Der Nutzer hat `origin/dev` (`1d7954a`) am 17.10. prüfen lassen. Befund: sauber gebaut, `npm test` 115/115, gegen den echten Store aber noch nie gelaufen. Zwei Fehler sind per Build belegt; der Nutzer hat ihre Behebung freigegeben:
+
+1. **T-20261018-01, ÜBERNOMMEN.** Problem: CSP stimmte nicht, wenn der Schlüssel nur in `.env` stand. `astro.config.mjs` liest die Store-Domain jetzt über `loadEnv`. Neuer Test `tests/build-env.test.mjs`, `npm test` 120/120. Details: `_agent/staging/T-20261018-01/ERGEBNIS.md`.
+2. **T-20261018-02, ÜBERNOMMEN** (18.10., Hauptchat 2). Problem: Die Produktbeschreibung zerfiel zu einem verklebten Absatz, sobald der Kunde den Text in Shopify änderte. Jetzt holt die Abfrage `descriptionHtml`, `src/lib/commerce/rich-text.ts` zerlegt es beim Build in reine Textblöcke, und die Seite zeigt sie in der gewohnten Optik. Meta und JSON-LD trennen die Blöcke. Neu sind `tests/rich-text.test.mjs` und die Komponente `DescriptionInline.astro`. `npm test` 132/132, `astro check` 0/0/0. Details: `_agent/staging/T-20261018-02/ERGEBNIS.md`.
+
+Weitere Befunde der Prüfung (noch nicht beauftragt):
+
+- **Kein automatischer Neubau (H8).** Nur die Produktseite aktualisiert Preis und Bestand live. Startseite, `/produkte/` und das JSON-LD-`Offer` bleiben bis zum Neubau alt. Risiko: Abweichungen im Merchant Center.
+- **Handles fest im Code**, an 5 Stellen: `HomeCollection`, `HomeJourney` (zweimal), `product.ts`, `redirects.mjs`. Wird ein Handle umbenannt oder ein Produkt entfernt, zeigen Links ins Leere.
+- **Nur die erste Variante ist kaufbar** (`variants(first: 1)`). `SHOPIFY.md` beschreibt im Ablauf noch eine Variantenwahl.
+- **Grundpreis fehlt:** `unitPrice` wird nicht gelesen.
+- **API-Version:** 2026-07 bis etwa Mitte 2027 erneuern.
+- **`seo.mjs`** liest die Store-Domain (S7) und `SITE_URL` nur aus der Prozessumgebung.
+
+Abnahme mit echtem Store, sobald der Kunde O7 erledigt hat:
+
+- **Stufe 1, vor dem Umzug:**
+  - Build mit echten Werten, danach `live-text.mjs` und `seo.mjs --store`.
+  - Im Browser: keine CSP-Fehler, Bilder und Preis stimmen.
+  - Warenkorb: hinzufügen, ändern, entfernen, Neuladen.
+  - Checkout und Testkauf bis zur Bestellung, danach ist der Warenkorb leer.
+  - Preis- und Bestandsänderung in Shopify durchspielen.
+  - Token widerrufen: Der Build muss abbrechen.
+- **Stufe 2, am Umzugstag** (Teil B in `SEO-PHASE0-KUNDE.md`): erneuter Testkauf; `checkoutUrl` muss auf `checkout.royalspices.de` zeigen.
+- **Stufe 3, laufend:** Smoke-Test nach jedem Build. Den gibt es noch nicht.
+
+Übertrag nach `dev`:
+
+- T-01 und T-02 sind übernommen, liegen aber nur auf H:, noch nicht im Repo.
+- Das lokale `dev` unter Desktop steht 3 Commits hinter `origin/dev`. Vor dem Übertrag deshalb erst `git pull`.
+- Push nur nach Rückfrage.

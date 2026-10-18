@@ -38,6 +38,7 @@ const QUERIES = {
           handle
           title
           description
+          descriptionHtml
           images(first: 10) { nodes { url altText width height } }
           variants(first: 1) {
             nodes {
@@ -168,6 +169,7 @@ export function createStorefront(config: CommerceConfig, fetchImpl: Fetch = fetc
           handle: p.handle,
           title: p.title,
           description: p.description ?? '',
+          descriptionHtml: p.descriptionHtml ?? '',
           images: (p.images?.nodes ?? []).map((i: Raw) => ({ url: i.url, altText: i.altText ?? null, width: i.width, height: i.height })),
           firstVariant: v ? { id: v.id, sku: v.sku ?? null, availableForSale: v.availableForSale, price: v.price } : null,
         };

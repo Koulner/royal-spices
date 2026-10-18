@@ -8,6 +8,7 @@ import { CommerceError } from '../src/lib/commerce/types.ts';
 import { loadCatalog, formatPrice, structuredDescription, toGrade1, productPlainText, productSchemaInput, productOgImage } from '../src/lib/commerce/catalog.ts';
 import { buildProduct } from '../src/lib/seo/schema.ts';
 import { productFacts, factsToText } from '../src/data/product.ts';
+import { htmlToBlocks, textToBlocks, blocksToText } from '../src/lib/commerce/rich-text.ts';
 import { readFile } from 'node:fs/promises';
 
 const config = { domain: 'example.myshopify.com', token: 'public-token', apiVersion: '2026-07' };
@@ -198,13 +199,13 @@ function fixtureFetch(change = (data) => data) {
   return { fetchImpl, calls };
 }
 
-test('catalog query asks for handle, title, description, images and the first variant', async () => {
+test('catalog query asks for handle, title, description (text and HTML), images and the first variant', async () => {
   const fake = fixtureFetch();
   await loadCatalog({ config, fetchImpl: fake.fetchImpl });
   const query = fake.calls[0].query.replace(/\s+/g, ' ');
   assert.equal(fake.calls.length, 1, 'one request per catalog');
   assert.match(query, /products\(first: 50\)/);
-  for (const field of ['handle', 'title', 'description', 'images', 'url altText width height', 'variants(first: 1)', 'sku', 'availableForSale', 'price { amount currencyCode }']) {
+  for (const field of ['handle', 'title', 'description', 'descriptionHtml', 'images', 'url altText width height', 'variants(first: 1)', 'sku', 'availableForSale', 'price { amount currencyCode }']) {
     assert.ok(query.includes(field), field);
   }
 });
@@ -213,7 +214,7 @@ test('catalog maps the recorded Storefront answer, ordered like the live collect
   const catalog = await loadCatalog({ config, fetchImpl: fixtureFetch().fetchImpl });
   assert.deepEqual(catalog.map((p) => p.handle), ['safran-herat-negin-0-5g', 'herat-negin-safran-1-g-grade-a']);
   const [small, large] = catalog;
-  assert.deepEqual(Object.keys(small).sort(), ['available', 'description', 'facts', 'handle', 'image', 'price', 'sku', 'title', 'variantId']);
+  assert.deepEqual(Object.keys(small).sort(), ['available', 'body', 'description', 'facts', 'handle', 'image', 'price', 'sku', 'title', 'variantId']);
   assert.equal(small.title, 'Safran – Herat Negin Grade 1, 0,5 g');
   assert.equal(large.title, 'Herat Negin Safran – 1\u00a0g (Grade\u00a01)', 'with a store the title is Shopify’s, Grade 1');
   assert.deepEqual(small.price, { amount: '8.9', currencyCode: 'EUR' });
@@ -240,6 +241,7 @@ test('catalog without a store: pages from product.ts, no price, no availability'
     assert.equal(p.image, null);
     assert.ok(p.facts);
     assert.doesNotMatch(p.description, /<|>/);
+    assert.deepEqual(p.body, textToBlocks(factsToText(p.facts)), 'without a store the blocks are the product.ts text');
   }
   assert.equal(catalog[1].title, 'Herat Negin Safran – 1\u00a0g (Grade\u00a01)');
   for (const p of catalog) assert.equal(structuredDescription(p), p.facts, 'without a store the structure is always known');
@@ -266,13 +268,56 @@ test('catalog: the recorded Shopify description says what product.ts says, so th
   const edited = await loadCatalog({
     config,
     fetchImpl: fixtureFetch((data) => {
-      data.products.nodes[0].description = data.products.nodes[0].description.replace('Einige Fäden', 'Ein paar Fäden');
+      const p = data.products.nodes[0];
+      p.description = p.description.replace('Einige Fäden', 'Ein paar Fäden');
+      p.descriptionHtml = p.descriptionHtml.replace('Einige Fäden', 'Ein paar Fäden');
       return data;
     }).fetchImpl,
   });
   const changed = edited.find((p) => p.handle === 'herat-negin-safran-1-g-grade-a');
   assert.equal(structuredDescription(changed), null);
   assert.match(changed.description, /Ein paar Fäden/);
+  assert.match(blocksToText(changed.body), /Ein paar Fäden/);
+});
+
+const compact = (text) => text.replace(/\s+/g, '');
+const shape = (blocks) => blocks.map((b) => (b.kind === 'heading' ? `h${b.level}` : b.kind === 'list' ? `list${b.items.length}` : 'p'));
+
+test('catalog: the description blocks come from descriptionHtml and say what the plain text says, Grade 1', async () => {
+  const catalog = await loadCatalog({ config, fetchImpl: fixtureFetch().fetchImpl });
+  const recorded = Object.fromEntries(fixture.data.products.nodes.map((n) => [n.handle, n]));
+  assert.match(recorded['herat-negin-safran-1-g-grade-a'].descriptionHtml, /Grade(\s|&nbsp;)A/, 'the recorded HTML still says Grade A');
+  for (const p of catalog) {
+    const raw = recorded[p.handle];
+    assert.equal(compact(blocksToText(htmlToBlocks(raw.descriptionHtml))), compact(raw.description), `${p.handle}: HTML and plain text of the recording agree`);
+    assert.equal(compact(blocksToText(p.body)), compact(p.description), p.handle);
+    assert.deepEqual(shape(p.body).slice(0, 4), ['h2', 'p', 'h3', 'list5'], p.handle);
+    const text = blocksToText(p.body);
+    assert.doesNotMatch(text, /Grade\sA/, p.handle);
+    assert.match(text, /Grade\s1/, p.handle);
+  }
+});
+
+test('catalog: a description changed in Shopify keeps its structure, its plain text keeps the blocks apart', async () => {
+  // As found on 17.10.: one full stop added in Shopify, so the plain text no longer matches product.ts.
+  const edited = await loadCatalog({
+    config,
+    fetchImpl: fixtureFetch((data) => {
+      const p = data.products.nodes.find((n) => n.handle === 'safran-herat-negin-0-5g');
+      p.description = p.description.replace('im kleinen Glas', 'im kleinen Glas.');
+      p.descriptionHtml = p.descriptionHtml.replace('im kleinen Glas</h2>', 'im kleinen Glas.</h2>');
+      return data;
+    }).fetchImpl,
+  });
+  const small = edited.find((p) => p.handle === 'safran-herat-negin-0-5g');
+  assert.equal(structuredDescription(small), null);
+  assert.match(small.description, /Glas\.Herat/, 'the plain Storefront text glues the blocks together');
+  const kinds = shape(small.body);
+  assert.ok(kinds.includes('h2') && kinds.includes('h3'), kinds.join());
+  assert.deepEqual(kinds.filter((k) => k.startsWith('list')), ['list5']);
+  assert.match(productPlainText(small), /Glas\. Herat/);
+  assert.doesNotMatch(productPlainText(small), /Glas\.Herat|ProduktdetailsProdukt/);
+  assert.equal(productPlainText(small), blocksToText(small.body));
 });
 
 test('product.ts: V1 facts per handle add to the live text without repeating it', () => {
@@ -304,6 +349,7 @@ test('catalog: a handle unknown to product.ts keeps Shopify title and descriptio
   assert.equal(catalog.at(-1), box, 'unknown products follow the known ones');
   assert.equal(box.title, 'Geschenkbox');
   assert.equal(box.description, 'Text aus Shopify.');
+  assert.deepEqual(box.body, textToBlocks('Text aus Shopify.'), 'without descriptionHtml one paragraph per line of text');
   assert.equal(box.facts, null);
   assert.equal(box.image, null);
   assert.equal(box.available, false);
