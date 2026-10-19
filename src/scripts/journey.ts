@@ -4,6 +4,8 @@
 // document into motion (html.journey-on). Native scrolling stays untouched: no wheel handlers,
 // no scroll locking. The scroll position is read, eased like a motion-control head, and drawn.
 
+import { createFlow } from './journey-flow';
+
 /**
  * `frames` lists the positions that exist as [first, last, stride] runs on a grid of `count` positions.
  * A motion set is dense: it is drawn while the camera moves. A rest set holds the base
@@ -265,6 +267,8 @@ function start(root: HTMLElement) {
     let received = 0;
     let arrived = 0;
     for (const stage of loadStages(levels[0], set.count)) {
+      // the move is scrubbable on the coarsest stage: only then the warp's data, behind the frames
+      if (stage.stride < 16 * fine) flow?.load(set.variant, set.count, shown);
       if (stage.stride < fine && arrived) {
         const rate = received / Math.max(0.001, (performance.now() - started) / 1000);
         const seconds = (stage.frames.length * (received / arrived)) / rate;
@@ -298,6 +302,7 @@ function start(root: HTMLElement) {
       await Promise.all(workers);
       if (mine !== generation || degraded) return;
     }
+    if (mine === generation && !degraded) flow?.load(set.variant, set.count, shown);
     // the places the "weiter" control stops at sharpen without a wait
     if (mine === generation && !degraded) for (const stop of stops) void loadSharp(nearestFrame(stop * (sets[name].count - 1)));
   }
@@ -306,6 +311,7 @@ function start(root: HTMLElement) {
   function degrade() {
     degraded = true;
     soften();
+    flow?.hide();
     film.classList.remove('is-live');
     root.dataset.tier = 'fallback';
     requestDraw();
@@ -364,6 +370,9 @@ function start(root: HTMLElement) {
   const layers: Layer[] = [...film.querySelectorAll<HTMLCanvasElement>('[data-journey-layer]')].map((el) => ({ el, context: el.getContext('2d', { alpha: false }), index: -1 }));
   let dissolve = '';
   let hasFrame = false;
+  // In-betweens moved into the camera of the position shown, over the two layers (journey-flow.ts).
+  // Null with ?flow=off and on the low tier; wherever it cannot warp, the layers dissolve as before.
+  const flow = createFlow({ film, template: layers[1].el, base, tier, search: location.search });
 
   /** Copies a frame into a canvas at its own size. */
   function fill(el: HTMLCanvasElement, context: CanvasRenderingContext2D | null, bitmap: ImageBitmap) {
@@ -400,7 +409,7 @@ function start(root: HTMLElement) {
     dissolve = '';
   }
 
-  function draw() {
+  function draw(time: number) {
     if (!info || degraded) return;
     const position = shown;
     const { list, k, a, b } = around(position, level);
@@ -414,11 +423,14 @@ function start(root: HTMLElement) {
     const frameA = bitmaps.get(a);
     const frameB = bitmaps.get(b);
     if (frameA && frameB) {
-      // neighbouring frames are cross-dissolved: between pictures this close it reads as movement
+      // neighbouring frames are cross-dissolved: between pictures this close it reads as movement.
+      // The layers always hold the dissolve, so the warp above them can drop out at any frame.
       present(a, frameA, b, frameB, mix);
+      flow?.draw(info.variant, position, a, frameA, b, frameB, mix, time);
       return;
     }
     // exact frames not ready: show the nearest decoded one rather than nothing
+    flow?.hide();
     const near = nearestLoaded(Math.round(position));
     if (near < 0) return;
     if (!bitmaps.has(near)) decode(near);
@@ -523,7 +535,7 @@ function start(root: HTMLElement) {
     level = 0;
     if (!resting) while (level < usable.length - 1 && pace > usable[level]) level++;
     updateInterface();
-    draw();
+    draw(time);
     // settled between the two ends (which have their own full-resolution stills): sharpen
     if (resting && shown === goal && current >= 0.004 && current <= 0.992) sharpen(goal);
     else soften();
