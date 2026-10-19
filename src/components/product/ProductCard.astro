@@ -1,7 +1,7 @@
 ---
-// One product in the list /produkte/ (live collection card): image, title, price from Shopify.
+// One product in the list /produkte/ (live collection card): image, title, price and unit price from Shopify.
 import ProductImage from './ProductImage.astro';
-import { formatPrice, type CatalogProduct } from '@/lib/commerce/catalog';
+import { formatPrice, unitPriceLabel, type CatalogProduct } from '@/lib/commerce/catalog';
 
 interface Props {
   product: CatalogProduct;
@@ -22,7 +22,7 @@ const href = `/produkte/${product.handle}/`;
         <span class="sr-only">Normaler Preis</span> {formatPrice(product.price)}
       </p>
     )
-  }
+  }{product.price && product.unitPrice && <p class="small">{unitPriceLabel(product.unitPrice)}</p>}
   {product.available === false && <p class="small">Ausverkauft</p>}
 </article>
 

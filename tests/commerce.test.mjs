@@ -2,14 +2,14 @@
 // The stand-in lives only in this test: the application itself contains no product or price data.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createStorefront } from '../src/lib/commerce/storefront.ts';
+import { createStorefront, checkApiVersion } from '../src/lib/commerce/storefront.ts';
 import { createCart, formatMoney } from '../src/lib/commerce/cart.ts';
 import { CommerceError } from '../src/lib/commerce/types.ts';
 import { loadCatalog, formatPrice, structuredDescription, toGrade1, productPlainText, productSchemaInput, productOgImage } from '../src/lib/commerce/catalog.ts';
 import { buildProduct } from '../src/lib/seo/schema.ts';
 import { productFacts, factsToText } from '../src/data/product.ts';
 import { htmlToBlocks, textToBlocks, blocksToText } from '../src/lib/commerce/rich-text.ts';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 
 const config = { domain: 'example.myshopify.com', token: 'public-token', apiVersion: '2026-07' };
 const money = (amount) => ({ amount: amount.toFixed(2), currencyCode: 'EUR' });
@@ -199,13 +199,13 @@ function fixtureFetch(change = (data) => data) {
   return { fetchImpl, calls };
 }
 
-test('catalog query asks for handle, title, description (text and HTML), images and the first variant', async () => {
+test('catalog query asks for handle, title, description (text and HTML), images and two variants', async () => {
   const fake = fixtureFetch();
   await loadCatalog({ config, fetchImpl: fake.fetchImpl });
   const query = fake.calls[0].query.replace(/\s+/g, ' ');
   assert.equal(fake.calls.length, 1, 'one request per catalog');
   assert.match(query, /products\(first: 50\)/);
-  for (const field of ['handle', 'title', 'description', 'descriptionHtml', 'images', 'url altText width height', 'variants(first: 1)', 'sku', 'availableForSale', 'price { amount currencyCode }']) {
+  for (const field of ['handle', 'title', 'description', 'descriptionHtml', 'images', 'url altText width height', 'variants(first: 2)', 'sku', 'availableForSale', 'price { amount currencyCode }']) {
     assert.ok(query.includes(field), field);
   }
 });
@@ -214,7 +214,8 @@ test('catalog maps the recorded Storefront answer, ordered like the live collect
   const catalog = await loadCatalog({ config, fetchImpl: fixtureFetch().fetchImpl });
   assert.deepEqual(catalog.map((p) => p.handle), ['safran-herat-negin-0-5g', 'herat-negin-safran-1-g-grade-a']);
   const [small, large] = catalog;
-  assert.deepEqual(Object.keys(small).sort(), ['available', 'body', 'description', 'facts', 'handle', 'image', 'price', 'sku', 'title', 'variantId']);
+  assert.deepEqual(Object.keys(small).sort(), ['available', 'body', 'description', 'facts', 'handle', 'image', 'price', 'sku', 'title', 'unitPrice', 'variantId']);
+  assert.equal(small.unitPrice, null, 'the recorded answer has no unit price (tests/unit-price.test.mjs)');
   assert.equal(small.title, 'Safran – Herat Negin Grade 1, 0,5 g');
   assert.equal(large.title, 'Herat Negin Safran – 1\u00a0g (Grade\u00a01)', 'with a store the title is Shopify’s, Grade 1');
   assert.deepEqual(small.price, { amount: '8.9', currencyCode: 'EUR' });
@@ -362,6 +363,60 @@ test('catalog: an API error stops the build with a clear message', async () => {
   const offline = async () => { throw new TypeError('fetch failed'); };
   await assert.rejects(loadCatalog({ config, fetchImpl: offline }), /\(network: Storefront not reachable\)/);
   await assert.rejects(loadCatalog({ config: { ...config, domain: 'https://x' }, fetchImpl: http }), /Invalid store domain/);
+});
+
+/** A second variant for the 0.5 g product, as Shopify would list it. */
+const withSecondVariant = (data) => {
+  const product = data.products.nodes.find((n) => n.handle === 'safran-herat-negin-0-5g');
+  product.variants.nodes.push({ ...product.variants.nodes[0], id: 'gid://shopify/ProductVariant/2', sku: 'RS-SAF-HN-1G-B' });
+  return data;
+};
+
+test('catalog: a product with more than one variant stops the build and names the handle (B3)', async () => {
+  await assert.rejects(
+    loadCatalog({ config, fetchImpl: fixtureFetch(withSecondVariant).fetchImpl }),
+    /Shopify-Produkt mit mehr als einer Variante: safran-herat-negin-0-5g\. .*Build abgebrochen/,
+  );
+  const catalog = await loadCatalog({ config, fetchImpl: fixtureFetch().fetchImpl });
+  const recordedVariant = (handle) => fixture.data.products.nodes.find((n) => n.handle === handle).variants.nodes[0].id;
+  for (const p of catalog) assert.equal(p.variantId, recordedVariant(p.handle), p.handle);
+});
+
+/** Like fixtureFetch, the answer carrying X-Shopify-API-Version when given. */
+const versionFetch = (version) => async () =>
+  new Response(JSON.stringify({ data: structuredClone(fixture.data) }), { status: 200, headers: version ? { 'X-Shopify-API-Version': version } : {} });
+
+test('API version: same header passes, a different one stops the build with both versions, a missing one passes (B5)', async () => {
+  assert.equal((await loadCatalog({ config, fetchImpl: versionFetch('2026-07') })).length, 2);
+  assert.equal((await loadCatalog({ config, fetchImpl: versionFetch(null) })).length, 2);
+  await assert.rejects(
+    loadCatalog({ config, fetchImpl: versionFetch('2026-10') }),
+    /Shopify-Katalog konnte nicht geladen werden \(version: API version 2026-07 requested, Shopify answered with 2026-10\)\. Build abgebrochen/,
+  );
+  assert.throws(() => checkApiVersion('2026-07', '2027-01'), (e) => e instanceof CommerceError && e.kind === 'version');
+  assert.doesNotThrow(() => checkApiVersion('2026-07', null));
+});
+
+test('API version: only the build checks it, cart requests in the browser do not', async () => {
+  const fake = fakeStorefront();
+  const storefront = createStorefront(config, async (url, init) => {
+    const response = await fake.fetchImpl(url, init);
+    return new Response(await response.text(), { status: response.status, headers: { 'X-Shopify-API-Version': '2026-10' } });
+  });
+  assert.equal((await storefront.product('herat-negin-safran-1-g-grade-a')).variants.length, 1);
+  assert.equal((await storefront.cartCreate([])).totalQuantity, 0);
+});
+
+test('API version: written in the code at exactly one place (src/lib/commerce/config.ts)', async () => {
+  const root = new URL('../src/', import.meta.url);
+  const hits = [];
+  for (const entry of await readdir(root, { recursive: true, withFileTypes: true })) {
+    if (!entry.isFile() || !/\.(ts|mjs|js|astro)$/.test(entry.name)) continue;
+    const path = `${entry.parentPath}/${entry.name}`.replace(/\\/g, '/');
+    // A quoted Shopify version such as '2026-07' (quarters 01, 04, 07, 10).
+    if (/['"`]20\d\d-(?:01|04|07|10)['"`]/.test(await readFile(path, 'utf8'))) hits.push(path.slice(path.indexOf('/src/') + 1));
+  }
+  assert.deepEqual(hits, ['src/lib/commerce/config.ts']);
 });
 
 test('formatPrice: German format as Shopify amounts arrive', () => {

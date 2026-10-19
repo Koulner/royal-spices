@@ -5,9 +5,10 @@
 // Gift box (D7): not a Shopify product yet, so the card says "In Vorbereitung" and shows no price.
 // As soon as the customer creates it in Shopify (handle or title containing "Geschenkbox"),
 // the card shows the Shopify title, the catalog price and the link to its product page.
+// A unit price (Grundpreis) appears under a price only when Shopify has one (unit-price.ts).
 import Arrow from '@/components/Arrow.astro';
 import Picture from '@/components/Picture.astro';
-import { getCatalog, formatPrice } from '@/lib/commerce/catalog';
+import { getCatalog, formatPrice, unitPriceLabel } from '@/lib/commerce/catalog';
 
 const catalog = await getCatalog();
 const find = (handle: string) => catalog.find((p) => p.handle === handle);
@@ -77,7 +78,7 @@ const SIZES = '(min-width: 64rem) 30vw, (min-width: 40rem) 46vw, 92vw';
                   <span class="card__amount">{formatPrice(c.product.price)}</span>
                   <span class="small">inkl. MwSt.</span>
                 </p>
-              )}
+              )}{c.product?.price && c.product.unitPrice && <p class="small">{unitPriceLabel(c.product.unitPrice)}</p>}
               <a class="link" href={c.href}>
                 Produkt ansehen <Arrow />
               </a>
@@ -106,7 +107,7 @@ const SIZES = '(min-width: 64rem) 30vw, (min-width: 40rem) 46vw, 92vw';
                     <span class="card__amount">{formatPrice(gift.price)}</span>
                     <span class="small">inkl. MwSt.</span>
                   </p>
-                )}
+                )}{gift.price && gift.unitPrice && <p class="small">{unitPriceLabel(gift.unitPrice)}</p>}
                 <a class="link" href={`/produkte/${gift.handle}/`}>
                   Produkt ansehen <Arrow />
                 </a>

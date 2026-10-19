@@ -159,10 +159,216 @@ Abnahme mit echtem Store, sobald der Kunde O7 erledigt hat:
   - Preis- und Bestandsänderung in Shopify durchspielen.
   - Token widerrufen: Der Build muss abbrechen.
 - **Stufe 2, am Umzugstag** (Teil B in `SEO-PHASE0-KUNDE.md`): erneuter Testkauf; `checkoutUrl` muss auf `checkout.royalspices.de` zeigen.
-- **Stufe 3, laufend:** Smoke-Test nach jedem Build. Den gibt es noch nicht.
+- **Stufe 3, laufend:** Smoke-Test nach jedem Build: `node tools/qa/freshness.mjs dist/client` (seit T-20261018-13, Exit 1 = neu bauen). Der automatische Neubau (B1b) fehlt noch.
 
 Übertrag nach `dev`:
 
-- T-01 und T-02 sind übernommen, liegen aber nur auf H:, noch nicht im Repo.
-- Das lokale `dev` unter Desktop steht 3 Commits hinter `origin/dev`. Vor dem Übertrag deshalb erst `git pull`.
-- Push nur nach Rückfrage.
+- Erledigt am 18.10. (T-20261018-04): T-01 und T-02 sind als `5633590` in `dev`, nach Freigabe des Nutzers gepusht; Pages-Deploy 19:18 erfolgreich.
+- Vor jedem weiteren Übertrag erst `git fetch` und `git status -sb` im Desktop-Klon, Push nur nach Rückfrage.
+
+## Analyse der offenen Befunde B1–B6 (Stand 18.10.2026, abends, Hauptchat 3)
+
+Schritt 1 des Auftrags: nur gelesen und gemessen, kein Code geändert. Im Projekt `npm test` 132/132. **Vom Nutzer am 18.10. freigegeben (E1–E7 am Ende), umgesetzt als T-20261018-09 bis -13.** Je Bündel eine Transaktion. Für alle gelten die allgemeinen Abnahmekriterien aus dem Auftrag: `npm test` grün mit neuen Tests und roter Gegenprobe, `astro check` 0/0/0, Build ohne Store grün, Build mit Fixture-Store und `live-text.mjs` 0 offen. Außerdem nie HTML aus Shopify, die CSP bleibt unverändert, kein JS-Tracking, und `SHOPIFY.md` sowie diese Datei werden nachgezogen.
+
+**Vorab, für die Planung:**
+- **ID doppelt:** `T-20261018-04` steht zweimal in `_agent/LOG.md`, einmal als Flüssig-Reservierung und einmal als Übertrag nach `dev`. Neue IDs deshalb ab `T-20261018-06`.
+- **Konflikt in der Schreibmenge:** `T-20261018-05` (Flüssig, `OFFEN`, reserviert) schreibt `src/components/home/HomeJourney.astro` und `docs/STATUS.md`. B2 braucht `HomeJourney.astro`. In `STATUS.md` schreibt keine Shopify-Transaktion, den Eintrag macht der Hauptchat nach Abstimmung.
+- **Fixture-Store-Build:** Er geht nur mit `_agent/staging/T-20261018-02/hilfsskripte/fake-sf.mjs` (Aufruf in deren `ERGEBNIS.md`). Das Skript liegt nicht im Projekt.
+- **Varianten heute:** Jedes Produkt hat genau eine Variante (Fixture: 12,90 € / RS-SAF-HN-1G, 8,90 € / RS-SAF-HN-05).
+
+### B1 – Kein automatischer Neubau (H8)
+
+**B1a erledigt (T-20261018-13, 18.10.), vorgezogen vor B2 (E6):** `tools/qa/freshness.mjs` ist neu. Es nutzt `storefront.ts` (samt Versions-Wache), `formatMoney` und `unitPriceLabel`, sodass Format und Grundpreis-Zeile genau wie im Build entstehen. Gegen echte Builds: Build und Fixture gleich → „keine Abweichungen“, Exit 0. Geänderte Fixture (1 g 12,90 → 13,90 €, 0,5 g ausverkauft) → 8 Abweichungen auf `/`, `/produkte/` und beiden Produktseiten (sichtbar und `Offer`), Exit 1. In `npm test` laufen beide Fälle sowie Grundpreis, neue und entfernte Produkte und „kein Build → Exit 2“, mit Seiten im Markup des Builds (`tests/freshness.test.mjs`). Ein Test prüft, dass die Komponenten die gelesenen Anker noch haben. Offen aus „Klären wir“: ob `freshness.mjs` den Deploy stoppt oder nur meldet. Das legen wir mit dem Hoster fest (B1b).
+
+- **Ursache:** Preis und Bestand kommen beim Build aus `getCatalog()` (`src/lib/commerce/catalog.ts`) in `HomeCollection.astro` (Z. 75), `product/ProductCard.astro` (Z. 20), `BuyBox.astro` (Z. 34) und ins `Offer` (`catalog.ts` Z. 132 → `src/lib/seo/schema.ts` Z. 308). Live nachgeladen wird nur auf der Produktseite (`src/scripts/commerce.ts` Z. 144–151), und dort nur Preistext und Verfügbarkeit, nicht das JSON-LD.
+  - Folge nach einer Preisänderung in Shopify: Die Produktseite zeigt nach dem Laden den neuen Preis, ihr `Offer` den alten. Das ist genau die Preisabweichung, die das Merchant Center bemängelt.
+  - Startseite und `/produkte/` zeigen dem Kunden den alten Preis.
+- **Vorschlag in zwei Teilen:**
+  - **B1a, jetzt und unabhängig vom Hoster:** `tools/qa/freshness.mjs` (neu) vergleicht die gebauten Seiten mit der Storefront API: sichtbaren Preis, Verfügbarkeit, `Offer.price` und `Offer.availability`. Ausgabe je Seite, bei Abweichung Exit 1. Das wird der fehlende Smoke-Test „Stufe 3“ und dient als Wächter für Zeitplan und Hook.
+  - **B1b, sobald der Hoster feststeht:** Shopify-Webhook (Produkt angelegt, geändert, gelöscht; Bestand) auf den Deploy-Hook, dazu ein nächtlicher Neubau als Netz. Ein fehlgeschlagener Build lässt den letzten Deploy online.
+- **Alternativen:**
+  - (i) Nur nächtlicher Neubau: Daten bis zu 24 h alt.
+  - (ii) Preise auch auf Start- und Listenseite per JS nachladen: Jede Seite fragt dann bei Shopify an (Datenschutz), das JSON-LD bleibt trotzdem alt. Nicht empfohlen.
+  - (iii) Das JSON-LD per JS mitziehen: Ob das Merchant Center das liest, ist unsicher. Nicht empfohlen.
+  - (iv) Eigener Hook-Endpunkt in `server.mjs` mit HMAC-Prüfung, der selbst neu baut: nur bei eigenem Server (VPS) sinnvoll und aufwendig.
+- **Musskriterien B1a:**
+  - Build mit Fixture-Store, dann `freshness.mjs` gegen dieselbe Fixture: 0 Abweichungen, Exit 0.
+  - Gegen eine geänderte Fixture (Preis 12,90 → 13,90 €, 0,5 g ausverkauft): Gemeldet werden `/`, `/produkte/` und beide Produktseiten (sichtbar und `Offer`), Exit 1.
+  - Beide Fälle laufen in `npm test`.
+  - Die Website selbst macht keine neue Anfrage.
+- **Musskriterien B1b:** Nach einer Preisänderung in Shopify zeigen alle Seiten und das `Offer` den neuen Preis, mit Hook innerhalb von X Minuten, nachts spätestens nach 24 h. X legen wir mit dem Hoster fest. Danach meldet `freshness.mjs` 0.
+- **Klären wir:**
+  - Welche Webhook-Themen braucht es? Löst eine reine Bestandsänderung einen Produkt-Webhook aus? Das am Store prüfen.
+  - Entprellen: Jede Bestellung ändert den Bestand.
+  - Soll `freshness.mjs` den Deploy stoppen oder nur melden?
+- **Wartet auf Kunde/Hoster:**
+  - Wahl des Hosters (H1, H8): Gibt es Deploy-Hook oder Zeitplan?
+  - Wer legt den Webhook im Shopify-Admin an?
+  - Nutzt der Kunde das Merchant Center überhaupt?
+- **Aufwand:** B1a M (2–4 h), B1b S, sobald der Hoster feststeht.
+
+### B2 – Handles fest im Code
+
+**Wartet (Stand 18.10., abends):** T-20261018-12 ist reserviert, aber nicht begonnen. Grund (E6): T-20261018-07 (Flüssig Player, schreibt `HomeJourney.astro`) ist noch `OFFEN`. Start, sobald -07 `ÜBERNOMMEN` oder `VERWORFEN` ist. Dann `HomeJourney.astro` frisch aus dem Projekt lesen, denn die Zeilennummern unten stammen von vor -07. Schreibmenge und Musskriterien wie unten und in der Zeile im LOG. Die Wache bricht ab (E2), die Fixture-Gegenprobe läuft ohne das 1-g-Produkt.
+
+- **Ursache:** Es sind mehr als 5 Stellen.
+  - `HomeCollection.astro` Z. 18/19 und 30/31
+  - `HomeJourney.astro` Z. 79 und 132
+  - `src/data/product.ts`: Schlüssel Z. 71 und 88, `formats[0].action.href` Z. 147 (Startseite, Handelsformate)
+  - `src/config/redirects.mjs` Z. 45
+  - QA-Listen in `tools/qa/a11y.mjs` Z. 9 und `perf.mjs` Z. 20
+  - `tools/live/rules.mjs` und die Tests beziehen sich auf die Live-Aufnahme und bleiben fest.
+  - Die Produktseiten entstehen aus dem Katalog (`produkte/[handle].astro`). Fehlt ein Handle, führen die festen Links in einen 404, und der Build merkt es nicht. Die Karte der Startseite verliert dann still ihren Preis.
+  - `/products/<alt>` leitet generisch auf `/produkte/<alt>/` (`redirects.mjs` Z. 52), nach einer Umbenennung also auf einen 404.
+- **Konkretes Risiko:** Der Handle `…-1-g-grade-a` widerspricht „Grade 1“ (D3/D4). Korrigiert der Kunde bei O6 auch den Handle, brechen 6 Links.
+- **Vorschlag:**
+  - Eine Quelle `src/config/handles.mjs` (neu, `.mjs`, damit auch `server.mjs` und `redirects.mjs` sie laden können), von allen Stellen genutzt.
+  - Dazu eine Wache im Build mit Store: Jeder dort genannte Handle muss im Katalog stehen, sonst bricht der Build ab, mit Handle und Fundstelle. Das folgt dem Prinzip „API-Fehler bricht den Build ab“, der letzte Deploy bleibt online.
+  - In `SHOPIFY.md` eine Regel für den Kunden: Handles nicht ändern. Wenn doch, uns vorher Bescheid geben; dann kommt in `redirects.mjs` eine Zeile alt → neu.
+- **Alternativen:**
+  - (i) Rückfall statt Abbruch: Die Karte verlinkt `/produkte/` und der Build warnt. Preisaktualisierungen laufen dann weiter, der Fehler fällt aber kaum auf.
+  - (ii) Die Startseite wählt die Produkte aus einer Shopify-Kollektion oder einem Metafeld. Die Karten tragen aber eigene Texte und Bilder je Produkt, also lohnt sich das erst mit den Metafeldern (§21).
+- **Musskriterien:**
+  - `grep -rln '<handle>' src` findet jeden Handle in genau einer Datei.
+  - Fixture ohne das 1-g-Produkt: Der Build bricht mit Meldung ab (bzw. fällt zurück, je nach E2). Mit vollständiger Fixture ist er grün.
+  - Build ohne Store: `dist/client/index.html` ist byte-gleich zu vorher.
+  - `tests/redirects.test.mjs` bleibt grün.
+- **Klären wir:** Abbruch oder Rückfall (E2)? Reihenfolge zu T-05 (E6)? Sollen die QA-Listen den Handle aus `handles.mjs` lesen?
+- **Wartet auf den Kunden:** Bleiben die Handles, so wie sie sind?
+- **Aufwand:** M (2–3 h).
+
+### B3 – Nur die erste Variante kaufbar
+
+**Erledigt (T-20261018-10, 18.10.):** Wache und Doku nach E2/E4. Die Abfrage holt `variants(first: 2)`, und `ListedProduct.variantCount` trägt die Anzahl. `loadCatalog` bricht ab: „Shopify-Produkt mit mehr als einer Variante: <Handle>. … Build abgebrochen.“ Der Build mit Fixture und 2 Varianten bricht ab (Exit 1). Mit einer Variante ist das HTML gleich zu vorher, bis auf die Hash-Namen der Client-Skripte: `storefront.ts` steckt auch im Browser-Bundle. `SHOPIFY.md` hat jetzt den Abschnitt „Varianten“, und der Ablauf beschreibt keine Variantenwahl mehr.
+
+- **Ursache:**
+  - Die Build-Abfrage holt `variants(first: 1)` (`storefront.ts` Z. 52). `catalog.ts` Z. 45–57 übernimmt Preis, SKU und `variantId` der ersten Variante, `BuyBox.astro` Z. 29 legt sie in `data-variant-id`.
+  - Die Laufzeitabfrage `product` holt zwar `first: 50` (Z. 72), aber `commerce.ts` Z. 148 sucht nur die Build-Variante.
+  - `SHOPIFY.md` Z. 23 und 29 beschreibt eine Variantenwahl, die es nicht gibt.
+  - Heute ohne Folgen, weil jedes Produkt genau eine Variante hat. Legt der Kunde Varianten an, sind sie unsichtbar und nicht kaufbar, Preis und `Offer` zeigen nur die erste.
+- **Vorschlag:**
+  - Wache und Doku: Die Abfrage holt `variants(first: 2)`. Hat ein Produkt mehr als eine Variante, bricht der Build ab, mit Handle und Hinweis.
+  - `SHOPIFY.md` beschreibt den Ablauf ohne Variantenwahl und nennt den Weg, wenn Varianten kommen.
+- **Alternative:** Eine echte Variantenwahl (Auswahl, Preis je Variante, `?variant=`, mehrere `Offer`, Tastatur und Screenreader). Groß, 1–2 Tage. Erst bauen, wenn der Kunde Varianten plant. §20 der Spezifikation sieht sie vor.
+- **Musskriterien:**
+  - Fixture mit 2 Varianten bricht den Build mit Meldung ab, Test rot/grün.
+  - Mit einer Variante sind die Produktseiten byte-gleich zu vorher.
+  - In `SHOPIFY.md` steht keine Variantenwahl mehr als vorhanden.
+- **Klären wir:** Abbruch oder Warnung (E2)?
+- **Wartet auf den Kunden:** Sind Varianten geplant (z. B. 1 g, 2 g, 5 g in einem Produkt)?
+- **Aufwand:** S (1–2 h).
+
+### B4 – Grundpreis fehlt
+
+**Erledigt (T-20261018-11, 18.10.):** datengetrieben nach E2/E5. Neues Modul `src/lib/commerce/unit-price.ts` mit Format, Wache, Live-Zeile und den Mengen für das JSON-LD. Format „Grundpreis 17.800,00 €/kg“ (Option 1 der Formatfrage), an allen Preisstellen und in der Live-Aktualisierung. Passt der Live-Wert nicht, wird die Zeile ausgeblendet. Die Wache prüft zusätzlich die Menge gegen das Nettogewicht in `product.ts`. Nur so fällt der Live-Fall auf: Dort steht 1 g statt 0,5 g, und Shopify rechnet daraus stimmig 8.900 €/kg. Beide 8.900-Fälle (1 g und 0,5 g) brechen den Build ab. `Offer.priceSpecification` folgt Googles Muster (Produktpreis, `referenceQuantity` 0,5 GRM, `valueReference` 1 KGM). Mit synthetischer Fixture ist `seo.mjs --store --no-browser` S2 grün, der einzige Fehler ist der bekannte S10-Treffer „Große Wirkung“ (E6, Kunde). Ohne Grundpreis ist das HTML gleich bis auf die Hash-Namen unter `/_astro/` (`commerce.ts` geändert). Dafür steht der Import von `unit-price` in `commerce.ts` hinter dem CSS-Import, sonst verschiebt sich die Reihenfolge des eingebetteten CSS. `tools/live/rules.mjs`: Begründung zu „Grundpreis“ aktualisiert, die Ausnahme bleibt. Nicht im Browser geprüft: die Live-Aktualisierung gegen einen Store (geprüft per Test von `liveUnitPriceLabel`).
+
+- **Ursache:**
+  - Weder die Build- noch die Laufzeitabfrage liest `unitPrice` oder `unitPriceMeasurement` (`storefront.ts` Z. 47–76), und die Typen kennen sie nicht (`types.ts`).
+  - In `tools/live/rules.mjs` sind Z. 57, 75 und 83 als Ausnahme „OFFEN beim Kunden“ geführt.
+- **Neu gemessen:** Der Live-Shop zeigt für das 0,5-g-Glas zu 8,90 € „Grundpreis €8.900,00/kg“ (`LIVE-INVENTAR.md` Z. 355 und 417). Rechnerisch sind es 17.800 €/kg, also Faktor 2. Vermutlich ist in Shopify 1 g statt 0,5 g als Menge eingetragen. Übernehmen wir den Wert ungeprüft, zeigen wir einen falschen Grundpreis.
+- **Vorschlag, datengetrieben:**
+  - Beide Abfragen lesen `unitPrice` und `unitPriceMeasurement`. Liefert Shopify einen Grundpreis, steht er neben jedem Preis: Startseitenkarte, `/produkte/`, BuyBox, Live-Aktualisierung in `commerce.ts`. Liefert Shopify keinen, bleibt die Seite wie heute.
+  - Plausibilitätsprüfung im Build: Grundpreis gleich Preis ÷ Menge × Bezugsmenge, auf 1 Cent genau. Sonst bricht der Build ab, mit den Zahlen.
+  - Ob ein Grundpreis überhaupt angezeigt werden muss, entscheidet so der Kunde in Shopify (Rechtsfrage). Der Code rechnet nichts selbst aus.
+- **Alternativen:**
+  - (i) Den Grundpreis aus dem Gewicht in `product.ts` berechnen: Das verstößt gegen „Preise nur aus Shopify“. Verworfen.
+  - (ii) Warten, bis die Rechtsfrage geklärt ist: kein Code, Ausnahme bleibt offen.
+  - Optional: `priceSpecification` (`UnitPriceSpecification`) im `Offer`.
+- **Musskriterien:**
+  - Fixture ohne Grundpreis: HTML byte-gleich zu vorher.
+  - Fixture mit 0,5 g, 8,90 € und Bezug 1 kg, 17.800 €/kg: Der Grundpreis steht an allen 3 Preisstellen und in der Live-Aktualisierung.
+  - Fixture mit 8.900 €/kg: Der Build bricht ab.
+  - Bei gewähltem JSON-LD: `Offer` und Sichtbares stimmen überein, `seo.mjs --store` grün.
+  - `live-text.mjs` 0 offen.
+  - Die Fixture-Werte für den Grundpreis sind synthetisch: `.raw/live-20261015/products.json` enthält keine. Das wird im Test benannt.
+- **Klären wir:** Format („17.800,00 €/kg“ oder „… € / 1 kg“), JSON-LD ja oder nein, Abbruch oder Warnung (E2).
+- **Wartet auf den Kunden:**
+  - Rechtliche Klärung der Grundpreispflicht. Vermutet ist eine Ausnahme unter 10 g Nenngewicht (`UEBERGABE-SEO.md` Z. 53). Wir beraten nicht rechtlich.
+  - Korrektur der Grundpreis-Angabe beim 0,5-g-Produkt in Shopify.
+- **Aufwand:** M (3–4 h).
+
+### B5 – API-Version 2026-07
+
+**Erledigt (T-20261018-10, 18.10.):** `checkApiVersion()` in `storefront.ts`, nur in `products()`, also nur beim Build. Gleicher Header ist ok, fehlender ebenso (E5). Ein abweichender Header bricht den Build ab mit „version: API version 2026-07 requested, Shopify answered with 2026-10“. Geprüft per Test und per Build mit Header-Stellvertreter. Der Warenkorb im Browser prüft nicht. Ein Test sichert, dass die Version im Code nur in `config.ts` steht. `SHOPIFY.md` nennt Termin (April 2027) und Ablauf, `.env.example` verweist darauf.
+
+- **Ursache:**
+  - Die Version steht an drei Stellen: `config.ts` Z. 12 als Rückfall, `.env.example` und `SHOPIFY.md` Z. 67.
+  - Setzt der Hoster `PUBLIC_SHOPIFY_API_VERSION`, gewinnt dessen Wert.
+  - Nach Shopify-Doku wird jede Version mindestens 12 Monate unterstützt. Danach leitet Shopify Anfragen still auf die älteste noch unterstützte Version weiter, das Verhalten ändert sich also unbemerkt.
+- **Vorschlag:**
+  - Der Storefront-Client vergleicht beim Build die angefragte Version mit dem Antwort-Header `X-Shopify-API-Version`. Weichen sie ab, bricht der Build mit beiden Versionen in der Meldung ab. Das ist eine Wache ohne Zeitbombe, sie schlägt erst an, wenn Shopify wirklich umleitet.
+  - Dazu ein Termin in `SHOPIFY.md`: Umstellung bis April 2027, mit Schritten (Tests, Testkauf).
+- **Alternativen:**
+  - (i) Ein Test, der ab einem Datum rot wird: Das macht Builds unreproduzierbar. Nicht empfohlen.
+  - (ii) Nur Doku und Kalendereintrag.
+  - (iii) Gleich auf die neueste stabile Version stellen. Dann zuerst prüfen, ob 2026-10 schon stabil ist.
+- **Musskriterien:**
+  - Test mit Stellvertreter: Header gleich → ok, Header abweichend → Fehler, Header fehlt → ok (E5).
+  - Die Version steht im Code an genau einer Stelle.
+  - `SHOPIFY.md` nennt Termin und Ablauf.
+- **Klären wir:** Sendet die Storefront API den Header wirklich? Das prüfen wir in Stufe 1 am echten Store. Bis dahin ist „Header fehlt → ok“ nötig.
+- **Wartet auf den Hoster:** Wer pflegt die Version in dessen Umgebungsvariablen?
+- **Aufwand:** S (1 h).
+
+### B6 – `seo.mjs` liest nur die Prozessumgebung
+
+**Erledigt (T-20261018-09, 18.10.):** nach (a). `storeDomainFromEnv()` in `tools/qa/seo.mjs` liest über `loadEnv('production', <Projekt>)`, die Prozessumgebung gewinnt. In `.env.example` ist `SITE_URL` auskommentiert, mit dem Hinweis „nur Prozessumgebung“; der Shopify-Block nennt `.env` oder Prozessumgebung. Neuer Test `tests/seo-env.test.mjs` (5 Fälle, Kindprozess): `npm test` 137/137. Gegenprobe mit dem alten Lesen (`process.env`): Der Fall „nur in `.env`“ wird rot. `astro check` 0/0/0, beide Builds HTML-gleich zu vorher, `live-text.mjs` 0 offen.
+
+- **Ursache:**
+  - `tools/qa/seo.mjs` Z. 91 liest `PUBLIC_SHOPIFY_STORE_DOMAIN` nur aus `process.env`. Steht die Domain nur in `.env`, wertet S7 (Z. 279) die Anfragen an Store und CDN als fremd: ein falsches Rot.
+  - `SITE_URL` (Z. 62) liest die Prozessumgebung wie `astro.config.mjs` Z. 24. Das ist in sich stimmig, aber `.env.example` Z. 2 führt `SITE_URL`, und in `.env` wird sie ignoriert (`tests/build-env.test.mjs` Z. 67). Die Beispieldatei führt also in die Irre.
+  - `tools/seo/indexnow.mjs` Z. 86 liest `SITE_URL` genauso.
+- **Vorschlag (a):** `seo.mjs` liest die Store-Domain über `loadEnv`, wie `astro.config.mjs`, die Prozessumgebung gewinnt. In `.env.example` steht ein Kommentar: `SITE_URL` wirkt nur aus der Prozessumgebung.
+- **Alternative (b):** `SITE_URL` überall über `loadEnv` lesen: `astro.config.mjs` Z. 24, `seo.mjs`, `indexnow.mjs`, Test Z. 67. Das ist einheitlicher, aber die drei Dateien müssen gleich bleiben. Die CI setzt `SITE_URL` als Prozessvariable, Pages bleibt davon unberührt.
+- **Musskriterien:**
+  - Test per Kindprozess wie `build-env.test.mjs`: Steht die Domain nur in `.env`, gilt sie in S7 als erlaubt. Ohne den Fix ist der Test rot.
+  - Die Prozessumgebung gewinnt.
+  - `.env.example` beschreibt das Verhalten richtig.
+- **Klären wir:** (a) oder (b) (E3).
+- **Wartet auf Kunde/Hoster:** nichts.
+- **Aufwand:** S (1 h).
+
+### Reihenfolge und Bündel (Vorschlag)
+
+| Nr. | Bündel | Befunde | Schreibmenge (Kern) | Begründung |
+| --- | --- | --- | --- | --- |
+| 1 | T-06 | B6 | `tools/qa/seo.mjs`, `.env.example`, neuer Test (bei (b) auch `astro.config.mjs`, `tools/seo/indexnow.mjs`, `tests/build-env.test.mjs`) | Klein und unabhängig. Wird für die Abnahme mit echtem Store (Stufe 1, `seo.mjs --store`) gebraucht. |
+| 2 | T-07 | B3 + B5 | `src/lib/commerce/{storefront,config,catalog}.ts`, `tests/commerce.test.mjs`, `.env.example` | Beide härten die Storefront-Abfrage und machen stilles Fehlverhalten laut. Dieselben Dateien, also eine Transaktion. |
+| 3 | T-08 | B4 | `storefront.ts`, `types.ts`, `catalog.ts`, `BuyBox.astro`, `ProductCard.astro`, `HomeCollection.astro`, `src/scripts/commerce.ts`, ggf. `schema.ts`, Fixture, `tools/live/rules.mjs` | Baut auf der Abfrage aus T-07 auf. Gebaut wird datengetrieben, die Anzeige bleibt aus, bis Shopify liefert. |
+| 4 | T-09 | B2 | `src/config/handles.mjs` (neu), `HomeCollection.astro`, `HomeJourney.astro`, `product.ts`, `redirects.mjs`, `catalog.ts`, Tests | Teilt `HomeCollection.astro` und `catalog.ts` mit T-08, also danach. `HomeJourney.astro` ist erst nach T-05 frei (E6). |
+| 5 | T-10 | B1a | `tools/qa/freshness.mjs` (neu), Test | Prüft am Ende alles, auch den Grundpreis. Die Schreibmenge ist disjunkt, deshalb könnte das Bündel auch früher oder parallel laufen. |
+| – | später | B1b | Hoster-Konfiguration, Doku | Wartet auf den Hoster. |
+
+Die Doku (`SHOPIFY.md`, diese Datei) zieht der Hauptchat je Transaktion beim COMMIT nach. Deshalb laufen die Transaktionen nacheinander. Subagents lohnen sich höchstens für T-08 und T-10, den Rest erledigt der Hauptchat.
+
+### Entscheidungen für die Freigabe
+
+- **E1:** Reihenfolge und Bündel wie oben?
+- **E2:** Wachen (B2 fehlender Handle, B3 mehrere Varianten, B4 unplausibler Grundpreis): Build abbrechen (Vorschlag) oder Rückfall mit Warnung?
+- **E3:** B6 nach (a) (Vorschlag) oder (b)?
+- **E4:** B3 nur Wache und Doku, Variantenwahl erst bei Bedarf?
+- **E5:** B4 jetzt datengetrieben bauen? Mit `UnitPriceSpecification` im JSON-LD? B5: fehlenden Header dulden?
+- **E6:** B2: `HomeJourney.astro` erst nach T-05, oder die Reservierung von T-05 um die zwei Links ergänzen?
+- **E7:** Für den Kunden: die Grundpreis-Angabe im Shop (8.900 statt 17.800 €/kg), die Handles nicht ändern, Varianten und Merchant Center. Wer gibt das weiter?
+
+**Freigabe des Nutzers (18.10.2026, alle wie empfohlen):**
+
+- **E1:** Reihenfolge und Bündel wie in der Tabelle.
+- **E2:** Die Wachen brechen den Build ab: fehlender Handle (B2), mehr als eine Variante (B3), unplausibler Grundpreis (B4).
+- **E3:** B6 nach (a). `seo.mjs` liest die Store-Domain über `loadEnv`, die Prozessumgebung gewinnt. `SITE_URL` bleibt nur Prozessumgebung, mit Kommentar in `.env.example`.
+- **E4:** B3 nur Wache und Doku, keine Variantenwahl.
+- **E5:** B4 datengetrieben, mit `UnitPriceSpecification` im `Offer`. B5: Fehlt der Header `X-Shopify-API-Version`, gilt das als ok.
+- **E6:** `HomeJourney.astro` erst anfassen, wenn die Flüssig-Transaktion mit dieser Datei nicht mehr `OFFEN` ist. Ist sie bei B2 noch offen, kommt B1a vorher, und B2 wartet. Das wird dem Nutzer gemeldet.
+- **E7:** Die Kundenpunkte gibt der Nutzer selbst weiter.
+
+**IDs nach der Freigabe:** Die Flüssig-Sitzung hat T-20261018-06 bis -08 inzwischen selbst belegt (Daten, Player, Werkzeuge). Die Bündel laufen deshalb unter neuen Nummern, Inhalt und Reihenfolge bleiben:
+
+| Freigabe | ID | Befunde |
+| --- | --- | --- |
+| T-06 | T-20261018-09 | B6 |
+| T-07 | T-20261018-10 | B3 + B5 |
+| T-08 | T-20261018-11 | B4 |
+| T-09 | T-20261018-12 | B2 |
+| T-10 | T-20261018-13 | B1a |
+
+„T-05“ in E6 und oben unter „Vorab“ heißt jetzt **T-20261018-07** (Flüssig Player, früher als „-05“ reserviert).

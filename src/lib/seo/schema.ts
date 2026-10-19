@@ -284,8 +284,14 @@ export function buildBreadcrumbList(input: { origin: Origin; items: readonly Cru
 
 // ------------------------------------------------------------------------- Product + Offer
 
-/** Price and availability as Shopify delivers them (amount e.g. "9.5"). */
-export type OfferInput = { amount: string | number; currencyCode?: string; available: boolean };
+/** UN/CEFACT quantity, e.g. { value: 0.5, unitCode: 'GRM' }. */
+export type UnitQuantity = { value: number; unitCode: string };
+
+/**
+ * Price and availability as Shopify delivers them (amount e.g. "9.5"). unitPricing only with a Shopify
+ * unit price: the price applies to `quantity` and is priced per `reference` (Google merchant listing).
+ */
+export type OfferInput = { amount: string | number; currencyCode?: string; available: boolean; unitPricing?: { quantity: UnitQuantity; reference: UnitQuantity } };
 
 export type ProductInput = Common & {
   /** Page path, e.g. `/produkte/${handle}/`. */
@@ -318,7 +324,26 @@ function offer(input: OfferInput, url: string, origin: Origin, facts: SiteFacts)
     priceCurrency: CURRENCY,
     availability: input.available ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
     itemCondition: 'https://schema.org/NewCondition',
+    ...(input.unitPricing ? { priceSpecification: unitPriceSpecification(value, input.unitPricing) } : {}),
     seller: organizationRef(origin, facts),
+  };
+}
+
+/**
+ * Unit pricing as Google reads it: the active price (the offer price) for the quantity sold
+ * (referenceQuantity, e.g. 0.5 GRM), priced per the base quantity (valueReference, e.g. 1 KGM).
+ * The unit price itself follows from these numbers; the visible one comes from Shopify (unit-price.ts).
+ */
+function unitPriceSpecification(price: number, { quantity, reference }: { quantity: UnitQuantity; reference: UnitQuantity }) {
+  const qv = (q: UnitQuantity, field: string) => {
+    if (!(q.value > 0) || !/^[A-Z0-9]{2,3}$/.test(q.unitCode)) throw new Error(`${field} must be a positive quantity with a UN/CEFACT code`);
+    return { '@type': 'QuantitativeValue', value: q.value, unitCode: q.unitCode };
+  };
+  return {
+    '@type': 'UnitPriceSpecification',
+    price: price.toFixed(2),
+    priceCurrency: CURRENCY,
+    referenceQuantity: { ...qv(quantity, 'unitPricing.quantity'), valueReference: qv(reference, 'unitPricing.reference') },
   };
 }
 

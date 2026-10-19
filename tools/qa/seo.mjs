@@ -7,6 +7,8 @@
 // --redirects also checks the old URLs from tools/seo/legacy-urls.txt (S4; another list with --legacy)
 // --out       writes seo-report[-redirects].txt and .json into this folder
 // --no-browser skips S7 (headless Chrome via tools/qa/browser.mjs, CDP port --cdp-port, default 9353)
+// S7 allows the store domain PUBLIC_SHOPIFY_STORE_DOMAIN from .env or the process environment (which
+// wins), as astro.config.mjs does. SITE_URL comes from the process environment only.
 //
 // Launch switch: if every page is noindex (built without SITE_INDEXABLE=1) the run checks S6 and
 // reports S1 and S5 for the sitemap pages only as a preview (hints). Otherwise S1 and S5 apply to
@@ -15,6 +17,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { loadEnv } from 'vite';
 import * as C from '../seo/checks.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -66,6 +69,15 @@ async function configuredOrigin() {
   return new URL(m[1]).origin;
 }
 
+/**
+ * Store domain for S7, read like astro.config.mjs reads it for the CSP: .env and .env.production in
+ * `dir` plus the process environment, which wins (Vite's loadEnv). Reading process.env alone missed a
+ * domain set only in .env, and S7 then reported the store and CDN requests as third-party.
+ */
+export function storeDomainFromEnv(dir = ROOT) {
+  return loadEnv('production', dir, '').PUBLIC_SHOPIFY_STORE_DOMAIN || null;
+}
+
 /** NAP from src/config/site.ts (import with type stripping, otherwise read from the source text). */
 async function loadNap() {
   const file = join(ROOT, 'src/config/site.ts');
@@ -88,7 +100,7 @@ async function main(argv) {
   const opts = parseArgs(argv);
   const origin = opts.origin ?? (await configuredOrigin());
   const nap = await loadNap();
-  const storeDomain = process.env.PUBLIC_SHOPIFY_STORE_DOMAIN || null;
+  const storeDomain = storeDomainFromEnv();
   const base = new URL(opts.base);
   const findings = [];
   const add = (list, extra = {}) => findings.push(...list.map((f) => ({ ...f, ...extra })));

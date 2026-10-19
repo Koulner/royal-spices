@@ -1,9 +1,21 @@
-# Stand 18.10.2026, abends — Übertrag der Shopify-Fixes nach `dev`, nicht gepusht
+# Stand 19.10.2026 — Übertrag Glas und Shopify-Fixes nach `dev`
+
+**T-20261019-01:** zwei Commits im Desktop-Klon `C:\Users\lukas\Desktop\royal-spices\royal-spices` (Branch `dev`, Basis `5633590` = `origin/dev`). Die Hashes stehen in `_agent/LOG.md`.
+- **Commit 1, Glas:** T-20261018-03 (`pipeline/blender/{web_hero,saffron_fill}.py`, c2-Konstanten) und die Ausgabe der Queue c2 vom 18.10. (`public/hero/5/**` mit 2.680 Bildern, `public/img/**` mit 54, `public/og.jpg`, `src/data/{hero-manifest,stills}.json`), dazu `docs/{ASSETS,UEBERGABE-E3-DEMO}.md`. 2.741 Pfade.
+- **Commit 2, Shopify-Fixes:** T-20261018-09 (B6), -10 (B3 + B5), -11 (B4) und -13 (B1a), dazu diese Statusdatei. 21 Pfade, 5 davon neu. T-20261018-12 (B2) ist noch offen und wartet auf den Flüssig-Player T-20261018-07.
+- **Nicht dabei:** `docs/UEBERGABE-FLUESSIG.md` und Flüssig B1 (T-20261018-06, -07, -08), weil sie noch nicht übernommen sind.
+- **Vorher auf H: geprüft:** `npm test` 158/158, Build mit `astro check` 0/0/0. Hero angesehen quer (1440 × 900) und hoch (375 × 812) bei p 0,9 und p 1: Glas klar, Füllung rot, kein Schleier; keine Konsolenfehler, kein kaputtes Standbild.
+- **Im Klon geprüft** (`package-lock.json` unverändert, daher kein `npm ci`): `npm test` 158/158, Build wie in der CI (`SITE_URL` = Pages-Origin, ohne Store) mit `astro check` 0/0/0, Pages-Kopie grün. Schlüsselsuche leer, keine ignorierten Dateien im Commit.
+- **Noch nicht gepusht.** Ein Push auf `dev` startet den Pages-Deploy, also nur nach Freigabe des Nutzers. Die Grundpreis-Wache aus B4 kann den Deploy nicht blockieren, weil die CI ohne Store baut.
+
+# Stand 18.10.2026, abends — Übertrag der Shopify-Fixes nach `dev`, gepusht
+
+Nachtrag: Nach Freigabe des Nutzers gepusht, `dev` = `origin/dev` = `5633590`. Der Pages-Deploy lief am 18.10. um 19:18 erfolgreich (Actions-Lauf 39148951553). Dieser Nachtrag ist noch nicht in `dev`, er geht mit dem nächsten Übertrag mit.
 
 T-20261018-01 und -02 als **T-20261018-04** in den Desktop-Klon `C:\Users\lukas\Desktop\royal-spices\royal-spices` übertragen (Branch `dev`). Vorher `git pull --ff-only` von `01a5d94` auf `1d7954a` = `origin/dev`. Ein Commit mit 14 Pfaden (4 neu, 10 geändert, keine gelöscht): `astro.config.mjs`, `src/lib/commerce/{rich-text,catalog,storefront,types}.ts`, `src/components/product/{ProductDescription,DescriptionInline}.astro`, `tests/{build-env,commerce,rich-text}.test.mjs`, `tests/fixtures/storefront-products.json`, `docs/{SHOPIFY,STATUS,UEBERGABE-SHOPIFY}.md`. Commit-Hash in `_agent/LOG.md`.
 - **Bewusst nicht dabei:** `docs/UEBERGABE-E3-DEMO.md` (Wunsch des Nutzers) und die Glas-Übernahme T-20261018-03 (`web_hero.py`, `saffron_fill.py`, `ASSETS.md`), die erst nach dem Kopieren auf H: kam. Beides geht mit dem nächsten Übertrag.
 - Im Worktree geprüft: `npm ci`, `npm test` 132/132, Build wie in der CI (`SITE_URL` = Pages-Origin, ohne Store) mit `astro check` 0/0/0, Pages-Kopie grün. Schlüsselsuche leer, keine ignorierten Dateien im Commit.
-- **Noch nicht gepusht.** Das Repo ist öffentlich, ein Push auf `dev` startet den Pages-Deploy. Push nur nach Freigabe des Nutzers.
+- Das Repo ist öffentlich, ein Push auf `dev` startet den Pages-Deploy. Push nur nach Freigabe des Nutzers.
 - In Git Bash `MSYS_NO_PATHCONV=1` vor `tools/pages/prepare.mjs --base /royal-spices` setzen, sonst wird der Pfad zu `C:/Program Files/Git/...`.
 
 # Stand 18.10.2026 — Prüfung von `dev`, Shopify-Fixes T-20261018-01 und -02

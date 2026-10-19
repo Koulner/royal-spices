@@ -4,9 +4,12 @@
 // without price and availability (the pages then lead to the inquiry).
 import { createStorefront } from './storefront.ts';
 import { formatMoney } from './cart.ts';
-import { CommerceError, type CommerceConfig, type ListedProduct } from './types.ts';
+import { CommerceError, type CommerceConfig, type ListedProduct, type UnitPrice } from './types.ts';
 import { productFacts, factsToText, type ProductFacts } from '../../data/product.ts';
 import { htmlToBlocks, textToBlocks, blocksToText, mapText, type Block } from './rich-text.ts';
+import { checkUnitPrice, unitPricing } from './unit-price.ts';
+// Price components take the unit price label from the catalog module they already import.
+export { unitPriceLabel } from './unit-price.ts';
 import type { Origin, ProductInput } from '../seo/schema.ts';
 
 export interface CatalogProduct {
@@ -15,6 +18,7 @@ export interface CatalogProduct {
   description: string; // Klartext (Storefront `description`), nie HTML
   body: Block[]; // Beschreibung als Textblöcke (aus `descriptionHtml`, sonst aus dem Klartext), nie HTML
   price: { amount: string; currencyCode: string } | null; // null ohne Store
+  unitPrice: UnitPrice | null; // Grundpreis aus Shopify, geprüft (unit-price.ts); null ohne Store oder wenn Shopify keinen hat
   available: boolean | null; // null ohne Store
   variantId: string | null; // erste Variante
   sku: string | null; // SKU der ersten Variante; null ohne Store oder wenn Shopify keine hat
@@ -53,6 +57,7 @@ function fromShopify(p: ListedProduct, facts: ProductFacts | null): CatalogProdu
     description,
     body: body.length ? body : textToBlocks(description),
     price: v ? { amount: v.price.amount, currencyCode: v.price.currencyCode } : null,
+    unitPrice: v?.unitPrice ?? null,
     available: v ? v.availableForSale : false,
     variantId: v ? v.id : null,
     sku: v?.sku?.trim() || null,
@@ -70,6 +75,7 @@ export async function loadCatalog({ config, fetchImpl = fetch, facts = productFa
       description: factsToText(f),
       body: textToBlocks(factsToText(f)),
       price: null,
+      unitPrice: null,
       available: null,
       variantId: null,
       sku: null,
@@ -86,6 +92,23 @@ export async function loadCatalog({ config, fetchImpl = fetch, facts = productFa
       `Shopify-Katalog konnte nicht geladen werden (${reason}). Build abgebrochen. Bitte PUBLIC_SHOPIFY_STORE_DOMAIN, PUBLIC_SHOPIFY_STOREFRONT_TOKEN und PUBLIC_SHOPIFY_API_VERSION prüfen.`,
       { cause: error },
     );
+  }
+  // One variant per product (decision E4): price, SKU and variant ID come from the first one, and the
+  // product page offers no choice. A second variant would be invisible and not for sale, so stop instead.
+  const multi = listed.filter((p) => p.variantCount > 1).map((p) => p.handle);
+  if (multi.length) {
+    throw new Error(
+      `Shopify-Produkt mit mehr als einer Variante: ${multi.join(', ')}. Die Website verkauft je Produkt genau eine Variante, eine Variantenwahl gibt es nicht (docs/SHOPIFY.md, „Varianten“). Build abgebrochen.`,
+    );
+  }
+  // Unit price (decision E2/E5): shown as Shopify delivers it, so a wrong one stops the build instead.
+  const implausible = listed.flatMap((p) => {
+    const v = p.firstVariant;
+    const reason = v?.unitPrice ? checkUnitPrice(v.price, v.unitPrice, factsFor(facts, p.handle)?.netGrams ?? null) : null;
+    return reason ? [`${p.handle}: ${reason}`] : [];
+  });
+  if (implausible.length) {
+    throw new Error(`Grundpreis aus Shopify unplausibel (${implausible.join('; ')}). Build abgebrochen. Bitte die Grundpreis-Angaben des Produkts in Shopify prüfen (docs/SHOPIFY.md, „Grundpreis“).`);
   }
   // Order: products known in product.ts in their order (= live collection), then the rest in API order.
   const order = Object.keys(facts);
@@ -129,7 +152,14 @@ export function productSchemaInput(product: CatalogProduct, origin: Origin): Pro
     description: productPlainText(product),
     images: [product.image ? product.image.url : '/og.jpg'],
     sku: product.sku,
-    offer: product.price ? { amount: product.price.amount, currencyCode: product.price.currencyCode, available: product.available === true } : null,
+    offer: product.price
+      ? {
+          amount: product.price.amount,
+          currencyCode: product.price.currencyCode,
+          available: product.available === true,
+          ...(product.unitPrice ? { unitPricing: unitPricing(product.unitPrice) } : {}),
+        }
+      : null,
     ...(product.facts ? { category: 'Gewürze', countryOfOrigin: 'Afghanistan', netGrams: product.facts.netGrams } : {}),
   };
 }

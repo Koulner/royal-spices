@@ -1,6 +1,6 @@
 // Shopify Storefront API client: products, variants, cart, checkout hand-over.
 // Framework-free and dependency-free so it can be unit-tested with a stand-in fetch.
-import { CommerceError, type Cart, type CommerceConfig, type ListedProduct, type Product } from './types.ts';
+import { CommerceError, type Cart, type CommerceConfig, type ListedProduct, type Product, type UnitPrice } from './types.ts';
 
 type Fetch = typeof fetch;
 type Raw = Record<string, any>;
@@ -28,8 +28,28 @@ const CART_FIELDS = /* GraphQL */ `
   }
 `;
 
+// Unit price ("Grundpreis") of a variant, in both product queries; shown only when Shopify has one (unit-price.ts).
+const UNIT_PRICE_FIELDS = /* GraphQL */ `
+  unitPrice { amount currencyCode }
+  unitPriceMeasurement { quantityValue quantityUnit referenceValue referenceUnit }
+`;
+
+/** null without a Shopify unit price; incomplete measurements stay visible as NaN or "" for the check. */
+function toUnitPrice(v: Raw): UnitPrice | null {
+  if (!v.unitPrice) return null;
+  const m = v.unitPriceMeasurement ?? {};
+  return {
+    price: v.unitPrice,
+    quantityValue: Number(m.quantityValue ?? NaN),
+    quantityUnit: String(m.quantityUnit ?? ''),
+    referenceValue: Number(m.referenceValue ?? NaN),
+    referenceUnit: String(m.referenceUnit ?? ''),
+  };
+}
+
 const QUERIES = {
   // Build time: the catalog behind /produkte/ and the product pages. 50 is the page size (two products today).
+  // Two variants, not one: the site sells exactly one variant per product, a second one stops the build (catalog.ts).
   products: /* GraphQL */ `
     query Products {
       products(first: 50) {
@@ -40,12 +60,13 @@ const QUERIES = {
           description
           descriptionHtml
           images(first: 10) { nodes { url altText width height } }
-          variants(first: 1) {
+          variants(first: 2) {
             nodes {
               id
               sku
               availableForSale
               price { amount currencyCode }
+              ${UNIT_PRICE_FIELDS}
             }
           }
         }
@@ -65,6 +86,7 @@ const QUERIES = {
             title
             availableForSale
             price { amount currencyCode }
+            ${UNIT_PRICE_FIELDS}
             selectedOptions { name value }
           }
         }
@@ -101,6 +123,17 @@ const QUERIES = {
   `,
 };
 
+/**
+ * Build-time guard against a silent version change: Shopify answers a request for a version it no
+ * longer supports with the oldest supported one and names that in X-Shopify-API-Version. A missing
+ * header passes (not every response may carry it); a different one throws with both versions.
+ */
+export function checkApiVersion(requested: string, answered: string | null): void {
+  if (answered && answered !== requested) {
+    throw new CommerceError(`API version ${requested} requested, Shopify answered with ${answered}`, 'version');
+  }
+}
+
 function toCart(raw: Raw | null | undefined): Cart | null {
   if (!raw) return null;
   return {
@@ -126,7 +159,7 @@ export function createStorefront(config: CommerceConfig, fetchImpl: Fetch = fetc
   }
   const endpoint = `https://${config.domain}/api/${config.apiVersion}/graphql.json`;
 
-  async function request(query: string, variables: Raw): Promise<Raw> {
+  async function request(query: string, variables: Raw, { checkVersion = false } = {}): Promise<Raw> {
     let response: Response;
     try {
       response = await fetchImpl(endpoint, {
@@ -142,6 +175,7 @@ export function createStorefront(config: CommerceConfig, fetchImpl: Fetch = fetc
       throw new CommerceError('Storefront not reachable', 'network');
     }
     if (!response.ok) throw new CommerceError(`Storefront answered ${response.status}`, 'http');
+    if (checkVersion) checkApiVersion(config.apiVersion, response.headers.get('x-shopify-api-version'));
     const payload = (await response.json()) as { data?: Raw; errors?: { message: string }[] };
     if (payload.errors?.length) throw new CommerceError(payload.errors[0].message, 'graphql');
     return payload.data ?? {};
@@ -158,9 +192,9 @@ export function createStorefront(config: CommerceConfig, fetchImpl: Fetch = fetc
   }
 
   return {
-    /** Every product published to this sales channel, each with its first variant. */
+    /** Every product published to this sales channel, each with its first variant. Build time, so the API version is checked. */
     async products(): Promise<ListedProduct[]> {
-      const data = await request(QUERIES.products, {});
+      const data = await request(QUERIES.products, {}, { checkVersion: true });
       if (!data.products) throw new CommerceError('Product list missing in response', 'graphql');
       return data.products.nodes.map((p: Raw) => {
         const v = p.variants?.nodes?.[0];
@@ -171,7 +205,8 @@ export function createStorefront(config: CommerceConfig, fetchImpl: Fetch = fetc
           description: p.description ?? '',
           descriptionHtml: p.descriptionHtml ?? '',
           images: (p.images?.nodes ?? []).map((i: Raw) => ({ url: i.url, altText: i.altText ?? null, width: i.width, height: i.height })),
-          firstVariant: v ? { id: v.id, sku: v.sku ?? null, availableForSale: v.availableForSale, price: v.price } : null,
+          firstVariant: v ? { id: v.id, sku: v.sku ?? null, availableForSale: v.availableForSale, price: v.price, unitPrice: toUnitPrice(v) } : null,
+          variantCount: p.variants?.nodes?.length ?? 0,
         };
       });
     },
@@ -189,6 +224,7 @@ export function createStorefront(config: CommerceConfig, fetchImpl: Fetch = fetc
           title: v.title,
           availableForSale: v.availableForSale,
           price: v.price,
+          unitPrice: toUnitPrice(v),
           options: v.selectedOptions,
         })),
       };

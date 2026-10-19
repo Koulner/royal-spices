@@ -54,7 +54,7 @@ export const NOT_TEXT = {
 };
 
 const THEME_PRICE = 'Shopify-Theme: Preisbeschriftung für Screenreader („Normaler Preis“, „Verkaufspreis“, „EUR“); V1 zeigt den Preis aus dem Katalog als „12,90 €“ (A, M2)';
-const UNIT_PRICE = 'OFFEN beim Kunden: Grundpreis je kg fehlt (`unitPrice` nicht in der Query), rechtlich klären lassen (UEBERGABE-SHOPIFY, Nächste Schritte 4)';
+const UNIT_PRICE = 'Grundpreis kommt aus Shopify, sobald der Kunde ihn pflegt (`unitPrice`, T-20261018-11); Live 8.900 €/kg für 0,5 g ist um Faktor 2 falsch (richtig 17.800 €/kg, der Build bricht damit ab), die Live-Aufnahme in der Fixture hat keinen Grundpreis; Pflicht rechtlich klären (Kunde)';
 const PRODUCT_FORM = 'Shopify-Theme: Produktformular mit Galerie-Dialog, Bildzähler, Mengenwähler, Badges und Teilen; V1 hat dafür die BuyBox (A5, commerce.ts) und das Shopify-Produktbild';
 const SAME_PAGE_FORM = 'V1 hat das Anfrageformular auf der Seite selbst (`#anfrage`, InquiryForm); Live verlinkt das Kontaktformular';
 const FORM = 'V1-Anfrageformular (InquiryForm) mit eigenen Feldern „Telefon“, „Nachricht“ und Knopf „Anfrage senden“, Versand per SMTP (D1, O2)';

@@ -6,6 +6,8 @@ import { createStorefront } from '@/lib/commerce/storefront';
 import { createCart, formatMoney } from '@/lib/commerce/cart';
 import { CommerceError, type Cart } from '@/lib/commerce/types';
 import '@/styles/commerce.css';
+// After the stylesheet: imported earlier, this module moved the page CSS order in the build.
+import { liveUnitPriceLabel } from '@/lib/commerce/unit-price';
 
 if (commerceEnabled) init();
 
@@ -115,6 +117,7 @@ function init() {
     const variantId = box.dataset.variantId;
     const handle = box.dataset.handle;
     const price = box.querySelector<HTMLElement>('[data-buybox-price]');
+    const unit = box.querySelector<HTMLElement>('[data-buybox-unit]'); // only with a unit price at build time
     const soldOut = box.querySelector<HTMLElement>('[data-buybox-soldout]');
     const quantity = box.querySelector<HTMLInputElement>('[data-buybox-qty]');
     const add = box.querySelector<HTMLButtonElement>('[data-buybox-add]');
@@ -148,6 +151,12 @@ function init() {
         const variant = product?.variants.find((v) => v.id === variantId);
         if (variant) {
           price.textContent = formatMoney(variant.price);
+          if (unit) {
+            // Shown only while it fits the current price (unit-price.ts); otherwise hidden, never stale.
+            const label = liveUnitPriceLabel(variant.price, variant.unitPrice, unit.dataset.netGrams ? Number(unit.dataset.netGrams) : null);
+            if (label) unit.textContent = label;
+            unit.hidden = label === null;
+          }
           available = variant.availableForSale;
         } else {
           available = false;

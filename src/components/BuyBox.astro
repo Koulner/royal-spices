@@ -4,10 +4,11 @@
 //                       refreshed from Shopify when the page is viewed; quantity, cart, Shopify Checkout.
 //                       Texts as on the live shop, plus the V1 line to the inquiry for larger quantities.
 //                       The cart gets the variant id of the catalog (data-variant-id), see scripts/commerce.ts.
+//                       Unit price only when Shopify has one; the net weight lets the live update check it.
 //   no store yet     -> the inquiry path. No placeholder prices, no simulated cart.
 import Arrow from './Arrow.astro';
 import { commerceEnabled } from '@/lib/commerce/config';
-import { formatPrice, type CatalogProduct } from '@/lib/commerce/catalog';
+import { formatPrice, unitPriceLabel, type CatalogProduct } from '@/lib/commerce/catalog';
 
 interface Props {
   product: CatalogProduct;
@@ -32,7 +33,7 @@ const qtyId = `qty-${product.handle}`;
         <p class="buybox__price display-m">
           <span class="sr-only">Normaler Preis</span>
           <span data-buybox-price>{formatPrice(product.price!)}</span>
-        </p>
+        </p>{product.unitPrice && <p class="small buybox__unit" data-buybox-unit data-net-grams={product.facts?.netGrams}>{unitPriceLabel(product.unitPrice)}</p>}
         <p class="small buybox__soldout" data-buybox-soldout hidden={product.available === true}>Ausverkauft</p>
         <p class="small">Inkl. Steuern.</p>
         <div class="buybox__row">

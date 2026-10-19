@@ -3,11 +3,20 @@
 
 export type Money = { amount: string; currencyCode: string };
 
+/**
+ * Shopify unit price of a variant: `price` per referenceValue referenceUnit (e.g. 17800.0 EUR per 1 KG)
+ * for a variant of quantityValue quantityUnit (e.g. 0.5 G). Units as Shopify names them (G, KG, ML, …).
+ * Checked by unit-price.ts before it is shown; missing values arrive as NaN or "".
+ */
+export type UnitPrice = { price: Money; quantityValue: number; quantityUnit: string; referenceValue: number; referenceUnit: string };
+
 export type Variant = {
   id: string;
   title: string;
   availableForSale: boolean;
   price: Money;
+  /** null when Shopify has no unit price for the variant. */
+  unitPrice: UnitPrice | null;
   /** Shopify "selectedOptions", e.g. [{ name: "Gebinde", value: "1 g" }] */
   options: { name: string; value: string }[];
 };
@@ -33,7 +42,9 @@ export type ListedProduct = {
   descriptionHtml: string;
   images: ProductImage[];
   /** The product's first variant; every Shopify product has at least one. */
-  firstVariant: { id: string; sku: string | null; availableForSale: boolean; price: Money } | null;
+  firstVariant: { id: string; sku: string | null; availableForSale: boolean; price: Money; unitPrice: UnitPrice | null } | null;
+  /** Variants Shopify returned, at most 2 (the query asks for two): more than one stops the build. */
+  variantCount: number;
 };
 
 export type CartLine = {
@@ -63,7 +74,7 @@ export type CommerceConfig = {
   apiVersion: string;
 };
 
-export type CommerceErrorKind = 'network' | 'http' | 'graphql' | 'user';
+export type CommerceErrorKind = 'network' | 'http' | 'graphql' | 'user' | 'version';
 
 export class CommerceError extends Error {
   kind: CommerceErrorKind;
