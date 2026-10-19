@@ -4,6 +4,120 @@ Vorgänger: `UEBERGABE-GLAS.md` (Musskriterien A–G, am 07.10. freigegeben). Tr
 
 **Ziel des Auftraggebers:** Die nächste Version bald für die Demo ausrollen. Pragmatisch vorgehen, aber ohne milchigen Schleier auf dem Glas.
 
+## Stand 18.10. spät: R1–R6 erfüllt, c2 im Code
+
+- **R6 freigegeben** durch den Nutzer (Tafel `tafel-1810_r6.png`).
+- **R4 „leer“, Variante b** (Kriterienänderung, vom Nutzer freigegeben): Das Dunkle im rechten Viertel war das Band selbst. Es lag in den letzten 10 px des Feldes (Bezug 2560); direkt links davon ist das Glas zu 0 % dunkel. Deshalb fällt nur dieser Streifen weg, nicht das ganze Viertel: In `measure.cjs` endet das Feld jetzt bei x 1782 statt 1792 (Backup `INTEGRATION-20261016/backup-measure-vor-1810b.cjs`). Kontrollbild: `.raw/tests/glass-r/felder-1810b_leer-band.png` (Magenta = V < 0,25, Gelb = Grenze zum rechten Viertel; erzeugt mit `tools/leermask.cjs`).
+- **Neu gemessen** (alle anderen Felder unverändert, L6 wie oben): „leer“ < 0,25 bei c2 quer p 1 **4,3 %**, quer p 0,9 **4,1 %**, hoch **3,3 %**. Damit R1–R4 überall erfüllt. base bleibt bei 34–37 %, das Feld trennt also weiter. Der Rest im Feld liegt links (dunkler Reflex an der Schulter, 10–11 %).
+- Projektcode unverändert, keine Transaktion `OFFEN`.
+
+- **Schritt 4 erledigt (T-20261018-03, übernommen):** Die c2-Werte stehen jetzt als Konstanten im Code. In `saffron_fill.py`: `CORE_*`. In `web_hero.py`: `SHADE_CARD_GREY` je Karte, `FILL_PANEL`, `FILL_GAIN`, `FILL_TOP_DZ` und ein drittes Füllpaneel. `docs/ASSETS.md` ist nachgezogen. Ein Kontrollrender ohne `TUNE_*` ist gleich `c2_p1000.png` (höchstens 1/255). Bericht: `_agent/staging/T-20261018-03/ERGEBNIS.md`.
+- **`tune.py`:** Die Schalter `TUNE_CARD_*`, `TUNE_FILLGAIN_*` und `TUNE_FILLTOP_DZ` brechen jetzt ab, weil ihre Haken fehlen. Stattdessen gehen `TUNE_WH_SHADE_CARD_GREY="{'right': …}"`, `TUNE_WH_FILL_GAIN="{…}"` und `TUNE_WH_FILL_TOP_DZ=…`. „base“ heißt ab jetzt c2.
+
+- **Stand 18.10. abends:** Schritt 1 erledigt (313 Bilder nach `.raw/prev-e3b/`), Schritt 2 läuft seit 19:19 (Terminal-Tab „Queue c2“). Weiter und dazu der neue Auftrag „flüssig beim langsamen Scrollen“: `docs/UEBERGABE-FLUESSIG.md`, Abschnitt „Wiedereinstieg“.
+- **Stand 19.10.:** Schritte 2–4 erledigt. Die Queue c2 war am 18.10. um 22:23 ohne Fehler fertig. Am 19.10. folgten Build (`astro check` 0/0/0), `npm test` 158/158 und die Sichtprüfung quer (1440 × 900) und hoch (375 × 812) bei p 0,9 und p 1: Das Glas ist klar, die Füllung rot, es gibt keinen Schleier. Danach Glas-Commit auf `dev` als T-20261019-01, Hash in `_agent/LOG.md`. Offen bleiben nur die Punkte aus „Zurückgestellt“ und „Offen nach der Demo“.
+
+**Nächste Schritte (je nach Rückfrage beim Nutzer):** wie unter „Stand 15.10.“, Nächste Schritte 1–4:
+1. Alte Bilder wegräumen. `move-old.sh` (`INTEGRATION-20261015/tools`) schiebt nach `.raw/prev-e3/`; Ziel jetzt `.raw/prev-e3b/`, also das Skript vorher anpassen und erst als Probelauf starten.
+2. Queue im Terminal-Panel (4–5 h). Sie veröffentlicht sich selbst über `build-hero.mjs` und `build-stills.mjs`, das zählt also als Build.
+3. `npm run build` und `npm test`, quer und hoch ansehen.
+4. `STATUS.md`, dann Commit auf `dev` (H: → Worktree → Repo), vorher fragen.
+
+## Wiedereinstieg (Stand 18.10. abends, Chatwechsel wegen Budget)
+
+Schritt 1 und 2 der „Nächsten Schritte (18.10.)“ unten sind erledigt, die Tafel für Schritt 3 liegt bereit. Projektcode unverändert, keine Transaktion `OFFEN`.
+
+- **Die c2-Bilder vom 18.10. ab 18:49 waren falsch.** Betroffen: `c2_p1000`, `c2_p0900`, `c2-hoch_p1000`, `l7-c2*`. Darin fehlten Karten, oberes Füllpaneel und heller Kern (Füllung V 0,31, „leer“ 38 %). Die Bilder liegen jetzt in `.raw/tests/glass-r/falsch-1810/`. Mit dem Aufruf unten neu gerendert, alle TUNE-Zeilen im Log geprüft. Damit war auch das bisherige L7 ungültig; neue Werte unten.
+- **Felder je Ansicht** in `measure.cjs`: `node measure.cjs <bild> [<basis>] [quer|quer09|hoch]`. Ohne Angabe gilt: Hochformat → `hoch`, Dateiname mit `p0900` → `quer09`. Die Felder von quer p 1 werden linear übertragen (Skalierung und Versatz, angepasst am Etikett von c2). Kontrolliert per Overlay: `.raw/tests/glass-r/felder-1810_quer-quer09-hoch.png`. Rechte Füllkante und linke Glaskante liegen nach der Übertragung höchstens 10 px (Bezug 2560) daneben. Für quer p 1 sind die Werte gleich wie vorher (Backup des Skripts: `INTEGRATION-20261016/backup-measure-vor-1810.cjs`). Hilfsskripte in `tools/`: `zoom.cjs` (Ausschnitte mit Feldern), `tafel.cjs` (R6-Tafel), `leer.cjs` (Feld „leer“ genau, in Teilstreifen).
+- **Messung c2** (alle mit Basis gleicher Ansicht für L6):
+
+| Ansicht | Seite V / S / H | ü. Etikett V | leer < 0,25 | Kante / Boden / Schulter | Papier | L6 | R1–R4 |
+|---|---|---|---|---|---|---|---|
+| quer p 1 | 0,67 / 0,75 / 13° | 0,69 | 7,9 % | 0 / 0 / 0 % | 0,942 | 0,16 | ja (leer knapp) |
+| quer p 0,9 | 0,67 / 0,73 / 13° | 0,69 | **8,3 %** | 0 / 0 / 0 % | 0,942 | 0,17 | **nein**, nur R4 „leer“ |
+| hoch p 1 | 0,69 / 0,82 / 13° | 0,69 | 6,3 % | 0 / 0 / 0 % | 0,945 | 0,10 | ja |
+
+  base zum Vergleich: p 0,9 Seite 0,49, „leer“ 39 %, Kante 37 %; hoch Seite 0,51, „leer“ 38 %, Kante 31 %.
+  Im Feld „leer“ liegt das Dunkle vor allem im rechten Viertel (p 0,9: 18 %, p 1: 15 %), also am Band. Links sind es 10–12 %, in der Mitte 0 %.
+- **L7 neu** (Paare direkt nacheinander, `RENDERED`): quer 13,6 s → 14,3 s (1,05 ×), hoch 7,1 s → 7,3 s (1,03 ×). Erfüllt.
+- **R6-Tafel:** `.raw/tests/glass-r/tafel-1810_r6.png` (Referenz | c2 quer p 1 | c2 quer p 0,9 | c2 hoch). Der Nutzer hat sie noch nicht gesehen. Das Hochbild ist aus 720 × 1280 hochskaliert.
+
+### Nächste Schritte (18.10. abends)
+
+1. Tafel `tafel-1810_r6.png` zeigen und den Nutzer entscheiden lassen, was mit R4 „leer“ bei p 0,9 (8,3 % statt ≤ 8 %) geschieht:
+   - a) Variante mit Karten 0,5 statt 0,4 rendern und messen (bei t2 → t3 sank „leer“ von 8 auf 7 %; S sinkt dabei etwas). Gleicher Aufruf mit `TUNE_CARD_LEFT/BEHIND/FRONT=0.5`, Tag z. B. `c2k5`, in allen drei Ansichten.
+   - b) Das Feld ohne das rechte Viertel am Band werten. Das ändert aber die Kriterien und braucht deshalb die Freigabe des Nutzers.
+2. Nach Freigabe von R6: weiter mit Schritt 4 unten (Konstanten setzen usw.).
+
+## Wiedereinstieg (Stand 18.10., Chatwechsel auf Wunsch des Nutzers)
+
+**c2 ist Basis** (Entscheid des Nutzers 18.10.). Schritt 1 und die Farbrunde sind fertig (Abschnitt „Stand 17.10.“ unten). Mitten in Schritt 2. Projektcode weiter unverändert (gleich Backup `INTEGRATION-20261016`), keine Transaktion `OFFEN`.
+
+- **c2 als Aufruf** (aus `royal-spices-v1`, Werkzeug `T=/h/royal-spices/_agent/staging/INTEGRATION-20261016/tools`):
+  `TUNE_SF_CORE_GAIN=1.0 TUNE_SF_CORE_DARK="(0.20,0.015,0.005,1)" TUNE_SF_CORE_MID="(0.40,0.035,0.009,1)" TUNE_SF_CORE_LIGHT="(0.60,0.06,0.015,1)" TUNE_CARD_LEFT=0.4 TUNE_CARD_BEHIND=0.4 TUNE_CARD_FRONT=0.4 TUNE_FILLTOP_DZ=0.15 TUNE_FILLGAIN_TOP=2 TUNE_FILLGAIN_RIGHT=0.5 TUNE_WH_FILL_PANEL="(100, (1.0, 0.65, 0.5), 0.03)" bash $T/r.sh <tag> [Argumente]`
+- **`r.sh` korrigiert (18.10.):** `web_hero.py` nimmt bei doppelten Argumenten das erste (`arg()`, Zeile 62). Zusatzargumente stehen jetzt vor den Vorgaben und gewinnen, z. B. `--p 0.9` oder `--variant mobile --res 720x1280`. Vorher wurden sie still ignoriert.
+- **Gerendert in `.raw/tests/glass-r/`** (base = Stand T-02 ohne `TUNE_*`):
+  - quer p 0,9, 1280×720, 48 spp: `base_p0900.png`, `c2_p0900.png`
+  - hoch p 1, 720×1280, 48 spp: `base-hoch_p1000.png`, `c2-hoch_p1000.png`
+  - L7 mit Queue-Einstellungen: `l7-base_p1000.png` / `l7-c2_p1000.png` (quer 1920×1080, 64 spp, noise 0,03), `l7-base-hoch_p1000.png` / `l7-c2-hoch_p1000.png` (720×1280, 64 spp)
+- **L7 vorläufig erfüllt:** quer 14,0 s → 13,9 s (0,99 ×), hoch 7,1 s → 7,1 s (1,00 ×). Je ein Lauf, reine Renderzeit aus `RENDERED`.
+- `base_p1000.png` und `c2_p1000.png` wurden am 18.10. versehentlich mit gleichem Code und gleichen Einstellungen neu erzeugt. Sie sind gleichwertig, die Messwerte bleiben gültig.
+
+### Nächste Schritte (18.10.)
+
+1. **Felder für p 0,9 und hoch festlegen.** `measure.cjs` kennt nur quer p 1 (Koordinaten auf 2560×1440, Maßstab = Bildbreite/2560). Es braucht einen Feldsatz je Ansicht, z. B. über ein drittes Argument `quer|quer09|hoch` mit eigener Bezugsbreite und eigener `BOX` für L6. Felder wie quer p 1: Füllung Seite, Füllung über Etikett (Füllstreifen, nicht das leere Glas), leer über Füllung, linke Kante, Boden, Schulter, Papier. Felder auf `c2_p0900.png` und `c2-hoch_p1000.png` legen, als Overlay kontrollieren (Achtung: sharp skaliert vor dem Auflegen, also erst `composite` → Buffer, dann `resize`).
+2. Messen: c2 gegen base (L6), R1–R4 in allen drei Ansichten. Wenn hoch oder p 0,9 durchfällt: nur an Fülllicht, Karten, Kern drehen (Fadenmaterial = lose Fäden, L6).
+3. Tafel für R6: Referenz | c2 quer p 1 | c2 quer p 0,9 | c2 hoch. Dem Nutzer zeigen.
+4. Nach Freigabe: Konstanten in `saffron_fill.py` und `web_hero.py` setzen. Dazu gehören `add_shade_cards()` mit einer Farbe je Karte und das dritte Füllpaneel in `add_product_lights()`. Danach Kommentare und `docs/ASSETS.md` anpassen, dann weiter wie unter „Stand 15.10.“, Nächste Schritte 1–4 (Bilder wegräumen nach `.raw/prev-e3b/`, Queue im Terminal-Panel, Build, Test, Commit nach Rückfrage).
+5. Danach Produktabgleich P1–P6 (Entwurf unten, noch freigeben; Bandfarbe offen).
+
+## Stand 17.10. (fünfter Chat): Produkt wie das echte Glas, erst nach R1–R6
+
+- **Tafeln** in `.raw/tests/glass-r/`: `tafel-1610_ref-base-card30-core-both.png` (Referenz und die vier Versuche vom 16.10., Glasausschnitt) und `tafel-1710_website-echt-render.png` (Website-Bild | echtes Foto | Render `core`).
+- **Nutzer am 17.10.:** Glasform, Kork, Band, Etikett und Logo sollen „1:1 dem Original“ entsprechen. Entschieden:
+  - Das Original ist das **echte Produkt** (`safran-glaeser-real.jpg`). Das Website-Bild (vermutlich KI: schwarzes Band mit Golddruck, heller grober Kork, Bergmotiv, Glas mit Kragen) bleibt nur Vorbild für Licht und helle Füllung (R1–R6).
+  - Es gibt **keine Druckdaten**. Etikett, Band und Logo werden nach dem Foto nachgezeichnet. Das Rücketikett-PDF ist ein ReportLab-Nachbau (Cormorant Garamond, Manrope), kein Original.
+  - **Reihenfolge:** erst Glas hell (R1–R6, Schritte unten), dann der Produktabgleich als eigener Schritt. Die Queue startet erst danach.
+- **Unterschiede Render zu echtem Foto** (Sichtvergleich): Band dunkelgrün statt blaugrau; Kork dunkler; „ROYAL SPICES“ im Render golden und weit gesperrt, im Foto enger und eher graubraun; Blattzeichen im Render kräftiger und breiter; Etikett mit Ersatzschrift Arial. Die Form deckt sich (B1, 1,2 %).
+- **Entwurf Musskriterien P1–P6, noch nicht freigegeben:**
+  - P1 Glasform: B1 bleibt (Silhouette ≤ 3 % der Körperbreite gegen das Foto). Halsbreite bleibt 60 %, bis eine Messung am echten Glas vorliegt.
+  - P2 Kork: Form nach B1/B6. Korkoberseite, gemessen relativ zum Etikettpapier: Farbton und Helligkeitsverhältnis höchstens ±15 % neben den Fotowerten (gleiche Messung im Foto), Körnung fein wie im Foto.
+  - P3 Band: Schlaufe mit Luft über dem Kork; Bandbreite relativ zur Etikettbreite ±5 %; Druck „ROYAL SPICES“ und Blattzeichen hell, Lage und Größe nach Foto ±5 %. **Farbe offen:** Foto blaugrau, Kunde am 08.10. „eher grünlich“ (`PRODUCT-TRUTH.md` Punkt 8).
+  - P4 Etikett: Format 44 × 38,2 mm bleibt. Zeilen (Blatt, ROYAL, SPICES, SAFFRON, HERAT NEGIN, GRADE 1, Gewicht, Flagge, PACKED IN GERMANY): Lage und Höhe nach entzerrtem Foto ±3 % der Etiketthöhe, Zeilenbreite ±5 %, Schriftfarbe nach Foto, freie Schriften so nah wie möglich. Gewicht „1 g“.
+  - P5 Logo: Blattzeichen nach Foto nachgezeichnet, Umriss gegen entzerrten Fotoausschnitt ≤ 5 % der Logohöhe; dasselbe Zeichen auf Band und Etikett.
+  - P6 Sichtprüfung durch den Nutzer: Tafel Foto | Render in Foto-Pose, dazu Ausschnitte von Etikett, Band und Kork. Vor der Queue.
+
+### Schritt 1 erledigt (17.10.): t2 erfüllt R1–R4 quer p 1
+
+- **Messfeld korrigiert:** Das alte Feld „Füllung über Etikett“ (y 538–640) lag fast ganz im leeren Glas über der Füllung. Jetzt in `measure.cjs`: „Füllung über Etikett“ 1664/608–1770/646 (Füllstreifen über dem Etikett) und „leer über Füllung“ 1626/538–1792/600 als Glasfeld (R4). Werte vom 16.10. für dieses Feld sind damit nicht vergleichbar.
+- **Neue Schalter in `tune.py`:** `TUNE_CARD_<RIGHT|LEFT|BEHIND|FRONT>=<Grau oder (r, g, b)>` (Karte einzeln), `TUNE_FILLGAIN_<FRONT|RIGHT|TOP>=<Faktor>`; `TUNE_FILLGAIN_TOP` legt ein drittes Füllpaneel über die Füllung (nach unten, nur Füllung und Kern, im Glas unsichtbar), Abstand `TUNE_FILLTOP_DZ` (0,15 BU; Füllung bis z 3,595, Schulter innen 3,818).
+- **Befund:** Über dem Etikett sieht man die Oberseite der Füllung. Kein Licht erreicht sie (das Glas blockt Schattenstrahlen), das vordere Paneel hilft kaum (×3: V 0,44 → 0,47). Das Paneel oben hebt sie auf 0,63–0,71.
+- **Versuche** (alle mit Kern hell wie `core`, rechte Karte 0,03; Werte Seite V / S, über Etikett V, leer < 0,25, Kante < 0,25):
+
+| Versuch | Karten L / H / V | Fülllicht | Seite | ü. Etikett | leer | Kante | R1–R4 |
+|---|---|---|---|---|---|---|---|
+| `lr30` | 0,3 / 0,3 / 0,03 | – | 0,77 / 0,64 | 0,38 | 10 % | 0 % | nein |
+| `lr30f` | 0,3 / 0,3 / 0,3 | – | 0,77 / 0,63 | 0,44 | 10 % | 0 % | nein |
+| `all10` | alle 0,10 | – | 0,78 / 0,60 | 0,37 | 21 % | 18 % | nein |
+| `all15` | alle 0,15 | – | 0,78 / 0,57 | 0,39 | 14 % | 4 % | nein (auch S) |
+| `f3` | 0,3 / 0,3 / 0,3 | vorn ×3 | 0,77 / 0,63 | 0,47 | 9 % | 0 % | nein |
+| `t1` | 0,4 / 0,4 / 0,4 | oben ×1 | 0,78 / 0,62 | 0,63 | 8 % | 0 % | ja |
+| **`t2`** | 0,4 / 0,4 / 0,4 | oben ×2 | 0,78 / 0,62 | 0,69 | 8 % | 0 % | ja |
+| `t3` | 0,5 / 0,5 / 0,5 | oben ×2 | 0,78 / 0,61 | 0,71 | 7 % | 0 % | ja |
+
+  Boden, Schulter, L1 und L6 überall erfüllt (t2: Papier Rot 0,942, außerhalb 0,17/255). Renderzeit 7,3–7,9 s, L7 noch nicht gegen eine frische `base`-Messung geprüft. Tafel: `.raw/tests/glass-r/tafel-1710_schritt1.png`.
+- **Sichteindruck:** Glas in t2 klar. Die Füllung wirkt in allen Versuchen lachsfarben-orange und heller als die Referenz (Seite 0,78 gegen 0,58–0,68, S 0,62 am unteren Rand von 0,60–0,79). R1 verlangt nur ≥ 0,55.
+- **Farbrunde (18.10.)**, Basis t2, Ziel Seite V 0,62–0,68 und S höher. Die Fadenfarbe bleibt (dasselbe Material wie die losen Fäden außerhalb, L6), gedreht wird nur an Fülllicht und Kern:
+
+| Versuch | Änderung gegen t2 | Seite V / S / Farbton | ü. Etikett | R1–R4 |
+|---|---|---|---|---|
+| `c1` | Paneel rechts ×0,6, `FILL_PANEL` Farbe (1,0, 0,75, 0,6) | 0,73 / 0,71 / 15° | 0,70 | ja, V über Ziel |
+| `c1b` | Paneel rechts ×0,4, Farbe (1,0, 0,75, 0,6) | **0,68 / 0,73 / 15°** | 0,70 | ja |
+| `c2` | Paneel rechts ×0,5, Farbe (1,0, 0,65, 0,5), `CORE_MID` (0,40/0,035/0,009), `CORE_LIGHT` (0,60/0,06/0,015) | **0,67 / 0,75 / 13°** | 0,69 | ja |
+
+  Leer, Kante, Boden, Schulter, L1, L6 unverändert erfüllt. Tafel `.raw/tests/glass-r/tafel-1810_farbe.png`. Sichteindruck: c1b und c2 kräftiger rot als t2, c2 am tiefsten. Die Füllung wirkt gegenüber der Referenz noch etwas orange und gleichmäßiger; die Referenz zeigt einzelne karminrote Fäden mit dunkleren Lücken (Fadenstärke nicht im Umfang).
+- **t2 als Aufruf** (mit den Kern-Werten von `core`): `TUNE_SF_CORE_GAIN=1.0 TUNE_SF_CORE_DARK="(0.20,0.015,0.005,1)" TUNE_SF_CORE_MID="(0.45,0.05,0.012,1)" TUNE_SF_CORE_LIGHT="(0.75,0.12,0.03,1)" TUNE_CARD_LEFT=0.4 TUNE_CARD_BEHIND=0.4 TUNE_CARD_FRONT=0.4 TUNE_FILLTOP_DZ=0.15 TUNE_FILLGAIN_TOP=2 bash r.sh t2`
+
 ## Stand 16.10. (vierter Chat): Glas immer noch zu dunkel, neue Kriterien R1–R6
 
 - **Erledigt:** 1.468 alte Bilder liegen in `.raw/prev-e3/`. `docs/ASSETS.md` ist um Produktnachbau, Moltonkarten, Produkt-, Füll- und Flaggenlicht ergänzt (Tabelle „Änderungen gegenüber dem Master“).

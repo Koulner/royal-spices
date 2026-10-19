@@ -6,7 +6,7 @@ Blender (web_hero.py, after setup_scene() and product_jar):
     saffron_fill.build_fill()            # hides the master fill, builds the new one under the product empty
     saffron_fill.retint_loose_threads()  # loose threads from add_threads() get the same material
 
-build_fill() also builds the hidden core (build_core, CORE_ON): a closed dark body behind the threads, so the fill
+build_fill() also builds the hidden core (build_core, CORE_ON): a closed deep red body behind the threads, so the fill
 reads as an opaque mass; the threads stay the surface and lie in front of it at the glass.
 No packing code here: geometry and cache come from saffron_pack.py in the same folder.
 """
@@ -25,7 +25,7 @@ TRANS_MIN, TRANS_MAX, TRANS_FROM = 0.22, 0.85, 0.45
 # surface: lengthwise ridges per mm, bump strength, roughness floor (+0..0.22 on ridges), specular level (0.5 = 4 % F0)
 GROOVE_PER_MM, BUMP, ROUGH_BASE, SPEC = 10.0, 0.6, 0.38, 0.35
 _MPB = 11.8637                 # mm per BU of the fill last built (loose threads use the same scale)
-# hidden core (T-20261010-01): a closed dark body behind the packed threads, so the fill reads as one opaque mass.
+# hidden core (T-20261010-01): a closed body behind the packed threads, so the fill reads as one opaque mass.
 # The threads stay the visible surface and lie in front of it at the glass; threads may cut it (hidden parts).
 CORE = 'SAFFRON | hidden core (dark mass)'
 CORE_MATERIAL = 'Saffron | hidden core (dark mass)'
@@ -39,8 +39,10 @@ CORE_REACH = 0.085             # > plan size of every top face (< 0.1): columns 
 CORE_MIN_T = 0.03              # least height of the top over the bottom (deep holes in the thread surface)
 CORE_N, CORE_DR = 512, 0.035   # points per ring, ring spacing (BU) on the top and bottom caps
 CORE_SPEC, CORE_ROUGH = 0.15, (0.75, 0.55)  # matt, fibres slightly waxy (roughness body, fibre)
-CORE_DARK, CORE_MID, CORE_LIGHT = (0.010, 0.0010, 0.0008, 1), (0.035, 0.0022, 0.0016, 1), (0.090, 0.0045, 0.0030, 1)
-CORE_GAIN = 3.0                # T-20261015-02: core colours lifted with the fill (seen in the gaps between threads)
+# Deep red, not red black (T-20261018-03, glass test c2): it is seen in the gaps between the threads, and the
+# black there made the fill read dark through the glass. Was (0.010, ...), (0.035, ...), (0.090, ...) x 3.0 (T-20261015-02).
+CORE_DARK, CORE_MID, CORE_LIGHT = (0.20, 0.015, 0.005, 1), (0.40, 0.035, 0.009, 1), (0.60, 0.06, 0.015, 1)
+CORE_GAIN = 1.0                # factor on the three core colours
 
 
 def _gain(c, g):

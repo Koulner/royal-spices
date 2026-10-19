@@ -10,7 +10,7 @@ What this script changes relative to the master (documented in docs/ASSETS.md):
     the master's own dry-stigma study mesh. Nothing moves during the shot.
   * Ground, world and light balance are re-set for a warm paper-toned set.
   * Product light reaches only the product (light linking): front light on the label, edge strips and a
-    shoulder glint on the glass; the shade cards beside the jar are dark grey (T-20261015-01).
+    shoulder glint on the glass; grey shade cards beside the jar, dark only on the right (T-20261015-01, T-20261018-03).
   * The ends of the three fresh stigma branches are opened into flared funnels with an uneven,
     papillose margin, and the stigma tissue is made translucent (refine_stigma_ends, 2026-10-06).
   * The single 85 mm motion-control path is replaced by two authored paths
@@ -159,14 +159,17 @@ def add_flags():
         o.visible_shadow = False
         o.visible_diffuse = False
 
-SHADE_CARD_GREY = 0.03   # linear albedo of the shade cards (was 0.004, T-20261015-01)
+# Linear albedo of each shade card (T-20261018-03, glass test c2; before: 0.03 for all, T-20261015-01; 0.004 before that).
+SHADE_CARD_GREY = {'right': 0.03, 'left': 0.4, 'behind': 0.4, 'front': 0.4}
 
 def add_shade_cards():
-    """Black cards right beside the jar, seen only in the glass (glossy and transmission rays).
+    """Grey cards right beside the jar, seen only in the glass (glossy and transmission rays).
     The camera looks down, so the upright walls mirror the bright floor beside the jar as a milky veil (E3);
     in the photo that floor is dark. The right card also takes the kicker out of the side wall. Left and behind:
     the thick walls and base guide rays by total reflection to the floor behind the jar, which lit the corners up.
-    Cut at the shoulder, so the shoulder and edge highlights stay."""
+    Cut at the shoulder, so the shoulder and edge highlights stay. Only the right card is dark (SHADE_CARD_GREY):
+    with all four dark the glass read too dark, light grey left, behind and in front keeps edges, base and the empty
+    glass above the fill clear without the veil (criteria R1-R6, docs/UEBERGABE-E3-DEMO.md)."""
     jar = D.objects[product_jar.GLASS_NAME]
     bb = [Vector(c) for c in jar.bound_box]
     x0, x1 = min(c.x for c in bb), max(c.x for c in bb)
@@ -178,12 +181,15 @@ def add_shade_cards():
     # Mirror rays leave the side wall towards +y (dy/dx ~ 2.6) and the front towards -x.
     back_y1, front_x0 = y1 + 3.0 / s, x0 - 3.0 / s
     # Molton, not card: the mirror rays meet it at the same grazing angle as the wall, where a glossy card shines.
-    mat = D.materials.new('Flag | dark grey molton')
-    mat.use_nodes = True
-    # Dark grey, not black (T-20261015-01): black made the glass black all round; grey keeps it clear without the veil.
-    principled(mat).inputs['Base Color'].default_value = (SHADE_CARD_GREY,) * 3 + (1,)
-    principled(mat).inputs['Roughness'].default_value = 1.0
-    principled(mat).inputs['Specular IOR Level'].default_value = 0.0
+    # Grey, not black (T-20261015-01): black made the glass black all round.
+    mats = {}
+    for side, grey in SHADE_CARD_GREY.items():
+        mat = D.materials.new('Flag | grey molton ' + side)
+        mat.use_nodes = True
+        principled(mat).inputs['Base Color'].default_value = (grey,) * 3 + (1,)
+        principled(mat).inputs['Roughness'].default_value = 1.0
+        principled(mat).inputs['Specular IOR Level'].default_value = 0.0
+        mats[side] = mat
     for name, quad in [
         ('FLAG | shade right of jar', [(x1 + gap, y0 - gap, zb), (x1 + gap, back_y1, zb), (x1 + gap, back_y1, zt), (x1 + gap, y0 - gap, zt)]),
         ('FLAG | shade left of jar', [(x0 - gap, back_y1, zb), (x0 - gap, y0 - gap, zb), (x0 - gap, y0 - gap, zt), (x0 - gap, back_y1, zt)]),
@@ -192,7 +198,7 @@ def add_shade_cards():
     ]:
         me = D.meshes.new(name)
         me.from_pydata(quad, [], [(0, 1, 2, 3)])
-        me.materials.append(mat)
+        me.materials.append(mats[name.split()[3]])      # 'FLAG | shade <side> of jar'
         o = D.objects.new(name, me)
         scene.collection.objects.link(o)
         o.matrix_world = jar.matrix_world.copy()
@@ -201,7 +207,9 @@ def add_shade_cards():
         o.visible_diffuse = False
 
 FLAG_LIGHT = (1000, (0.7, 1.0, 0.8))   # W, colour of the flag's own light (T-20261015-02)
-FILL_PANEL = (100, (1.0, 0.9, 0.8), 0.03)   # W, colour, BU inside the inner wall
+FILL_PANEL = (100, (1.0, 0.65, 0.5), 0.03)   # W, colour, BU inside the inner wall (colour (1.0, 0.9, 0.8) before T-20261018-03)
+FILL_GAIN = {'front': 1.0, 'right': 0.5, 'top': 2.0}   # energy factor per fill panel (T-20261018-03)
+FILL_TOP_DZ = 0.15                                     # BU of the top panel above the fill top
 
 def add_product_lights():
     """Product light after the website photo (T-20261015-01): only the product receives it (Cycles light linking),
@@ -254,7 +262,8 @@ def add_product_lights():
     light('PRODUCT | flag', (6.0, 6.0), jar_c + d * 12.0, jar_c, FLAG_LIGHT[0], FLAG_LIGHT[1], flag_rx)
     # Fill (T-20261015-02): light from outside cannot reach it (the glass blocks shadow rays; shadow linking cost
     # +42 % render time). So two panels stand just inside the front and right inner walls, facing in, and light only
-    # the packed threads and the core: the threads at the glass read red as in the website photo.
+    # the packed threads and the core: the threads at the glass read red as in the website photo. A third one above
+    # the fill top, facing down, lights the strip of threads seen over the label (T-20261018-03).
     fill_rx = D.collections.new('LIGHT LINK | saffron fill')    # not the loose threads (same material)
     for n in ((saffron_fill.FILL, saffron_fill.CORE) if saffron_fill else ()):
         if n in D.objects:
@@ -263,8 +272,10 @@ def add_product_lights():
     a, z0, z1 = I['inner_half_width'], I['inner_floor_z'], I['fill_top_z']
     zm, eps = (z0 + z1) / 2, FILL_PANEL[2]
     for name, loc, tgt in [('PRODUCT | fill panel front', (0.0, -a + eps, zm), (0.0, 0.0, zm)),
-                           ('PRODUCT | fill panel right', (a - eps, 0.0, zm), (0.0, 0.0, zm))]:
-        o = light(name, (2 * a, z1 - z0), (0, 0, 0), (0, 0, -1), FILL_PANEL[0], FILL_PANEL[1], fill_rx)
+                           ('PRODUCT | fill panel right', (a - eps, 0.0, zm), (0.0, 0.0, zm)),
+                           ('PRODUCT | fill panel top', (0.0, 0.0, z1 + FILL_TOP_DZ), (0.0, 0.0, z0))]:
+        o = light(name, (2 * a, z1 - z0), (0, 0, 0), (0, 0, -1), FILL_PANEL[0] * FILL_GAIN[name.split()[-1]],
+                  FILL_PANEL[1], fill_rx)
         o.parent = emp; o.matrix_parent_inverse.identity()
         o.location = loc
         o.rotation_euler = (Vector(tgt) - Vector(loc)).to_track_quat('-Z', 'Y').to_euler()
