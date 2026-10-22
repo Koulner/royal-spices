@@ -4,9 +4,10 @@
 // accessible names of links and buttons, touch target sizes (mobile viewport), text contrast of
 // the palette, keyboard order with visible focus on the home page, the compact menu, the form.
 import { launch } from './browser.mjs';
+import { HANDLES, productPath } from '../../src/config/handles.mjs';
 
 const base = process.argv[2] ?? 'http://127.0.0.1:4321';
-const PAGES = ['/', '/produkte/', '/produkte/herat-negin-safran-1-g-grade-a/', '/herkunft-qualitaet/', '/b2b/', '/catering/', '/ueber-uns/', '/kontakt/', '/faq/', '/versand-lieferung/', '/impressum/', '/datenschutz/', '/anfrage/gesendet/', '/anfrage/fehler/'];
+const PAGES = ['/', '/produkte/', productPath(HANDLES.oneGram), '/herkunft-qualitaet/', '/b2b/', '/catering/', '/ueber-uns/', '/kontakt/', '/faq/', '/versand-lieferung/', '/impressum/', '/datenschutz/', '/anfrage/gesendet/', '/anfrage/fehler/'];
 
 const structure = `(() => {
   const visible = (el) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none'; };

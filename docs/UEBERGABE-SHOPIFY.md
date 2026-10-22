@@ -209,7 +209,26 @@ Schritt 1 des Auftrags: nur gelesen und gemessen, kein Code geändert. Im Projek
 
 ### B2 – Handles fest im Code
 
-**Wartet (Stand 18.10., abends):** T-20261018-12 ist reserviert, aber nicht begonnen. Grund (E6): T-20261018-07 (Flüssig Player, schreibt `HomeJourney.astro`) ist noch `OFFEN`. Start, sobald -07 `ÜBERNOMMEN` oder `VERWORFEN` ist. Dann `HomeJourney.astro` frisch aus dem Projekt lesen, denn die Zeilennummern unten stammen von vor -07. Schreibmenge und Musskriterien wie unten und in der Zeile im LOG. Die Wache bricht ab (E2), die Fixture-Gegenprobe läuft ohne das 1-g-Produkt.
+**Erledigt (20.10.2026, T-20261018-12 `ÜBERNOMMEN`, Backup in `_agent/staging/T-20261018-12/backup/`):**
+- **Eine Quelle:** Beide Handles stehen nur in `src/config/handles.mjs` (`HANDLES`, `HANDLE_USES`, `productPath`, `missingHandles`). Daraus lesen:
+  - `HomeCollection.astro` und `HomeJourney.astro`
+  - `product.ts` (Schlüssel und Handelsformat)
+  - `redirects.mjs` (alte 1-g-Seite)
+  - `tools/qa/{a11y,perf}.mjs`
+- **Wache:** Sie steht in `catalog.ts`, im Zweig mit Store, vor den Wachen für Varianten und Grundpreis. Die Meldung nennt den Handle und die Dateien. Kundenregel und Ablauf beim Umbenennen stehen in `SHOPIFY.md`, „Handles“.
+- **Geprüft in der Prüfkopie**, Vorher und Nachher aus derselben Kopie:
+  - grep findet jeden Handle in `src` nur in `handles.mjs`.
+  - Fixture ohne das 1-g-Produkt: Exit 1 mit Handle und 4 Dateien. Ohne das 0,5-g-Produkt: Exit 1 mit 2 Dateien.
+  - Vollständige Fixture: Build grün, `live-text.mjs` 0 offen.
+  - Ohne Store: `index.html` byte-gleich, 16/16 HTML-Dateien gleich.
+  - `npm test` 185/185 (8 neue in `tests/handles.test.mjs`), `astro check` 0/0/0.
+  - Rote Gegenprobe: Mit dem alten `catalog.ts` scheitern die Wachentests.
+  - Im Projekt nach der Übernahme `npm test` 185/185.
+- **Zusätzlich geändert:** `tests/redirects.test.mjs`, eine Zeile. Der Servertest kopiert jetzt `handles.mjs` mit in seinen Temp-Ordner, die Erwartungen sind unverändert.
+- **Beim Deploy:** `src/config/handles.mjs` muss mit `redirects.mjs` neben `server.mjs` liegen.
+- **Bewusst wörtlich bleiben:** `tools/live/rules.mjs`, `tools/seo/legacy-urls.txt`, Tests und Fixtures.
+
+Die Liste unten ist der Befund vom 18.10. Ihre Zeilennummern gelten nicht mehr.
 
 - **Ursache:** Es sind mehr als 5 Stellen.
   - `HomeCollection.astro` Z. 18/19 und 30/31

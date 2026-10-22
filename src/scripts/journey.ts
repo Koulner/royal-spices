@@ -4,7 +4,7 @@
 // document into motion (html.journey-on). Native scrolling stays untouched: no wheel handlers,
 // no scroll locking. The scroll position is read, eased like a motion-control head, and drawn.
 
-import { createFlow } from './journey-flow';
+import { chooseFrames, createFlow, limitsFor, stridesFor } from './journey-flow';
 
 /**
  * `frames` lists the positions that exist as [first, last, stride] runs on a grid of `count` positions.
@@ -71,13 +71,10 @@ function start(root: HTMLElement) {
 
   // Levels of detail in time. Each stride keeps the positions on a coarser grid; levels[0] is every
   // frame this device uses. A slow or resting camera reads from levels[0]. A fast camera reads from
-  // a coarser level, so the decoder is never asked for more frames than it can deliver.
-  //   high    every frame, thinning step by step to the base frames at speed
-  //   medium  one in-between per base step
-  //   low     every third base frame
-  const powers: number[] = [];
-  for (let stride = 1; stride <= fine; stride *= 2) powers.push(stride);
-  const strides = tier === 'high' ? powers : tier === 'medium' ? powers.slice(-2) : [fine * 3];
+  // a coarser level, so the decoder is never asked for more frames than it can deliver. The strides
+  // per tier: stridesFor (journey-flow.ts). Levels wider than limits.span are shown as whole frames.
+  const strides = stridesFor(tier, fine);
+  const limits = limitsFor(tier);
   // the strides in use: on a slow link the finest ones are dropped (loadSet)
   let usable = strides;
   let levels: number[][] = [[0]];
@@ -407,37 +404,65 @@ function start(root: HTMLElement) {
   function forgetLayers() {
     for (const layer of layers) layer.index = -1;
     dissolve = '';
+    content = null;
+  }
+
+  // Where the content shown last lay (see chooseFrames), and what the stage shows, for measurements:
+  // data-journey-frame = "<position> <a> <b> <warp|fade|whole>", written only when it changes.
+  let content: number | null = null;
+  let frameNote = '';
+  const ready = (index: number) => bitmaps.has(index);
+
+  function note(position: number, a: number, b: number, mode: 'warp' | 'fade' | 'whole') {
+    const value = `${position.toFixed(2)} ${a} ${b} ${mode}`;
+    if (value !== frameNote) film.dataset.journeyFrame = frameNote = value;
   }
 
   function draw(time: number) {
     if (!info || degraded) return;
     const position = shown;
-    const { list, k, a, b } = around(position, level);
-    const mix = b === a ? 0 : Math.min(1, Math.max(0, (position - a) / (b - a)));
+    const { list, k, b } = around(position, level);
 
-    // keep the frames ahead of the camera decoded, in the direction of travel
+    // keep the frames ahead of the camera decoded, in the direction of travel. Where whole frames are
+    // shown, from where the camera will be at the next frame: the ones it passes before are not shown.
     const ahead = target >= current ? 1 : -1;
-    for (const offset of [0, 1, 2, 3, 4, -1]) decode(list[Math.min(list.length - 1, Math.max(0, k + offset * ahead))]);
+    const from = usable[level] > limits.span ? around(position + ahead * pace, level).k : k;
+    for (const offset of [0, 1, 2, 3, 4, -1]) decode(list[Math.min(list.length - 1, Math.max(0, from + offset * ahead))]);
     decode(b);
 
-    const frameA = bitmaps.get(a);
-    const frameB = bitmaps.get(b);
-    if (frameA && frameB) {
+    // pairs no wider than limits.span, from the level the pace asks for; beyond it whole frames (E1 a)
+    const pairs: [number, number][] = [];
+    for (let l = level; l < usable.length && usable[l] <= limits.span; l++) {
+      const pair = around(position, l);
+      pairs.push([pair.a, pair.b]);
+    }
+    const choice = chooseFrames({ position, pairs, ready, frames: bitmaps.keys(), last: content, heading, limits });
+    if (choice.mode === 'pair') {
       // neighbouring frames are cross-dissolved: between pictures this close it reads as movement.
       // The layers always hold the dissolve, so the warp above them can drop out at any frame.
-      present(a, frameA, b, frameB, mix);
-      flow?.draw(info.variant, position, a, frameA, b, frameB, mix, time);
+      const { a, b: c, mix } = choice;
+      const frameA = bitmaps.get(a)!;
+      const frameB = bitmaps.get(c)!;
+      present(a, frameA, c, frameB, mix);
+      const warped = flow?.draw(info.variant, position, a, frameA, c, frameB, mix, time) ?? false;
+      content = position;
+      if (mix <= 0 || mix >= 1) note(position, mix <= 0 ? a : c, mix <= 0 ? a : c, 'whole');
+      else note(position, a, c, warped ? 'warp' : 'fade');
       return;
     }
-    // exact frames not ready: show the nearest decoded one rather than nothing
-    flow?.hide();
+    // no pair: while the frames are still coming in, the nearest one that arrived gets decoded
     const near = nearestLoaded(Math.round(position));
-    if (near < 0) return;
-    if (!bitmaps.has(near)) decode(near);
-    let closest = -1;
-    for (const key of bitmaps.keys()) if (closest < 0 || Math.abs(key - position) < Math.abs(closest - position)) closest = key;
-    const fallback = bitmaps.get(closest);
-    if (fallback) present(closest, fallback, closest, fallback, 0);
+    if (near >= 0 && !bitmaps.has(near)) decode(near);
+    if (choice.mode === 'hold') {
+      // nothing fits: the picture stays as it is
+      flow?.pause();
+      return;
+    }
+    flow?.hide();
+    const whole = bitmaps.get(choice.a)!;
+    present(choice.a, whole, choice.a, whole, 0);
+    content = choice.a;
+    note(position, choice.a, choice.a, 'whole');
   }
 
   // ---------------------------------------------------------------- progress
@@ -452,6 +477,7 @@ function start(root: HTMLElement) {
   let lastInput = 0;
   // positions travelled per drawn frame, smoothed: picks the level of detail in time
   let pace = 0;
+  let heading = 0;
   // camera speed in progress per second, and how stiffly it follows the scroll position (1/s)
   let velocity = 0;
   const FOLLOW = 10;
@@ -532,6 +558,9 @@ function start(root: HTMLElement) {
     const before = shown;
     shown = Math.abs(goal - shown) < 0.003 ? goal : shown + (goal - shown) * (resting ? 1 - Math.exp(-dt / 0.11) : 1);
     pace += (Math.abs(shown - before) - pace) * 0.35;
+    // the direction the camera travels; held while it pauses, none once it has come to rest
+    const moved = shown - before;
+    heading = moved > 1e-6 ? 1 : moved < -1e-6 ? -1 : resting ? 0 : heading;
     level = 0;
     if (!resting) while (level < usable.length - 1 && pace > usable[level]) level++;
     updateInterface();

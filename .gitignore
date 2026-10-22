@@ -12,3 +12,8 @@ __pycache__/
 .env
 .env.*
 !.env.example
+
+# IONOS upload (tools/ionos/prepare.mjs) and PHP dependencies (composer install in php/)
+dist-ionos/
+dist-ionos-local/
+php/vendor/

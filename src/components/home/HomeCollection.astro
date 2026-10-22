@@ -9,6 +9,7 @@
 import Arrow from '@/components/Arrow.astro';
 import Picture from '@/components/Picture.astro';
 import { getCatalog, formatPrice, unitPriceLabel } from '@/lib/commerce/catalog';
+import { HANDLES, productPath } from '@/config/handles.mjs';
 
 const catalog = await getCatalog();
 const find = (handle: string) => catalog.find((p) => p.handle === handle);
@@ -16,20 +17,20 @@ const gift = catalog.find((p) => /geschenkbox/i.test(`${p.handle} ${p.title}`));
 
 const cards = [
   {
-    href: '/produkte/herat-negin-safran-1-g-grade-a/',
-    product: find('herat-negin-safran-1-g-grade-a'),
+    href: productPath(HANDLES.oneGram),
+    product: find(HANDLES.oneGram),
     badge: 'UNSER ORIGINAL',
     eyebrow: 'HERAT NEGIN · GRADE 1',
     title: 'Premium Safran – 1 g',
     text: 'Ganze, handverlesene Fäden.',
     imageAlt: 'Ganze Premium-Safranfäden aus Herat – 1-g-Produkt',
-    still: 'jar',
+    still: 'live-jar-1g',
     stillAlt:
-      'Royal-Spices-Glas von vorn: cremefarbenes Etikett mit „Royal Spices, Saffron, Herat Negin, Grade 1, 1 g, Packed in Germany“, davor getrocknete Safranfäden.',
+      'Royal-Spices-Glas 1 g mit Korken und dunklem Siegelstreifen, cremefarbenes Etikett „Royal Spices, Saffron, Herat Negin, Grade 1, 1 g, Packed in Germany“, ringsum getrocknete Safranfäden.',
   },
   {
-    href: '/produkte/safran-herat-negin-0-5g/',
-    product: find('safran-herat-negin-0-5g'),
+    href: productPath(HANDLES.halfGram),
+    product: find(HANDLES.halfGram),
     badge: 'KLASSIKER',
     eyebrow: 'HERAT NEGIN · GRADE 1',
     title: 'Premium Safran – 0,5 g',

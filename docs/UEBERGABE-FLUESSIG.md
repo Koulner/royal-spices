@@ -1,6 +1,81 @@
 # Flüssig beim langsamen Scrollen (18.10.2026)
 
-## Neuester Stand (19.10. abends): R7 relativ zum Grundtakt (T-20261019-04) übernommen
+## Neuester Stand (21.10. vormittags): -01/-02 übernommen, Warp-Kanten nach Option (a) im Bau (T-20261021-01/-02)
+
+- **Entscheidungen des Nutzers (21.10.):** T-20261020-01/-02 übernehmen (erledigt, Backups in den Staging-Ordnern, MD5 gleich). Gegen die Warp-Kanten Option (a): MSAA + weiche Gewichte, als A/B-Versuch mit V0–V3. Kriterien K1–K7 und Info I1 sind freigegeben: `_agent/staging/T-20261021-01/KRITERIEN.md`.
+- **Vorgabe des Nutzers (21.10., wörtlich):** „es darf kein weg gewählt werden, der die performance der seite reduziert“ und „es muss allerdings flüssig sein“. Beides ist Musskriterium. Messbar gemacht als K6: kein Wert schlechter als der geprüfte Stand von T-20261020-01 (`--f2`, `--fast` warm, `perf`, Transfer), im selben Block an der Konsole abwechselnd gegen V0 gemessen. Dazu K8: GPU-Zeit je Warp-Bild ≤ V0 × 1,10. Damit scheiden (b) und (c) aus. Neu ist V4 (nur weiche Gewichte, ohne MSAA), die Reihenfolge ist V4 → V1 → V2 → V3.
+- **Bau (Subagents parallel, Aufträge in den Staging-Ordnern):**
+  - -01 baut das Messwerkzeug `tools/qa/flow-edge.mjs` und misst V0. Arbeitskopie `wa`, Port 4391, CDP 9351.
+  - -02 baut V1–V3 in `journey-flow.ts` hinter `createRenderer(canvas, { samples, smooth })`, `RENDER_DEFAULTS` und `RENDER_AT_SCREEN`. Arbeitskopie `wb`, Port 4392, CDP 9352.
+  - Beide Arbeitskopien liegen im Scratchpad der Sitzung `023c4cfa-…`, als vollständige Kopien (ohne /MT) mit verglichener Dateiliste.
+- **Danach (Hauptchat):**
+  1. Prüfkopie aus Projekt + -01 + -02 anlegen und V0–V3 mit `flow-edge.mjs` messen. Vorgabe ist die kleinste Variante, die K1–K4 und K7 erfüllt.
+  2. K5 prüfen, K6 an der Konsole (`--f2`, gpu.lock, CDP 9336).
+  3. Sichtprüfung des Nutzers auf Port 4394.
+  4. Übernahme mit Backup, danach diese Datei und STATUS.md nachziehen.
+
+## Stand 21.10. früh: N1–N5 erfüllt, -01/-02 nicht übernommen; neuer Befund „Warp-Kanten in Bewegung“
+
+- **Konsolenläufe** (Protokolle in `_agent/staging/T-20261020-01/pruefung/`):
+  - `--fast` erfüllt alle Prüfungen. N1 0, N2 warm erfüllt (P1 bis 4000 px/s d ≤ 2,0), N3 warm mindestens 89 fps und höchstens 30,4 ms.
+  - W1, W2 und `perf` ok (TBT 0, LCP 672 ms).
+  - `--f2` dreimal gelaufen: je Profil genau ein Intervall von 34,6–37,0 ms, nur am Wendepunkt (Altbefund). Sonst 143 fps (Desktop) und 112 fps (Telefon), 100 % Warp.
+  - N1 offline hat der Nutzer mit (a) angenommen (`ENTSCHEIDUNG-N1.md`).
+- **Nicht übernommen.** Der Nutzer sah beim Anschauen in Bewegung (21.10.): „alle Ränder kaputt, als wäre Anti-Aliasing auf niedrigster Einstellung“. Im Standbild verschwinden die Kanten.
+- **Befund des Hauptchats:** Die Kanten kommen vom Warp bei Abstand 1–2, und den gibt es schon seit T-20261018-07 im Projekt. Im Standbild zeigt der Player echte Renders. Aufnahmen und Vergleiche mit `?flow=off` liegen im Scratchpad der Sitzung `a6c2fb99-…` (`cap2/cmp-428.png`, `zoom-428.png`; Skripte `cap.mjs`, `cap2.mjs`).
+  - Im Warp haben die Kanten der Fäden kleine Knicke und Treppen. Im Bild ohne Warp gibt es stattdessen Doppelbilder.
+  - Vermutete Anteile:
+    1. Der Warp rendert ohne Kantenglättung (`antialias: false`, Render-Targets ohne Multisampling) in Bildauflösung (1440 px). Der Browser skaliert das auf 2560 px. Verdeckungskanten der Dreiecke werden so zu Pixeltreppen, die in Bewegung krabbeln.
+    2. Die Gewichte je Dreieck (`vG` aus Tiefenverhältnis und Dehnung) und das grobe Tiefenraster (Zellen von etwa 14 px) knicken die Kanten an den Zellgrenzen.
+    3. Möglicher Zusatz durch -01: Bei mittlerem Tempo wechselt der Player Frame für Frame zwischen Warp und ganzem Bild (P1 Flick 4000: 166 Warp / 429 ganze Bilder). Das ist nicht geprüft.
+  - F1/N1 messen auf 960 px heruntergerechnet und gemittelt, deshalb sehen sie diese Kanten nicht.
+- **Optionen zur Entscheidung (Kriterien vor dem Bau):**
+  - (a) Kantenglättung im Warp: MSAA-Render-Targets (WebGL2 `renderbufferStorageMultisample` + `blitFramebuffer`), eventuell in Bildschirmauflösung. Klein. Zuerst als A/B-Versuch in der Prüfkopie, mit einem neuen Kantenmaß in voller Auflösung und Flimmern von Frame zu Frame.
+  - (b) Feineres Tiefenraster: Flow-Daten aus `.raw/*-depth` neu erzeugen. Größer, betrifft F3 (Transfer).
+  - (c) Kein Warp mehr: ganze Bilder bzw. Überblenden, dann ohne Kanten, aber mit Stufen bzw. Doppelbildern.
+- **Offen:** Übernahme von -01/-02 (Fragmente beim schnellen Scrollen sind behoben, die Werkzeuge taugen für den nächsten Schritt) und die Wahl der Option.
+
+**Startprompt für eine neue Sitzung:**
+> Royal Spices, Flüssig: Warp-Kanten in Bewegung („wie Anti-Aliasing auf niedrigster Stufe“, verschwinden im Standbild). Lies H:\royal-spices\CLAUDE.md, den Kopf von _agent/LOG.md und in royal-spices-v1/docs/UEBERGABE-FLUESSIG.md den Abschnitt „Neuester Stand (21.10.)“. T-20261020-01 (Player, keine Fragmente) und -02 (Werkzeuge) sind fertig geprüft (N1–N5 erfüllt), aber nicht übernommen. Kläre mit dem Nutzer: Übernahme -01/-02 ja oder nein, und welche Option gegen die Warp-Kanten (a MSAA, b feineres Tiefenraster, c kein Warp). Lege für die gewählte Option zuerst messbare Kriterien vor (Kanten in voller Auflösung, Flimmern in Bewegung), erst nach Freigabe bauen (Subagent nach CLAUDE.md §3, neue ID im Block T-20261021-01…-09). Prüfkopie im Scratchpad ohne robocopy /MT, Dateiliste vergleichen, Port 4394. Bildtakt nur an der Konsole mit gpu.lock und CDP 9336. Kein Übertrag nach dev, kein Push ohne Freigabe. Budget: kein Chat und kein Agent über 150k Tokens.
+
+## Stand 20.10. abends: Fragmentierung, Bau fertig und geprüft bis auf Konsole und Entscheidung (T-20261020-01/-02)
+
+- **Bau:** Er lief in zwei Transaktionen, damit jeder Subagent im Budget bleibt. Beide Subagents lagen trotzdem darüber: A 162k, B 217k laut Harness.
+  - **-01 Player** (`journey.ts`, `journey-flow.ts`, Tests): Neue reine Funktionen `MAX_SPAN = 2`, `stridesFor`, `limitsFor`, `pairAllowed`, `chooseFrames`. Gewarpt oder überblendet wird nur, wenn die beiden Bilder höchstens 2 Positionen auseinanderliegen. Sonst zeigt der Player ganze Bilder, höchstens 4 Positionen neben der Kamera (E1 a). Ein ganzes Bild liegt nie mehr als 0,5 Positionen hinter dem vorigen, entgegen der Fahrtrichtung. Passt nichts, bleibt das Bild stehen. `flow.draw` verweigert Abstände über 2 selbst und meldet zurück, ob es gewarpt hat. `medium` nutzt die Abstände [2, 4, 8] (E2 a). `low` bleibt unverändert. Diagnose-Attribut am Film: `data-journey-frame = "<pos> <a> <b> <warp|fade|whole>"`, gesetzt nur bei Änderung.
+  - **-02 Werkzeuge:** `flow-gl.mjs --fast [P1,P2,P2m] [--no-timing] [--out f.json] [--cdp p]` misst N1–N3 (etwa 20 min). `flow-check.mjs --stride s --t …` misst die Splitter.
+- **Ergebnisse** liegen im Staging von -01 und -02, jeweils mit `ERGEBNIS.md` und `diff.patch`. Die Prüfprotokolle stehen in `_agent/staging/T-20261020-01/pruefung/`.
+- **Prüfkopie:** `scratchpad\pk` der Sitzung `a6c2fb99-…`, das ist Projekt + -01 + -02. Server auf 4394. Die Dateiliste ist geprüft gleich dem Projekt. Achtung: `robocopy /MT` hatte bei den Arbeitskopien still 1642 Dateien ausgelassen, deshalb ohne `/MT` kopieren und die Dateiliste vergleichen.
+- **Geprüft:**
+  - `npm test` 191/191, `astro check` 0 Fehler, Build ok.
+  - Per RDP mit `no-rm-preload.mjs`: K2, K3, K5 `--load`, W7, K7 72/72 alle ok.
+  - `--fast --no-timing`: N1 hält. In allen 24 Fahrten gibt es 0 Frames mit Abstand über 2, auch kalt, und 0 Rücksprünge. Gegenprobe: Der alte Player hatte 2986 solche Frames.
+  - N2 auf P1 bei Flicks bis 4000 px/s per RDP (30 Hz) verfehlt, d bis 4,0. Muss bei 144 Hz an der Konsole gemessen werden. Reicht es dort nicht, kann `high` höchstens auf Abstand 4 dekodieren (Vorschlag A).
+- **Offen:**
+  1. **Konsolenläufe** mit `_agent/staging/T-20261020-01/console-runs.sh`: `--fast` (N1–N3), `--f2` (K4/N4), W1, W2, `perf`. Das Skript wartet auf `>console` und setzt `gpu.lock`.
+  2. **Entscheidung N1 offline:** Siehe `_agent/staging/T-20261020-01/ENTSCHEIDUNG-N1.md`. Quer liegen 11 Positionen über 0,02 %, hoch die ganze Haltestelle 188–215 (dünne Naht an der Narbe). Alles betrifft Abstand 2 und war schon vor dem Umbau so. t 0,25/0,75 und Abstand 1 sind ohne Referenz nicht messbar. Empfehlung: (a) annehmen.
+  3. Nach Freigabe: Übernahme -01 + -02 mit Backup, LOG, STATUS. Kein `dev`/Push ohne Freigabe.
+- **Hinweise aus A:** Kalt bleiben die Poster stehen, bis ein Bild höchstens 4 Positionen neben der Kamera fertig ist. `medium` lädt doppelt so viele Bilder (Desktop 357 statt 179), das Speicherbudget von 48 MB bleibt.
+
+**Startprompt für eine neue Sitzung:**
+> Royal Spices, Flüssig: Fragmentierung beim schnellen Scrollen, T-20261020-01 (Player) und -02 (Werkzeuge) sind gebaut und bis auf die Konsolenläufe geprüft. Lies H:\royal-spices\CLAUDE.md, den Kopf von _agent/LOG.md und in royal-spices-v1/docs/UEBERGABE-FLUESSIG.md den Abschnitt „Neuester Stand (20.10. abends)“. Prüfe die Protokolle in _agent/staging/T-20261020-01/pruefung/ (Konsolenläufe über console-runs.sh: fast, f2, w1-hz30, w2-native-slow25, perf; fehlen sie, die Prüfkopie neu anlegen: Projekt ohne /MT kopieren, Dateiliste vergleichen, -01 und -02 aus dem Staging einspielen, bauen, Server PORT=4394, Skript-Pfad PK anpassen). Bildtakt nur an der Konsole (`query session` beginnt mit `>console`), gpu.lock setzen und löschen, CDP 9336 nacheinander. Die Entscheidung zu N1 offline (ENTSCHEIDUNG-N1.md) liegt beim Nutzer. Übernahme ins Projekt nur nach Freigabe, mit Backup und Statuspflege im LOG; kein Übertrag nach dev und kein Push ohne ausdrückliche Freigabe. Danach UEBERGABE-FLUESSIG.md und STATUS.md nachziehen. Budget: kein Chat und kein Agent über 150k Tokens.
+
+## Stand 20.10.: Fragmentierung beim schnellen Scrollen, Kriterien freigegeben (T-20261020-01)
+
+Auftrag des Nutzers (20.10.): „die animation ist jetz super flüssig, allerdings gibt es fragmentierungen, wenn man schnell durchscrolled, das darf nicht passieren“. Befund, Messwerte, Kriterien N1–N5 und Entscheidungen: `_agent/staging/T-20261020-01/KRITERIEN.md`, am 20.10. vom Nutzer freigegeben. Messwerkzeuge der Analyse liegen in `messung/` daneben.
+
+- **Ursache, vom Nutzer anhand von `bild-kante-100.png` bestätigt („genau das“):** Beim schnellen Scrollen wählt `journey.ts` die Stufen 2/3, also Bildabstand 4/8, und `journey-flow.ts` warpt ohne Abstandsgrenze. Das Tiefenraster 1/12 erzeugt dann Treppen und Splitter an Tiefenkanten. Splitter sind Pixel mit Fehler über 48/255, ihr Anteil liegt bei Abstand 2/4/8 bei höchstens 0,01 / 0,06 / 0,42 %. Am Telefon (P2) springt das Bild außerdem in 12–25 % der Frames auf ein ungewarptes Nachbarbild, bis zu 22 Positionen weit und auch rückwärts. Die Stufe `medium` warpt nur über 4/8.
+- **Freigegeben:** N1 (kein Warp über einen Abstand größer als 2, Splitter ≤ 0,02 % im erlaubten Bereich), N2 (warm höchstens 4 Positionen neben der Kamera, P1 bis 4000 px/s höchstens 2, keine Rücksprünge), N3 (≥ 55 fps, ≤ 33,4 ms bei schnellen Fahrten), N4 (kein Rückschritt, K4 bei 300 px/s ≥ 95 % Warp), N5 (`flow-gl.mjs --fast`, Splittermessung in `flow-check.mjs`). **E1 (a):** Ist die Kamera für saubere Zwischenbilder zu schnell, zeigt der Player ganze Bilder (das nächste fertige Bild, ohne Warp und ohne Überblenden). **E2 (a):** `medium` lädt auch Abstand 2 und warpt wie `high`. **E3:** P3/P4 misst der Nutzer vor dem Übertrag nach `dev`.
+- **Stand:** Projektcode unverändert, T-20261020-01 `OFFEN` (Bau nicht begonnen). Server 4394 gestoppt, `gpu.lock` nicht gesetzt.
+- **Hinweise für den Bau:**
+  - Die Analyse-Prüfkopie (`scratchpad\pk` der Sitzung `cda9ae11-…`) enthält Protokoll-Haken (`window.__jlog`, `__jcap`). Für die Abnahme taugt sie nicht, deshalb neu anlegen.
+  - Auf H: lassen sich keine Junctions anlegen („lokale NTFS-Volumes erforderlich“). Prüfkopie deshalb im Scratchpad auf C: mit Junction auf `H:\royal-spices\royal-spices-v1\node_modules`, Server mit `PORT=4394`. Nach jedem Neubau den Server neu starten, sonst liefert er die alte Seite.
+  - `.raw/desktop-fine-1440` enthält nur 364 Bilder, gerade Zwischenpositionen fehlen teils. N1 offline deshalb dort messen, wo Quellen liegen, und die Abdeckung nennen.
+  - Ein Diagnose-Attribut wie `data-journey-flow` ist in Ordnung, gesetzt nur bei Änderung. Globale Testhaken im Produktionscode sind es nicht.
+
+**Startprompt für die neue Sitzung:**
+> Royal Spices, Flüssig: Fragmentierung beim schnellen Scrollen beheben, Transaktion T-20261020-01 (ID-Block -01 bis -09; Kriterien freigegeben). Lies H:\royal-spices\CLAUDE.md, den Kopf von _agent/LOG.md (Parallelbetrieb: GPU-Sperre, Prüfkopie, Ports, HomeJourney.astro gehört T-20261018-12), dann _agent/staging/T-20261020-01/KRITERIEN.md (N1–N5, E1 a, E2 a) und in royal-spices-v1/docs/UEBERGABE-FLUESSIG.md den Abschnitt „Neuester Stand (20.10.)“. Baue per Subagent nach der Vorlage in CLAUDE.md §3: Er schreibt nur nach _agent/staging/T-20261020-01/ (Projektpfade), Schreibmenge laut KRITERIEN.md, nicht HomeJourney.astro (wird sie gebraucht: melden und warten), flow-warp.mjs bleibt die Referenz. Danach im Hauptchat gegen N1–N5 prüfen, in einer frischen Prüfkopie im Scratchpad (Port 4394). Bildtakt (--f2, --fast) nur lokal an der Konsole (`query session` beginnt mit `>console`), nacheinander, CDP 9336, vorher _agent/gpu.lock setzen und danach löschen. Übernahme ins Projekt nur nach meiner Freigabe, mit Backup und Statuspflege im LOG; kein Übertrag nach dev und kein Push ohne meine ausdrückliche Freigabe. Danach UEBERGABE-FLUESSIG.md und STATUS.md nachziehen. Budget: kein Chat und kein Agent über 150k Tokens; bei etwa 120k Übergabe in UEBERGABE-FLUESSIG.md mit Startprompt schreiben und eine neue Sitzung fortsetzen lassen. Subagents antworten mit höchstens 300 Wörtern.
+
+## Stand 19.10. abends: R7 relativ zum Grundtakt (T-20261019-04) übernommen
 
 Kriterien W1–W7 und Entscheidungen E1 (a), E2, E3 (a): `_agent/staging/T-20261019-04/KRITERIEN.md`. Ergebnis und Protokolle: `_agent/staging/T-20261019-04/ERGEBNIS.md` und `*.log` daneben.
 

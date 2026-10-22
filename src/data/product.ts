@@ -2,6 +2,8 @@
 // Price, availability and variants are NOT kept here: they come from the Storefront API
 // (src/lib/commerce/catalog.ts). Without a configured store the site states no prices.
 
+import { HANDLES, productPath } from '../config/handles.mjs';
+
 export type Fact = { label: string; value: string; note?: string };
 
 /** One section of the product description as the live shop shows it. "\n" inside a paragraph is a line break. */
@@ -68,7 +70,7 @@ const details = (quantity: string): Fact[] => [
 
 /** Keyed by Shopify handle, in the order of the live collection "Safran". */
 export const productFacts: Record<string, ProductFacts> = {
-  'safran-herat-negin-0-5g': {
+  [HANDLES.halfGram]: {
     title: 'Safran – Herat Negin Grade 1, 0,5 g',
     intro: {
       heading: 'Die Kunst des Safrans – im kleinen Glas',
@@ -85,7 +87,7 @@ export const productFacts: Record<string, ProductFacts> = {
     picture: { name: 'jars-photo', alt: 'Reihen abgefüllter Royal-Spices-Gläser mit Korken, Siegelstreifen und Etikett auf einem Tisch.' },
     more: [threads, packaging, documents],
   },
-  'herat-negin-safran-1-g-grade-a': {
+  [HANDLES.oneGram]: {
     // As in Shopify, with its non-breaking spaces; Grade A -> Grade 1.
     title: 'Herat Negin Safran – 1\u00a0g (Grade\u00a01)',
     intro: {
@@ -106,8 +108,8 @@ export const productFacts: Record<string, ProductFacts> = {
     ],
     netGrams: 1,
     picture: {
-      name: 'jar',
-      alt: 'Royal-Spices-Glas von vorn: cremefarbenes Etikett mit „Royal Spices, Saffron, Herat Negin, Grade 1, 1 g, Packed in Germany“, davor getrocknete Safranfäden.',
+      name: 'live-jar-1g',
+      alt: 'Royal-Spices-Glas 1 g mit Korken und dunklem Siegelstreifen, cremefarbenes Etikett „Royal Spices, Saffron, Herat Negin, Grade 1, 1 g, Packed in Germany“, ringsum getrocknete Safranfäden.',
     },
     more: [threads, packaging, packedIn, documents],
   },
@@ -144,7 +146,7 @@ export const formats: Format[] = [
     spec: '1 g · Negin · Grade 1',
     body: 'Ganze Fäden aus Herat, in Deutschland abgefüllt. Glas mit Naturkork und Siegelstreifen.',
     audience: 'Für die Küche zu Hause, für Bar und Pass, für das Regal.',
-    action: { label: 'Produkt ansehen', href: '/produkte/herat-negin-safran-1-g-grade-a/' },
+    action: { label: 'Produkt ansehen', href: productPath(HANDLES.oneGram) },
   },
   {
     id: 'display',

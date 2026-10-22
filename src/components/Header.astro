@@ -1,5 +1,5 @@
 ---
-import Sprig from './Sprig.astro';
+import Picture from './Picture.astro';
 import { primaryNav, secondaryNav, announcement, shopifyAccountUrl } from '@/config/site';
 import { commerceEnabled } from '@/lib/commerce/config';
 
@@ -13,10 +13,9 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
   </div>
 
   <div class="site-header__bar wrap">
-    {/* O5: royal-spices-atelier-logo-wide.png */}
+    {/* Logo von royalspices.de, Hintergrund freigestellt (pipeline/images/build-stills.mjs) */}
     <a class="wordmark" href="/" aria-label="Royal Spices – Startseite">
-      <Sprig class="wordmark__sprig" />
-      <span class="wordmark__text">Royal Spices</span>
+      <Picture class="wordmark__logo" name="logo-wide" alt="" sizes="8.25rem" loading="eager" />
     </a>
 
     {
@@ -124,20 +123,10 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
     color: var(--ink);
   }
 
-  .wordmark__sprig {
-    width: 1.5rem;
-    height: 1.4rem;
-    color: var(--bronze);
-  }
-
-  .wordmark__text {
-    font-family: var(--font-display), Georgia, serif;
-    font-weight: 500;
-    font-size: 1.3125rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    line-height: 1;
-    white-space: nowrap;
+  .wordmark :global(.wordmark__logo img) {
+    display: block;
+    width: auto;
+    height: 2.75rem;
   }
 
   .site-nav {
@@ -219,11 +208,6 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
   @media (min-width: 64rem) and (max-width: 84.99rem) {
     .site-header__bar {
       gap: var(--s-4);
-    }
-
-    .wordmark__text {
-      font-size: 1.125rem;
-      letter-spacing: 0.12em;
     }
 
     .site-nav {

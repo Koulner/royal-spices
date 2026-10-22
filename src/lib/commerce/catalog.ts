@@ -6,6 +6,7 @@ import { createStorefront } from './storefront.ts';
 import { formatMoney } from './cart.ts';
 import { CommerceError, type CommerceConfig, type ListedProduct, type UnitPrice } from './types.ts';
 import { productFacts, factsToText, type ProductFacts } from '../../data/product.ts';
+import { missingHandles } from '../../config/handles.mjs';
 import { htmlToBlocks, textToBlocks, blocksToText, mapText, type Block } from './rich-text.ts';
 import { checkUnitPrice, unitPricing } from './unit-price.ts';
 // Price components take the unit price label from the catalog module they already import.
@@ -91,6 +92,15 @@ export async function loadCatalog({ config, fetchImpl = fetch, facts = productFa
     throw new Error(
       `Shopify-Katalog konnte nicht geladen werden (${reason}). Build abgebrochen. Bitte PUBLIC_SHOPIFY_STORE_DOMAIN, PUBLIC_SHOPIFY_STOREFRONT_TOKEN und PUBLIC_SHOPIFY_API_VERSION prüfen.`,
       { cause: error },
+    );
+  }
+  // Handles named in the code (src/config/handles.mjs, decision B2/E2): if Shopify no longer has one,
+  // its fixed links lead to a 404 and its home card loses the price unnoticed. Stop instead.
+  const missing = missingHandles(listed.map((p) => p.handle));
+  if (missing.length) {
+    const list = missing.map((m) => `${m.handle} (genutzt in ${m.uses.join(', ')})`).join('; ');
+    throw new Error(
+      `Shopify-Handle fehlt im Katalog: ${list}. Die Website verlinkt diese Produkte fest (src/config/handles.mjs). Build abgebrochen. Bitte den Handle in Shopify prüfen, eine Umbenennung vorher mit uns abstimmen (docs/SHOPIFY.md, „Handles“).`,
     );
   }
   // One variant per product (decision E4): price, SKU and variant ID come from the first one, and the

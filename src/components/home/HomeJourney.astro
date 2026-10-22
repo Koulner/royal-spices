@@ -18,6 +18,7 @@ import Arrow from '@/components/Arrow.astro';
 import stills from '@/data/stills.json';
 import manifest from '@/data/hero-manifest.json';
 import { chapters, stops, slow } from '@/data/journey';
+import { HANDLES, productPath } from '@/config/handles.mjs';
 
 type Variant = { src: string; width: number };
 type Still = { width: number; height: number; avif: Variant[]; webp: Variant[] };
@@ -76,7 +77,7 @@ const arrivalAlt =
         <h1 class="display-xl" id="journey-title"><span class="eyebrow">ROYAL SPICES · SAFRAN AUS HERAT, AFGHANISTAN</span> The Art<br />of Saffron.</h1>
         <p class="lead">Ein kostbares Gewürz. Eine außergewöhnliche Herkunft. Handverlesene Safranfäden aus Herat – für Momente, die in Erinnerung bleiben.</p>
         <div class="actions">
-          <a class="btn" href="/produkte/herat-negin-safran-1-g-grade-a/">Safran entdecken <Arrow /></a>
+          <a class="btn" href={productPath(HANDLES.oneGram)}>Safran entdecken <Arrow /></a>
           <a class="link" href="/herkunft-qualitaet/">Unsere Herkunft</a>
         </div>
         <dl class="journey__marks">
@@ -129,7 +130,7 @@ const arrivalAlt =
         <h2 class="display-l">Safranfäden.<br />Ein Gramm im Glas.</h2>
         <p class="lead">Negin · Grade 1. Herkunft Herat, Afghanistan. In Deutschland abgefüllt.</p>
         <div class="actions">
-          <a class="btn" href="/produkte/herat-negin-safran-1-g-grade-a/">Produkt ansehen <Arrow /></a>
+          <a class="btn" href={productPath(HANDLES.oneGram)}>Produkt ansehen <Arrow /></a>
           <a class="link" href="/kontakt/?anliegen=handel#anfrage">Handelsanfrage senden <Arrow /></a>
         </div>
       </div>

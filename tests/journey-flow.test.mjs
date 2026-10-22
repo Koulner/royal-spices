@@ -195,3 +195,73 @@ test('watchdog (R7) at 30 Hz: 33.3 ms holds for 10 s, 50 ms trips after 2 s', ()
   const early = run(none, 0, 10000, 33.3);
   assert.ok(early >= 2000 && early < 2100, `no base: tripped after ${early} ms`);
 });
+
+// T-20261020-01: no fragments at speed. Warp and dissolve only for frames at most MAX_SPAN apart,
+// beyond that whole frames near the camera, never jumping back against the direction of travel.
+const HIGH = F.limitsFor('high');
+const choose = (o) => F.chooseFrames({ pairs: [], frames: [], last: null, heading: 1, limits: HIGH, ...o, ready: (i) => (o.frames ?? []).includes(i) });
+
+test('frame choice: pairs 4 and 8 apart never warp or dissolve, also when decoded', () => {
+  assert.equal(F.MAX_SPAN, 2);
+  for (const pair of [[100, 104], [96, 104], [97, 105]]) {
+    const r = choose({ position: 100.5, pairs: [pair], frames: [...pair] });
+    assert.notEqual(r.mode, 'pair', `${pair}`);
+    if (r.mode === 'whole') assert.ok(Math.abs(r.a - 100.5) <= F.NEAR_SPAN);
+    assert.equal(F.pairAllowed(...pair), false);
+  }
+  // the same pair on the medium tier and on a slow link (coarse levels only): whole frames
+  assert.deepEqual(choose({ position: 101, pairs: [[100, 104], [96, 104]], frames: [96, 100, 104] }), { mode: 'whole', a: 100 });
+  assert.deepEqual(F.chooseFrames({ position: 101, pairs: [[100, 104]], ready: () => true, frames: [100, 104], last: null, heading: 1, limits: F.limitsFor('medium') }), { mode: 'whole', a: 100 });
+});
+
+test('frame choice: pairs up to 2 apart and decoded are warped, the first one that is there', () => {
+  assert.deepEqual(choose({ position: 100.5, pairs: [[100, 101], [100, 102]], frames: [100, 101, 102] }), { mode: 'pair', a: 100, b: 101, mix: 0.5 });
+  assert.deepEqual(choose({ position: 100.5, pairs: [[100, 101], [100, 102]], frames: [100, 102] }), { mode: 'pair', a: 100, b: 102, mix: 0.25 });
+  // one of the two missing: no pair
+  assert.equal(choose({ position: 100.5, pairs: [[100, 102]], frames: [100] }).mode, 'whole');
+  assert.equal(F.pairAllowed(100, 102), true);
+  assert.equal(F.pairAllowed(100, 100), false);
+});
+
+test('frame choice: a whole frame lies at most 4 positions from the camera, the nearest of any level', () => {
+  assert.deepEqual(choose({ position: 100.5, frames: [97, 110] }), { mode: 'whole', a: 97 });
+  assert.deepEqual(choose({ position: 100.5, frames: [96, 104.5, 101] }), { mode: 'whole', a: 101 });
+  assert.deepEqual(choose({ position: 100, frames: [96, 104] }), { mode: 'whole', a: 104 }); // tie: ahead
+  assert.deepEqual(choose({ position: 100, frames: [96, 104], heading: -1 }), { mode: 'whole', a: 96 });
+  assert.deepEqual(choose({ position: 100.5, frames: [96, 105, 78, 122] }), { mode: 'hold' }); // 4.5 and more away
+});
+
+test('frame choice: never more than 0.5 behind the content before, against the direction, even if a nearer frame is ready', () => {
+  // the camera travels forward at 102.8, 104 was shown: 102 is nearer but behind, so 104 stays
+  assert.deepEqual(choose({ position: 102.8, frames: [102, 104], last: 104 }), { mode: 'whole', a: 104 });
+  // a decoded pair behind the content is not drawn either
+  assert.deepEqual(choose({ position: 102.8, pairs: [[102, 103]], frames: [102, 103, 104], last: 104 }), { mode: 'whole', a: 104 });
+  // within 0.5 it is
+  assert.equal(choose({ position: 103.6, pairs: [[103, 104]], frames: [103, 104], last: 104 }).mode, 'pair');
+  // travelling back, the same frames are ahead
+  assert.deepEqual(choose({ position: 102.8, frames: [102, 104], last: 104, heading: -1 }), { mode: 'whole', a: 102 });
+  // at rest no direction: the nearest
+  assert.deepEqual(choose({ position: 102.8, frames: [102, 104], last: 104, heading: 0 }), { mode: 'whole', a: 102 });
+});
+
+test('frame choice: nothing fits, the picture stays', () => {
+  assert.deepEqual(choose({ position: 50, frames: [] }), { mode: 'hold' });
+  assert.deepEqual(choose({ position: 102.8, frames: [102, 100], last: 104 }), { mode: 'hold' }); // all behind
+  assert.deepEqual(choose({ position: 100.5, pairs: [[100, 104]], frames: [94, 108] }), { mode: 'hold' });
+});
+
+test('strides per tier: medium gains stride 2, high and low as before; low keeps its limits', () => {
+  const powers = (fine) => { const p = []; for (let s = 1; s <= fine; s *= 2) p.push(s); return p; };
+  for (const fine of [1, 2, 4, 8, 16]) {
+    assert.deepEqual(F.stridesFor('high', fine), powers(fine));
+    assert.deepEqual(F.stridesFor('low', fine), [fine * 3]);
+  }
+  assert.deepEqual(F.stridesFor('medium', 8), [2, 4, 8]);
+  assert.ok(F.stridesFor('medium', 8).includes(F.MAX_SPAN));
+  assert.deepEqual(F.stridesFor('medium', 1), [1]);
+  // low: dissolve over every third base frame and the nearest frame there is, as before
+  const low = F.limitsFor('low');
+  assert.deepEqual(F.chooseFrames({ position: 30, pairs: [[24, 48]], ready: () => true, frames: [24, 48], last: null, heading: 1, limits: low }), { mode: 'pair', a: 24, b: 48, mix: 0.25 });
+  assert.deepEqual(F.chooseFrames({ position: 30, pairs: [[24, 48]], ready: (i) => i === 72, frames: [72], last: 0, heading: -1, limits: low }), { mode: 'whole', a: 72 });
+  assert.deepEqual(F.limitsFor('medium'), { span: 2, near: 4, back: 0.5 });
+});

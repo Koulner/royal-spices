@@ -5,6 +5,24 @@
 //   node tools/qa/flow-gl.mjs <base-url> --f2 [P1,P2] K4: frame pacing at 300 px/s (production build, real GPU)
 //   node tools/qa/flow-gl.mjs <base-url> --load      K5: flow requests after the first loading stage, transfer per variant
 //   node tools/qa/flow-gl.mjs <base-url> --idle      W7: no rAF call 3 s after the journey came to rest (T-20261019-04)
+//   node tools/qa/flow-gl.mjs <base-url> --fast [P1,P2,P2m] [--no-timing] [--out <file.json>]
+//                                                    N1–N3 fast scrolling (T-20261020-02), production build. Reads what the
+//     player drew per frame from [data-journey-canvas] data-journey-frame = "<pos> <a> <b> <mode>" (MutationObserver,
+//     injected before the page). Profiles: P1 1707x960@1.5; P2 390x844@3, touch emulated, CPU 4x; P2m = P2 with
+//     deviceMemory 4 (data-tier must read medium). Gestures go in as mouse (a synthetic touch gesture does not scroll
+//     headless). Each profile warm (fresh load, one sweep down and up at 300 px/s) and cold (0.3 s after the load
+//     event), each gesture on a fresh load: flick 1500 / 4000 / 10000 px/s down and up, mouse wheel 120 px every
+//     16 ms for 3 s. prefers-reduced-motion is forced to no-preference.
+//     N1 every run, cold included: no warp/fade frame with b − a > 2.
+//     N2 warm (cold only reported): shown content at most 4 positions from the camera (P1, flicks up to 4000 px/s: 2);
+//        content c = pos for warp/fade (distance max |a − pos|, |b − pos|), c = a for whole (distance |a − pos|); no
+//        jump of c by more than 0.5 against the camera's direction of travel.
+//     N3 warm, every run: mean ≥ 55 fps and no interval over 33.4 ms. Window: the rAF intervals from the first to the
+//        last drawn frame in which the camera position changed, i.e. the time the picture is visibly moving; the
+//        idle frames before the first input event and after the camera came to rest do not show motion and are left
+//        out. --no-timing leaves N3 out (remote desktop: 30 Hz, no statement on the frame rate).
+//     Also checks that every run scrolled through the journey (≥ 90 % of its span) and that frames were recorded.
+// --cdp <port>   DevTools port of the headless browser (default 9336), for every mode.
 // R7 relative to the base rate (T-20261019-04, W1/W2), both with --f2:
 //   --hz30            a 30 Hz display: rAF callbacks run together on a 33.3 ms timetable, at the first real tick
 //                     no more than 8.3 ms before the due time, with its timestamp; checks W1 instead of F2
@@ -12,7 +30,7 @@
 // Exit 1 when a check fails. Headless Chrome with the machine's GPU (browser.mjs); SwiftShader does not count for --f2.
 // On another machine (F2 on the laptop, E2): node tools/qa/flow-gl.mjs http://127.0.0.1:4322 --f2
 import { launch, scrollToProgress } from './browser.mjs';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { decodePNG } from './png-lite.mjs';
 
 const args = process.argv.slice(2);
@@ -20,6 +38,8 @@ const base = args.find((a) => /^https?:\/\//.test(a)) ?? 'http://127.0.0.1:4321'
 const has = (flag) => args.includes(flag);
 const slowWarp = has('--slow-warp') ? Number(args[args.indexOf('--slow-warp') + 1]) : 0;
 if (has('--slow-warp') && !(slowWarp > 0)) throw new Error('--slow-warp needs a number of ms');
+const cdp = has('--cdp') ? Number(args[args.indexOf('--cdp') + 1]) : 9336;
+if (!(cdp > 0)) throw new Error('--cdp needs a port');
 
 // a 30 Hz display stand-in for every rAF user on the page (journey, base run, F2 recording).
 // Each 30 Hz frame has a due time; the callbacks run at the first real tick no more than TOL before it.
@@ -78,7 +98,7 @@ const STAGE = `(() => {
     glVisible: c ? getComputedStyle(c).opacity === '1' : false, hash, spread: hi - lo };
 })()`;
 
-const page = await launch({ port: 9336 });
+const page = await launch({ port: cdp });
 const urls = [];
 page.on('Network.requestWillBeSent', (p) => urls.push(p.request.url));
 const flowUrls = () => urls.filter((u) => u.includes(`${manifest.base}/flow/`));
@@ -286,6 +306,107 @@ try {
     for (const identifier of injected) await page.send('Page.removeScriptToEvaluateOnNewDocument', { identifier });
   }
 
+  // ------------------------------------------------------------ N1–N3 fast scrolling (T-20261020-02)
+  if (has('--fast')) {
+    const timing = !has('--no-timing');
+    if (timing && software) console.log('  note: software renderer, N3 does not count here');
+    const which = (args.find((a) => /^P\d/.test(a)) ?? 'P1,P2,P2m').split(',');
+    const PROFILES = [
+      { id: 'P1', name: 'P1 desktop 1707x960@1.5, mouse', w: 1707, h: 960, dpr: 1.5, cpu: 1 },
+      { id: 'P2', name: 'P2 phone stand-in 390x844@3, touch emulated, CPU 4x', w: 390, h: 844, dpr: 3, mobile: true, cpu: 4 },
+      { id: 'P2m', name: 'P2m = P2 with deviceMemory 4 (tier medium)', w: 390, h: 844, dpr: 3, mobile: true, cpu: 4, memory: 4, tier: 'medium' },
+    ].filter((p) => which.includes(p.id));
+    // per drawn frame: [rAF time of the frame, value of data-journey-frame]. The own rAF loop is requested before the
+    // player's in every frame, so r.raf is the time of the frame in which the player set the attribute.
+    const FRAMES = `(() => {
+      const r = (window.__fast = { on: false, t: [], y: [], m: [], raf: 0 });
+      (function loop(time) { r.raf = time; if (r.on) { r.t.push(time); r.y.push(Math.round(scrollY)); } requestAnimationFrame(loop); })(0);
+      const watch = () => {
+        const el = document.querySelector('[data-journey-canvas]');
+        if (!el) return;
+        new MutationObserver((list) => {
+          for (let k = 0; k < list.length; k++) if (r.on) r.m.push([r.raf, k + 1 < list.length ? list[k + 1].oldValue : el.getAttribute('data-journey-frame')]);
+        }).observe(el, { attributes: true, attributeFilter: ['data-journey-frame'], attributeOldValue: true });
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch, { once: true }); else watch();
+    })();`;
+    const MEMORY = (gb) => `Object.defineProperty(Navigator.prototype, 'deviceMemory', { get: () => ${gb} });`;
+    const START = `(() => { const r = window.__fast; r.t = []; r.y = []; r.m = []; r.on = true; })()`;
+    const STOP = `(() => { const r = window.__fast; r.on = false; return { t: r.t, y: r.y, m: r.m }; })()`;
+    const at = (p) => ({ x: Math.round(p.w / 2), y: Math.round(p.h / 2) });
+    const flick = (speed) => ({ name: `flick ${speed}`, speed, run: async (p, span) => {
+      for (const dir of [1, -1]) await page.send('Input.synthesizeScrollGesture', { ...at(p), yDistance: -dir * span, speed, gestureSourceType: 'mouse', preventFling: true });
+    } });
+    const wheel = { name: 'wheel 120/16ms 3s', speed: Infinity, run: async (p) => {
+      for (let t = 0; t < 3000; t += 16) {
+        await page.send('Input.dispatchMouseEvent', { type: 'mouseWheel', ...at(p), deltaX: 0, deltaY: 120 });
+        await page.wait(16);
+      }
+    } };
+    const GESTURES = [flick(1500), flick(4000), flick(10000), wheel];
+    await page.media({ 'prefers-reduced-motion': 'no-preference' });
+    const injected = [(await page.send('Page.addScriptToEvaluateOnNewDocument', { source: FRAMES })).identifier];
+    const runs = [];
+    const f1 = (x) => (x == null ? '-' : x.toFixed(1));
+    console.log(`\nN1–N3 fast scrolling${timing ? '' : ' (--no-timing: N3 left out)'}`);
+    console.log('  profile state gesture            frames  warp/fade/whole  N1 b−a>2  max b−a  d max (limit)  d over  back>0.5 (max)  scrolled' + (timing ? '  fps   max ms' : ''));
+    for (const p of PROFILES) {
+      await page.viewport(p.w, p.h, { dpr: p.dpr, mobile: p.mobile });
+      await page.send('Emulation.setTouchEmulationEnabled', { enabled: Boolean(p.mobile), maxTouchPoints: p.mobile ? 5 : 1 });
+      const memory = p.memory ? (await page.send('Page.addScriptToEvaluateOnNewDocument', { source: MEMORY(p.memory) })).identifier : null;
+      for (const state of ['warm', 'cold'])
+        for (const g of GESTURES) {
+          await page.throttle({ cpu: 1 });
+          await page.goto(base + '/', { settle: state === 'cold' ? 300 : 3000 });
+          await page.throttle({ cpu: p.cpu });
+          const { top, span } = await page.eval(journeyTop);
+          await page.eval(`scrollTo(0, ${top})`);
+          if (state === 'warm') {
+            await page.wait(1500);
+            for (const dir of [1, -1]) await page.send('Input.synthesizeScrollGesture', { ...at(p), yDistance: -dir * span, speed: 300, gestureSourceType: 'mouse', preventFling: true });
+            await page.eval(`scrollTo(0, ${top})`);
+            await page.wait(2000);
+          }
+          await page.eval(START);
+          await g.run(p, span);
+          await page.wait(800);
+          const rec = await page.eval(STOP);
+          const stage = await page.eval(STAGE);
+          const count = manifest.sets[stage.set]?.count ?? null;
+          await page.throttle({ cpu: 1 });
+          const limit = p.id === 'P1' && g.speed <= 4000 ? 2 : 4;
+          // scroll travel inside the journey (the wheel also runs on into the page below)
+          const through = rec.y.length ? Math.max(0, Math.min(Math.max(...rec.y), top + span) - Math.max(Math.min(...rec.y), top)) : 0;
+          const r = { profile: p.id, state, gesture: g.name, tier: stage.tier, set: stage.set, journeyOn: stage.on, span, through, count, ...analyseFast(rec, { limit, timing }) };
+          runs.push(r);
+          const modes = `${r.modes.warp ?? 0}/${r.modes.fade ?? 0}/${r.modes.whole ?? 0}`;
+          console.log(`  ${p.id.padEnd(7)} ${state.padEnd(5)} ${g.name.padEnd(18)} ${String(r.frames).padStart(6)}  ${modes.padStart(15)}  ${String(r.n1.count).padStart(8)}  ${String(r.maxGap).padStart(7)}  ${f1(r.n2.dMax).padStart(5)} (${limit})     ${String(r.n2.over).padStart(6)}  ${String(r.n2.back).padStart(8)} (${f1(r.n2.backMax)})  ${String(r.through).padStart(5)}/${span}` + (timing && r.n3 ? `  ${f1(r.n3.fps).padStart(5)}  ${f1(r.n3.max).padStart(6)}` : ''));
+          const tag = `${p.id} ${state} ${g.name}`;
+          check(stage.on && r.frames > 0, `${tag}: journey on and frames recorded from data-journey-frame (${r.frames}${stage.on ? '' : ', journey not on'})`);
+          if (p.tier && g === GESTURES[0]) check(stage.tier === p.tier, `${p.id}: data-tier ${stage.tier} (expected ${p.tier})`);
+          check(r.through >= 0.9 * span, `${tag}: the page scrolled through the journey (${r.through} of ${span} px inside it)`);
+          check(r.n1.count === 0, `${tag}: N1 no warp/fade frame with b − a > 2 (${r.n1.count}${r.n1.count ? `, e.g. ${r.n1.examples.join('; ')}` : ''})`);
+          if (state === 'warm') {
+            check(r.n2.over === 0, `${tag}: N2 content within ${limit} positions of the camera (max ${f1(r.n2.dMax)}, ${r.n2.over} frames over)`);
+            check(r.n2.back === 0, `${tag}: N2 no jump back over 0.5 positions (${r.n2.back}${r.n2.back ? `, max ${f1(r.n2.backMax)}, e.g. ${r.n2.backExamples.join('; ')}` : ''})`);
+            if (timing) check(r.n3 && r.n3.fps >= 55 && r.n3.max <= 33.4, `${tag}: N3 ${f1(r.n3?.fps)} fps ≥ 55, max ${f1(r.n3?.max)} ms ≤ 33.4 over ${r.n3?.intervals ?? 0} intervals`);
+          }
+        }
+      if (memory) await page.send('Page.removeScriptToEvaluateOnNewDocument', { identifier: memory });
+    }
+    for (const identifier of injected) await page.send('Page.removeScriptToEvaluateOnNewDocument', { identifier });
+    await page.media({});
+    await page.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+    const summary = {
+      check: 'fast', base, renderer: gpu, timing, profiles: PROFILES.map((p) => p.id),
+      n1: runs.reduce((s, r) => s + r.n1.count, 0), n2WarmOver: runs.filter((r) => r.state === 'warm').reduce((s, r) => s + r.n2.over, 0),
+      n2WarmBack: runs.filter((r) => r.state === 'warm').reduce((s, r) => s + r.n2.back, 0), failedChecks: failed, runs,
+    };
+    console.log(JSON.stringify(summary));
+    const out = has('--out') ? args[args.indexOf('--out') + 1] : null;
+    if (out) writeFileSync(out, JSON.stringify(summary, null, 1) + '\n');
+  }
+
   // ------------------------------------------------------------ W7 (T-20261019-04)
   if (has('--idle')) {
     // counts the page's rAF requests; no F2 recording here, it would keep a loop of its own running
@@ -349,6 +470,54 @@ try {
 }
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed');
 process.exit(failed ? 1 : 0);
+
+// ------------------------------------------------------------ --fast analysis
+/** One recorded run: N1 (b − a of warp/fade), N2 (distance of the shown content, jumps back), N3 (rAF intervals while the
+ *  camera moves), scroll travel. rec.m: [rAF time, "<pos> <a> <b> <mode>"] per change; rec.t / rec.y: every rAF frame. */
+function analyseFast(rec, { limit, timing }) {
+  const f = rec.m.filter((x) => typeof x[1] === 'string').map(([time, v]) => {
+    const [pos, a, b, mode] = v.trim().split(/\s+/);
+    return { time, pos: Number(pos), a: Number(a), b: Number(b), mode };
+  });
+  const modes = {}, gaps = {}, n1 = [], back = [];
+  let dMax = 0, over = 0, backMax = 0;
+  const moving = [];
+  const show = (x) => `${x.pos.toFixed(2)} ${x.a}-${x.b} ${x.mode}`;
+  f.forEach((x, k) => {
+    modes[x.mode] = (modes[x.mode] ?? 0) + 1;
+    const blend = x.mode === 'warp' || x.mode === 'fade';
+    if (blend) gaps[x.b - x.a] = (gaps[x.b - x.a] ?? 0) + 1;
+    if (blend && x.b - x.a > 2) n1.push(show(x));
+    x.c = blend ? x.pos : x.a;
+    x.d = blend ? Math.max(Math.abs(x.a - x.pos), Math.abs(x.b - x.pos)) : Math.abs(x.a - x.pos);
+    dMax = Math.max(dMax, x.d);
+    if (x.d > limit) over++;
+    const prev = f[k - 1];
+    if (!prev || x.pos !== prev.pos) moving.push(x.time);
+    if (!prev) return;
+    const travel = x.pos - prev.pos, step = x.c - prev.c;
+    if (travel !== 0 && Math.sign(step) === -Math.sign(travel) && Math.abs(step) > 0.5) {
+      back.push(`${show(prev)} → ${show(x)}`);
+      backMax = Math.max(backMax, Math.abs(step));
+    }
+  });
+  let n3 = null;
+  if (timing && moving.length > 1) {
+    const [from, to] = [moving[0], moving.at(-1)], iv = [];
+    for (let k = 1; k < rec.t.length; k++) if (rec.t[k - 1] >= from && rec.t[k] <= to) iv.push(rec.t[k] - rec.t[k - 1]);
+    const mean = iv.reduce((s, x) => s + x, 0) / Math.max(1, iv.length);
+    n3 = { window: [from, to].map((x) => Math.round(x)), intervals: iv.length, fps: iv.length ? 1000 / mean : 0, max: Math.max(0, ...iv), over: iv.filter((x) => x > 33.4).length };
+  }
+  const pos = f.map((x) => x.pos);
+  return {
+    frames: f.length, modes, gaps, maxGap: Math.max(0, ...Object.keys(gaps).map(Number)),
+    camera: pos.length ? [Math.min(...pos), Math.max(...pos)] : null,
+    moved: rec.y.length ? Math.max(...rec.y) - Math.min(...rec.y) : 0,
+    n1: { count: n1.length, examples: n1.slice(0, 5) },
+    n2: { limit, dMax, over, back: back.length, backMax, backExamples: back.slice(0, 5) },
+    n3,
+  };
+}
 
 // ------------------------------------------------------------ in the page (K1)
 /** Runs in the browser at the dev server: the player's renderer against flowFrame of the reference. */

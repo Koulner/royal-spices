@@ -11,10 +11,11 @@ import Base from '@/layouts/Base.astro';
 import HomeJourney from '@/components/home/HomeJourney.astro';
 import HomeCollection from '@/components/home/HomeCollection.astro';
 import Picture from '@/components/Picture.astro';
-import Sprig from '@/components/Sprig.astro';
+import InlineVideo from '@/components/InlineVideo.astro';
 import Arrow from '@/components/Arrow.astro';
 import stills from '@/data/stills.json';
 import { site } from '@/config/site';
+import { liveThreadsLicensed } from '@/config/launch';
 import { formats } from '@/data/product';
 import { saffronDishes } from '@/data/catering';
 import { buildOrganization, buildWebSite } from '@/lib/seo/schema';
@@ -109,8 +110,8 @@ const ritual = [
             Von Herat direkt in deine kulinarische Welt: handverlesene Safranfäden, charaktervoll und sorgfältig ausgewählt. Unsere Liebe zur Gastronomie und unsere Verbindung zur Herkunft prägen Royal Spices.
           </p>
           <p><a class="link" href="/herkunft-qualitaet/">Entdecke unsere Geschichte <Arrow /></a></p>
-          {/* O5: Live-Markenzeichen royal-spices-atelier-logo-square.png erst nach Freigabe; bis dahin das V1-Zeichen vom Etikett */}
-          <Sprig class="story__mark" />
+          {/* Markenzeichen: goldene Blüte von royalspices.de */}
+          <Picture class="story__mark" name="brand-mark" alt="" sizes="3.5rem" />
         </div>
         <figure class="story__photo figure">
           <Picture
@@ -130,11 +131,21 @@ const ritual = [
     <section class="section band-deep roots" id="wurzeln" aria-labelledby="wurzeln-title">
       <div class="wrap grid">
         <figure class="roots__figure figure">
-          <Picture
-            name="saffron"
-            alt="Getrocknete Safranfäden auf hellem Papier: dunkelrot, unregelmäßig gedreht, mit verbreiterten Enden."
-            sizes="(min-width: 64rem) 50vw, 92vw"
-          />
+          {
+            liveThreadsLicensed ? (
+              <Picture
+                name="live-threads"
+                alt="Rot leuchtende Safranfäden in einem Holzlöffel auf dunklem Grund."
+                sizes="(min-width: 64rem) 50vw, 92vw"
+              />
+            ) : (
+              <Picture
+                name="saffron"
+                alt="Getrocknete Safranfäden auf hellem Papier: dunkelrot, unregelmäßig gedreht, mit verbreiterten Enden."
+                sizes="(min-width: 64rem) 50vw, 92vw"
+              />
+            )
+          }
           <figcaption class="roots__caption">HERAT · 34°20' N</figcaption>
         </figure>
         <div class="roots__copy opener">
@@ -172,12 +183,13 @@ const ritual = [
 
     {/* S9 */}
     <section class="section band-slate business" id="business" aria-labelledby="business-title">
-      <div class="wrap">
+      <div class="wrap business__grid">
         <div class="business__head opener">
           <p class="eyebrow">ROYAL SPICES BUSINESS</p>
           <h2 class="display-l" id="business-title">Für Küchen, die<br />mehr erwarten.</h2>
           <p class="lead">Safran für Gastronomie und Handel. Exklusive kulinarische Erlebnisse und Catering für Unternehmen und Veranstaltungen.</p>
         </div>
+        <InlineVideo class="business__video" name="bar" label="Ein Barkeeper mixt einen Cocktail mit Royal-Spices-Safran; am Ende das 0,5-g-Glas." />
         <div class="actions">
           <a class="btn" href="/b2b/">B2B kennenlernen <Arrow /></a>
           <a class="link" href="/catering/">Catering entdecken</a>
@@ -307,10 +319,10 @@ const ritual = [
     align-content: center;
   }
 
-  .story :global(.story__mark) {
+  .story :global(.story__mark img) {
+    display: block;
     width: 3.5rem;
     height: auto;
-    color: var(--bronze);
   }
 
   .story__photo {
@@ -386,12 +398,44 @@ const ritual = [
   }
 
   /* ---------------------------------------------------------------- S9 business */
+  /* desktop: copy and actions left, the film right; phone: copy, film, actions */
+  .business__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 26.25rem);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'head video'
+      'actions video';
+    column-gap: clamp(2rem, 6vw, 6rem);
+    align-items: start;
+  }
+
   .business__head {
+    grid-area: head;
     max-width: 44rem;
   }
 
   .business .actions {
+    grid-area: actions;
     margin-top: var(--s-6);
+  }
+
+  .business :global(.business__video) {
+    grid-area: video;
+    justify-self: end;
+  }
+
+  @media (max-width: 63.99rem) {
+    .business__grid {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: none;
+      grid-template-areas: 'head' 'video' 'actions';
+    }
+
+    .business :global(.business__video) {
+      justify-self: start;
+      margin-top: var(--s-6);
+    }
   }
 
   /* ---------------------------------------------------------------- V1 trade */

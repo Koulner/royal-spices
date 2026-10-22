@@ -1,0 +1,93 @@
+# Production: builds the site for https://royalspices.de and uploads it to the IONOS webspace
+# of the customer (docs/HOSTING-IONOS.md). Twice a day, so prices and stock from Shopify are at most
+# about 14 hours old (decision E4 of T-20261022-01), and by hand.
+# Nothing is uploaded unless every check passes: the last deploy stays online.
+# Off until the switch-over: runs only when the repository variable IONOS_DEPLOY is 1.
+name: Deploy to IONOS
+
+on:
+  schedule:
+    # 03:30 and 13:30 Berlin (UTC+1 in winter, UTC+2 in summer: 30 or 90 minutes earlier in UTC)
+    - cron: "30 1,11 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ionos
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: vars.IONOS_DEPLOY == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SITE_URL: https://royalspices.de
+      SITE_INDEXABLE: ${{ vars.SITE_INDEXABLE }}
+      PUBLIC_SHOPIFY_STORE_DOMAIN: ${{ vars.PUBLIC_SHOPIFY_STORE_DOMAIN }}
+      PUBLIC_SHOPIFY_STOREFRONT_TOKEN: ${{ vars.PUBLIC_SHOPIFY_STOREFRONT_TOKEN }}
+      PUBLIC_SHOPIFY_API_VERSION: ${{ vars.PUBLIC_SHOPIFY_API_VERSION }}
+    steps:
+      - name: Checkout prod
+        uses: actions/checkout@v4
+        with:
+          ref: prod
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # ubuntu-latest ships PHP 8.3 and Composer; no third-party action needed
+      - name: PHP and Composer
+        run: php --version && composer --version
+
+      - name: Install
+        run: |
+          npm ci
+          composer install --no-dev --no-interaction --no-progress --classmap-authoritative --working-dir=php
+
+      - name: Tests (including the PHP endpoint)
+        run: npm test
+
+      - name: Build (astro check + astro build)
+        run: npm run build
+
+      - name: Prices and stock as in Shopify
+        run: |
+          if ! node --experimental-strip-types --no-warnings tools/qa/freshness.mjs dist/client; then
+            echo "Shopify changed during the build: building once more"
+            npm run build
+            node --experimental-strip-types --no-warnings tools/qa/freshness.mjs dist/client
+          fi
+
+      - name: Upload folder for IONOS
+        run: node tools/ionos/prepare.mjs --app-dir "${{ vars.IONOS_APP_DIR || 'royalspices-app' }}" --private-dir "${{ vars.IONOS_PRIVATE_DIR || 'royalspices-private' }}"
+
+      - name: Check against Apache (container laid out like the webspace)
+        run: |
+          node tools/ionos/prepare.mjs --origin http://localhost:8089 --out dist-ionos-local
+          node tools/ionos/container.mjs start --out dist-ionos-local
+          node tools/ionos/check.mjs http://localhost:8089 --dist dist-ionos-local/public
+          # the redirects (S4) gate the upload; findings of other rules are content, reported only
+          node tools/qa/seo.mjs http://localhost:8089 --redirects --no-browser --out seo-out || true
+          node -e 'const r=require("./seo-out/seo-report-redirects.json"); const bad=r.findings.filter(f=>f.level==="error"); for (const f of bad) console.log(`${f.rule} ${f.path ?? ""} ${f.message}`); if (!r.redirects || bad.some(f=>f.rule==="S4")) process.exit(1)'
+          node tools/ionos/container.mjs stop
+
+      - name: Upload over SFTP
+        env:
+          IONOS_SFTP_HOST: ${{ secrets.IONOS_SFTP_HOST }}
+          IONOS_SFTP_USER: ${{ secrets.IONOS_SFTP_USER }}
+          IONOS_SFTP_PASSWORD: ${{ secrets.IONOS_SFTP_PASSWORD }}
+          IONOS_KNOWN_HOSTS: ${{ secrets.IONOS_KNOWN_HOSTS }}
+          IONOS_WEBROOT: ${{ vars.IONOS_WEBROOT || 'royalspices' }}
+          IONOS_APP_DIR: ${{ vars.IONOS_APP_DIR || 'royalspices-app' }}
+        run: |
+          sudo apt-get install -y -qq lftp > /dev/null
+          bash tools/ionos/deploy.sh dist-ionos
+
+      - name: Smoke test on the live domain
+        run: node tools/ionos/check.mjs https://royalspices.de --smoke --dist dist-ionos/public

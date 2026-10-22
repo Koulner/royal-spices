@@ -176,6 +176,89 @@ export const flowWanted = (s: Pick<ModeInput, 'off' | 'tier' | 'gl'>) => !s.off 
  */
 export const slowLimit = (g: number | null) => (g !== null && g > BASE_REF_MS ? SLOW_FRAME_MS * (g / BASE_REF_MS) : SLOW_FRAME_MS);
 
+// ---------------------------------------------------------------- frame choice (T-20261020-01)
+// The warp holds F1 for frames up to two positions apart. Further apart, the coarse depth grid drags
+// background along with foreground at depth edges: blocky steps and splinters from 4 on, plain at 8.
+// Where the camera is too fast for pairs that close, the player shows whole frames instead (E1 a).
+
+/** Widest gap between two frames that are warped or dissolved into each other. */
+export const MAX_SPAN = 2;
+/** A whole frame shown instead of an in-between lies at most this far from the camera. */
+export const NEAR_SPAN = 4;
+/** Nothing is shown further than this behind the content before it, against the camera's direction of travel. */
+export const BACK_SPAN = 0.5;
+
+export type Limits = { span: number; near: number; back: number };
+
+/** The limits per tier: low keeps its dissolve over every third base frame and the nearest frame there is, as before. */
+export const limitsFor = (tier: Tier): Limits => (tier === 'low' ? { span: Infinity, near: Infinity, back: Infinity } : { span: MAX_SPAN, near: NEAR_SPAN, back: BACK_SPAN });
+
+/** Whether frames a and b may be warped or dissolved into each other. */
+export const pairAllowed = (a: number, b: number, span = MAX_SPAN) => a !== b && Math.abs(b - a) <= span;
+
+/**
+ * Strides of the levels of detail in time, on a grid `fine` times as dense as the base frames.
+ *   high    every frame, thinning step by step to the base frames at speed
+ *   medium  from MAX_SPAN up, so that it warps like high (E2 a); the coarser levels carry speed
+ *   low     every third base frame
+ */
+export function stridesFor(tier: Tier, fine: number): number[] {
+  const powers: number[] = [];
+  for (let stride = 1; stride <= fine; stride *= 2) powers.push(stride);
+  if (tier === 'high') return powers;
+  if (tier === 'medium') {
+    const close = powers.filter((stride) => stride >= MAX_SPAN);
+    return close.length ? close : powers.slice(-1);
+  }
+  return [fine * 3];
+}
+
+export type FrameChoice = { mode: 'pair'; a: number; b: number; mix: number } | { mode: 'whole'; a: number } | { mode: 'hold' };
+
+export type ChoiceInput = {
+  /** camera position drawn */
+  position: number;
+  /** the frames around it on the levels in question, preferred first (a < b) */
+  pairs: [number, number][];
+  /** whether a frame is decoded */
+  ready: (index: number) => boolean;
+  /** every decoded frame, of any level */
+  frames: Iterable<number>;
+  /** where the content shown last lay (the camera position for a pair, the frame for a whole one); null: nothing yet */
+  last: number | null;
+  /** the camera's direction of travel: 1, -1, or 0 at rest */
+  heading: number;
+  limits: Limits;
+};
+
+/**
+ * What a frame shows: the first decoded pair no wider than `span`, else the nearest decoded whole
+ * frame no further than `near` from the camera, else nothing new (the picture stays). Neither may lie
+ * more than `back` behind the content shown last, against the direction of travel, even where a frame
+ * behind it is nearer: that would read as a jump back.
+ */
+export function chooseFrames({ position, pairs, ready, frames, last, heading, limits }: ChoiceInput): FrameChoice {
+  const { span, near, back } = limits;
+  const behind = (at: number) => last !== null && heading !== 0 && heading * (at - last) < -back;
+  if (!behind(position)) {
+    for (const [a, b] of pairs) {
+      if (pairAllowed(a, b, span) && ready(a) && ready(b)) return { mode: 'pair', a, b, mix: Math.min(1, Math.max(0, (position - a) / (b - a))) };
+    }
+  }
+  let best = -1;
+  let gap = Infinity;
+  for (const i of frames) {
+    const d = Math.abs(i - position);
+    if (d > near || behind(i)) continue;
+    // on a tie the frame ahead in the direction of travel
+    if (d < gap || (d === gap && heading * (i - best) > 0)) {
+      best = i;
+      gap = d;
+    }
+  }
+  return best < 0 ? { mode: 'hold' } : { mode: 'whole', a: best };
+}
+
 /**
  * Base interval of the display for R7, from a short rAF run of the flow's own (createFlow, from
  * load() on). Counts BASE_SAMPLES intervals, but none in which a warped frame was drawn, nor the
@@ -592,11 +675,21 @@ export function createFlow({ film, template, base, tier, search }: { film: HTMLE
         if (gl === 'ok' && !lost && !data.has(variant)) void fetchVariant(variant, count, position);
       });
     },
-    /** Shows the in-between of frames a and b at the position, if it can (else the layers below dissolve). */
-    draw(variant: string, position: number, a: number, frameA: ImageBitmap, b: number, frameB: ImageBitmap, mix: number, time: number) {
+    /**
+     * Shows the in-between of frames a and b at the position, if it can (else the layers below
+     * dissolve). Returns whether it warped. Frames more than MAX_SPAN apart are never warped.
+     */
+    draw(variant: string, position: number, a: number, frameA: ImageBitmap, b: number, frameB: ImageBitmap, mix: number, time: number): boolean {
       if (a === b || !(mix > 0 && mix < 1)) {
         watch.pause();
-        return show(false, 'rest');
+        show(false, 'rest');
+        return false;
+      }
+      if (!pairAllowed(a, b)) {
+        // second guard (T-20261020-01): journey.ts does not hand such pairs over in the first place
+        watch.pause();
+        show(false, 'fade');
+        return false;
       }
       const entry = data.get(variant);
       const meta = entry?.meta;
@@ -608,17 +701,23 @@ export function createFlow({ film, template, base, tier, search }: { film: HTMLE
       const mode = flowMode({ off, tier, gl: gl === 'ok', lost: lost || Boolean(renderer?.gl.isContextLost()), data: entry?.status ?? 'idle', pair, slow: watch.tripped });
       if (mode !== 'warp' || watch.tick(time)) {
         watch.pause();
-        return show(false, 'fade');
+        show(false, 'fade');
+        return false;
       }
       const big = frameB.width > frameA.width ? frameB : frameA;
       const done = renderer!.render(meta!, { image: frameA, row: rowA!, sheet: sheetA!, tile: tileA! }, { image: frameB, row: rowB!, sheet: sheetB!, tile: tileB! }, camT!, mix, big.width, big.height);
       if (done) rate.warped();
       show(done, done ? 'warp' : 'fade');
+      return done;
     },
-    /** Nothing to warp: the nearest frame is shown unwarped, or the stage fell back to the posters. */
+    /** Nothing to warp: a whole frame is shown, or the stage fell back to the posters. */
     hide() {
       watch.pause();
       show(false, 'fade');
+    },
+    /** Nothing new to show: the picture stays as it is, a warp on screen included; R7 starts over afterwards. */
+    pause() {
+      watch.pause();
     },
   };
 }

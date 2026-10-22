@@ -92,6 +92,21 @@ Was die Zahlen sagen und was nicht:
 
 Die Nachbesserungen vom Nachmittag und Abend sind **vom Auftraggeber noch nicht angesehen.** Bis dahin gilt die Fahrt als **nicht abgenommen**.
 
+## Video
+
+Barszene (`InlineVideo`, Aufbau in `docs/ASSETS.md`, Abschnitt Video) auf `/` (S9, `#business`) und `/b2b/` („Zusammenarbeit“). Prüfpunkte:
+
+- **Tests:** `tests/inline-video.test.mjs` prüft die Fassungswahl und das Manifest gegen die Dateien. Jede Quelle liegt unter `public/`, `bytes` stimmt, der Typ nennt `codecs=`, das Poster steht in `stills.json`.
+- **CSP:** kein `style`-Attribut, kein `define:vars`, kein Videopfad im Code. Nach dem Scrollen zum Video gibt es keine Konsolenmeldung. Die Info „Images loaded lazily and replaced with placeholders“ von Edge kommt auf jeder Seite mit `loading="lazy"` und stammt nicht vom Video.
+- **Laden:** Vor dem ersten Scrollen wird weder aus `/video/` noch das Poster (`bar-poster`) geladen, außer die Figur ist schon im Bild. Das gilt auch auf /b2b/, wo die Figur weniger als eine Bildhöhe unter dem Rand liegt. Das Poster steht dafür in einem `<template>`. Nach dem Scrollen in die Nähe (eine Bildhöhe Vorlauf) kommen das Poster und genau eine Videodatei, ohne abgebrochene Zusatzanfrage. Geprüft wird mit `requestWillBeSent`, nicht nur mit den Antworten. Die Fassung hängt von Gerät und Breite ab (AV1 nur bei `powerEfficient`), mit Save-Data oder 3g lädt die kleinste.
+- **Abspielen:** Ab halber Sichtbarkeit stumm, `currentTime > 0`. Außerhalb des Bildes und im verborgenen Tab angehalten. Nach „Anhalten“ kein Weiterspielen beim Zurückscrollen. Am Ende steht das letzte Bild (Flasche), statt „Abspielen“ erscheint „Noch einmal“. Hatte „Abspielen“ den Fokus, wandert er auf „Noch einmal“; sonst bleibt der Fokus, wo er ist.
+- **Stillstand:** Mit `prefers-reduced-motion: reduce` kein Autoplay und keine Anfrage an `/video/`. Das Poster zeigt den Abspielknopf, erst der Klick lädt und spielt. Ein Wechsel zur Laufzeit hält ein automatisch gestartetes Video an.
+- **Rahmen:** Seitenverhältnis exakt 0,5625. Gemessen: 420 × 746,7 bei 1440 × 900, 344,3 × 612 bei 1280 × 720 (85svh) und 335 × 595,5 bei 375 × 812. Kein waagerechter Überlauf (`tools/qa/shots.mjs`, `#business` und `#b2b-zusammenarbeit`, je mit und ohne `still`).
+- **Bedienung:** Knöpfe mindestens 44 × 44 px, Namen „Abspielen“/„Anhalten“, „Ton an“/„Ton aus“, „Noch einmal“. Tastatur und sichtbarer Fokus wie bei allen Knöpfen. Das Video hat eine Textalternative (`aria-label`).
+- **Ohne JS:** native Bedienelemente, alle Fassungen als `<source>`, vor dem Klick keine Anfrage. Das Poster kommt aus `<noscript>` und wird geladen, die dunkle Fläche des nativen Videos deckt es aber zu (Befund B6 aus T-20261021-35, schon vor T-35 so).
+- **Messumgebung:** Sind die Windows-Animationseffekte aus, meldet Edge `prefers-reduced-motion: reduce`, und das Video spielt in den Prüfläufen nicht von selbst. Prüfskripte in `_agent/staging/T-20261021-34/checks/` und `-35/checks/`, Aufruf mit `RS_QA_MOTION=no-preference`. Die Variable kennt nur das `browser.mjs` der Arbeitskopie (Vorlage `T-20261021-34/checks/browser.wa-patched.mjs`).
+- **Live-Texte:** `tools/live/live-text.mjs` prüft nur Zeilen von royalspices.de, die auf der V1-Seite fehlen. Neue V1-Texte wie die Knopfnamen und die Textalternative prüft es **nicht**. Sie sind von Hand gegen diese Liste zu prüfen.
+
 ## Performance
 
 Labormessung am 06.10.2026, 16:00 (nach der Nachbesserung vom Nachmittag), Produktions-Build über `server.mjs`, Rechner im Leerlauf (kein Rendern), Chrome headless, `node tools/qa/perf.mjs`. Rohdaten: `.raw/qa/perf-final.json`, `.raw/qa/perf-final.txt`. Ein Lauf vom Vormittag (09:05, vor der Nachbesserung) ergab dieselbe Größenordnung.

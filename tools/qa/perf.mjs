@@ -6,6 +6,7 @@
 // number of frame images requested.
 // These are lab values from this machine with emulated CPU/network; they are not field data.
 import { launch } from './browser.mjs';
+import { HANDLES, productPath } from '../../src/config/handles.mjs';
 import { writeFile, mkdir } from 'node:fs/promises';
 
 const base = process.argv[2] ?? 'http://127.0.0.1:4322';
@@ -17,7 +18,7 @@ const PROFILES = [
   // "average phone": 4x CPU slowdown, ~9 Mbit/s down, 170 ms round trip (Lighthouse "slow 4G" class)
   { name: 'mobile-4xcpu-slow4g', width: 390, height: 844, dpr: 3, mobile: true, cpu: 4, network: { latency: 170, down: (9 * 1024 * 1024) / 8, up: (1.5 * 1024 * 1024) / 8 } },
 ];
-const PAGES = ['/', '/produkte/herat-negin-safran-1-g-grade-a/', '/kontakt/'];
+const PAGES = ['/', productPath(HANDLES.oneGram), '/kontakt/'];
 
 const OBSERVERS = `
   window.__vitals = { lcp: 0, lcpEl: '', cls: 0, events: [], fcp: 0, longTasks: [] };

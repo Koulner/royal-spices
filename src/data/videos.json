@@ -1,0 +1,43 @@
+{
+  "bar": {
+    "width": 1080,
+    "height": 1920,
+    "duration": 25.35,
+    "fps": 30,
+    "poster": "bar-poster",
+    "sources": [
+      {
+        "src": "/video/bar-av1-1920-6fd2fefb6c.mp4",
+        "type": "video/mp4; codecs=\"av01.0.08M.08, mp4a.40.2\"",
+        "codec": "av1",
+        "width": 1080,
+        "height": 1920,
+        "bytes": 7264002
+      },
+      {
+        "src": "/video/bar-av1-1280-9ea722ebfd.mp4",
+        "type": "video/mp4; codecs=\"av01.0.05M.08, mp4a.40.2\"",
+        "codec": "av1",
+        "width": 720,
+        "height": 1280,
+        "bytes": 3886480
+      },
+      {
+        "src": "/video/bar-h264-1920-19ca3486af.mp4",
+        "type": "video/mp4; codecs=\"avc1.640028, mp4a.40.2\"",
+        "codec": "h264",
+        "width": 1080,
+        "height": 1920,
+        "bytes": 13234314
+      },
+      {
+        "src": "/video/bar-h264-1280-150b0a405a.mp4",
+        "type": "video/mp4; codecs=\"avc1.64001f, mp4a.40.2\"",
+        "codec": "h264",
+        "width": 720,
+        "height": 1280,
+        "bytes": 6844541
+      }
+    ]
+  }
+}

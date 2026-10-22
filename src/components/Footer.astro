@@ -1,15 +1,14 @@
 ---
-import Sprig from './Sprig.astro';
+import Picture from './Picture.astro';
 import { site, footerExploreNav, footerInfoNav } from '@/config/site';
 ---
 
 <footer class="site-footer band-slate">
   <div class="wrap site-footer__grid">
     <div class="site-footer__brand">
-      {/* O5: royal-spices-atelier-logo-wide.png */}
+      {/* Logo von royalspices.de, freigestellt, Schrift hell für den dunklen Fuß */}
       <a class="site-footer__wordmark" href="/" aria-label="Royal Spices – Startseite">
-        <Sprig class="site-footer__sprig" />
-        <span>ROYAL<br />SPICES</span>
+        <Picture class="site-footer__logo" name="logo-wide-light" alt="" sizes="10.5rem" />
       </a>
       <p class="eyebrow site-footer__claim">THE ART OF SAFFRON</p>
       <p class="small">Edler Safran aus Herat. Genuss für besondere Momente.</p>
@@ -77,17 +76,12 @@ import { site, footerExploreNav, footerInfoNav } from '@/config/site';
     gap: 0.75rem;
     min-height: 2.75rem;
     text-decoration: none;
-    font-family: var(--font-display), Georgia, serif;
-    font-size: 1.625rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    line-height: 1.1;
   }
 
-  .site-footer__sprig {
-    width: 1.875rem;
-    height: 1.75rem;
-    color: #c9bd9c;
+  .site-footer__wordmark :global(.site-footer__logo img) {
+    display: block;
+    width: auto;
+    height: 3.5rem;
   }
 
   .site-footer__claim {

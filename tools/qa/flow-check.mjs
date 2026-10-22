@@ -12,6 +12,18 @@
 //                             picture i at 960 x 540 / 540 x 960 (area downscale). Error per pixel = mean over
 //                             RGB of |Δ|·255; per position mean (limit 2) and p99 (limit 24), the same for
 //                             plain cross-fade. Writes f1.csv, summary.json, error maps of the 3 worst positions.
+//   --stride <s> --t <list> --variant V --raw <depthdir> --src <.raw> --out <dir> [--from i --to j] [--grid WxH]
+//            [--cam true|interp] [--except 261,185] [--verbose]
+//                             N1 (T-20261020-02, splinters at a source distance): for every t in the list (e.g.
+//                             0.25,0.5,0.75) and every integer target position i the in-between at t from a = i − t·s
+//                             and b = a + s, against picture i. Only where t·s is an integer is there a rendered
+//                             target; else the t is reported as not measurable. Measured where picture i, both
+//                             sources and both depths are present. Error as F1; per position mean (≤ 2), p99 (≤ 24)
+//                             and splinter share = pixels with error > 48/255 (≤ 0.02 %). --except: accepted
+//                             positions (reported, not failing). Writes n1.csv, summary.json (coverage measured /
+//                             possible, missing positions as runs with the reason) and error maps of the 3 positions
+//                             with the most splinters. Exit 1 on a failing position (listed) or when nothing was
+//                             measurable at all.
 //   [--out <file.json>] for --cams / --consistency writes the result as JSON.
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -230,6 +242,122 @@ export async function checkF1(a) {
   return summary;
 }
 
+// ---------------------------------------------------------------- N1 (T-20261020-02)
+
+/** Splinter: a pixel whose error (as F1) is over 48/255. Limit: 0.02 % of the picture per position. */
+const SPLINTER = 48, N1_SPLINTER = 0.0002;
+const runsOf = (list) => {
+  const r = [];
+  for (const i of list) { const l = r.at(-1); if (l && i === l[1] + 1) l[1] = i; else r.push([i, i]); }
+  return r.map(([x, y]) => (x === y ? `${x}` : `${x}-${y}`));
+};
+
+function splinterStats(img, ref) {
+  const n = ref.length / 3, e = new Float32Array(n);
+  let sum = 0, gross = 0;
+  for (let p = 0; p < n; p++) {
+    const v = ((Math.abs(img[3 * p] - ref[3 * p]) + Math.abs(img[3 * p + 1] - ref[3 * p + 1]) + Math.abs(img[3 * p + 2] - ref[3 * p + 2])) / 3) * 255;
+    e[p] = v; sum += v; if (v > SPLINTER) gross++;
+  }
+  return { e, mean: sum / n, p99: quantile(e, 0.99), splinter: gross / n };
+}
+
+export async function checkStride(a) {
+  const variant = a.variant, raw = a.raw, outDir = a.out, s = Number(a.stride);
+  const ts = String(a.t ?? '0.5').split(',').map(Number);
+  if (!(Number.isInteger(s) && s >= 1) || !ts.length || ts.some((t) => !(t > 0 && t < 1))) throw new Error('--stride needs an integer ≥ 1, --t values in (0, 1)');
+  const except = new Set((typeof a.except === 'string' ? a.except : '261,185').split(',').filter(Boolean).map(Number));
+  const c = await loadCams(raw), meta = metaOf(c), [W, H] = meta.res;
+  const [gw, gh] = a.grid ? a.grid.split('x').map(Number) : GRID[variant];
+  const camMode = a.cam === 'interp' ? 'interp' : 'true';
+  const src = await sources(a.src, variant, c.count, c.fine ?? 8);
+  const hasDepth = (i) => Boolean(c.frames?.[String(i)]) && existsSync(join(raw, `${pad(i)}.png`));
+  const from = Number(a.from ?? 0), to = Number(a.to ?? c.count - 1);
+  const shipped = new Map(), pictures = new Map();
+  const depthOf = async (i) => {
+    if (!shipped.has(i)) {
+      const fr = c.frames[String(i)], d = await rawDepth(raw, i, fr);
+      const { u8, dn, df } = encodeDepth(downscaleDepth(d.w, d.W, d.H, gw, gh));
+      shipped.set(i, { depth: { w: gw, h: gh, data: decodeDepth(u8, dn, df) }, cam: camFromRow(camRow(camFromFrame(fr), dn, df)) });
+    }
+    return shipped.get(i);
+  };
+  const picture = async (i) => {
+    if (!pictures.has(i)) pictures.set(i, resizeArea(toRGBf(decodePNG(await readFile(src.get(i).file))), W, H));
+    return pictures.get(i);
+  };
+  const forget = (below) => { for (const m of [shipped, pictures]) for (const k of m.keys()) if (k < below) m.delete(k); };
+  await mkdir(outDir, { recursive: true });
+  const rows = [], perT = [], worst = [];
+  const t0 = Date.now();
+  for (const t of ts) {
+    const off = t * s, k = Math.round(off), integral = Math.abs(off - k) < 1e-9;
+    const possible = [], missing = [], why = { reference: 0, source: 0, depth: 0 };
+    shipped.clear(); pictures.clear();
+    if (integral)
+      for (let i = Math.max(from, k); i <= Math.min(to, c.count - 1 - (s - k)); i++) {
+        const ia = i - k, ib = ia + s;
+        possible.push(i);
+        const reason = !src.has(i) ? 'reference' : !(src.has(ia) && src.has(ib)) ? 'source'
+          : !(hasDepth(ia) && hasDepth(ib)) || (camMode === 'true' && !c.frames?.[String(i)]) ? 'depth' : null;
+        if (reason) { why[reason]++; missing.push(i); continue; }
+        forget(ia);
+        const A = await depthOf(ia), B = await depthOf(ib);
+        const imgA = await picture(ia), imgRef = await picture(i), imgB = await picture(ib);
+        const camT = camMode === 'true' ? camFromRow(camRow(camFromFrame(c.frames[String(i)]), 0, 0)) : interpCam(A.cam, B.cam, t);
+        const r = flowFrame({ imgA, imgB, depthA: A.depth, depthB: B.depth, camA: A.cam, camB: B.cam, t, meta, out: [W, H], camT });
+        const st = splinterStats(r.rgb, imgRef.data);
+        const pass = st.mean <= F1_MEAN && st.p99 <= F1_P99 && st.splinter <= N1_SPLINTER;
+        const row = { t, i, a: ia, b: ib, srcA: src.get(ia).dir, srcRef: src.get(i).dir, srcB: src.get(ib).dir, mean: st.mean, p99: st.p99, splinter: st.splinter, fallback: r.fallback ?? 0, pass, excepted: !pass && except.has(i) };
+        rows.push(row);
+        worst.push({ t, i, splinter: st.splinter, e: st.e });
+        worst.sort((x, y) => y.splinter - x.splinter);
+        if (worst.length > 3) worst.pop();
+        if (a.verbose) console.log(`N1 s${s} t${t} ${i} (${ia}→${ib}): mean ${st.mean.toFixed(2)}, p99 ${st.p99.toFixed(1)}, splinters ${(st.splinter * 100).toFixed(3)} %${pass ? '' : ' FAIL'}`);
+      }
+    const mine = rows.filter((r) => r.t === t);
+    const max = (key) => (mine.length ? Math.max(...mine.map((r) => r[key])) : null);
+    const avg = (key) => (mine.length ? mine.reduce((sum, r) => sum + r[key], 0) / mine.length : null);
+    const failures = mine.filter((r) => !r.pass && !r.excepted).map((r) => r.i);
+    perT.push({
+      t, pair: integral ? `i−${k} → i+${s - k}` : null, possible: possible.length, measured: mine.length,
+      coverage: `${mine.length}/${possible.length}`,
+      note: integral ? undefined : `t·s = ${off} is not an integer: the target lies between two rendered positions, there is no reference picture`,
+      missing: runsOf(missing), missingWhy: why,
+      avg: { mean: avg('mean'), p99: avg('p99'), splinterPct: mine.length ? avg('splinter') * 100 : null },
+      max: { mean: max('mean'), p99: max('p99'), splinterPct: mine.length ? max('splinter') * 100 : null },
+      splinterP90Pct: mine.length ? quantile(mine.map((r) => r.splinter), 0.9) * 100 : null,
+      failures, excepted: mine.filter((r) => r.excepted).map((r) => r.i),
+      pass: mine.length ? failures.length === 0 : null,
+    });
+  }
+  for (const w of worst) {
+    const ow = Math.round(W / 2), oh = Math.round(H / 2), rgb = new Float32Array(W * H * 3);
+    for (let p = 0; p < W * H; p++) rgb[3 * p] = rgb[3 * p + 1] = rgb[3 * p + 2] = w.e[p];
+    const small = resizeArea({ width: W, height: H, data: rgb }, ow, oh).data, g = new Uint8Array(ow * oh);
+    for (let p = 0; p < g.length; p++) g[p] = Math.min(255, Math.round(small[3 * p] * 4));
+    await writeFile(join(outDir, `n1-error-s${s}-t${w.t}-${pad(w.i)}.png`), encodeGray8(ow, oh, g));
+  }
+  const f = (x, d = 3) => (x == null ? '' : x.toFixed(d));
+  const csv = ['stride,t,i,a,b,src_a,src_ref,src_b,mean,p99,splinter_pct,fallback,pass,excepted',
+    ...rows.map((r) => [s, r.t, r.i, r.a, r.b, r.srcA, r.srcRef, r.srcB, f(r.mean), f(r.p99), f(r.splinter * 100, 4), f(r.fallback, 5), r.pass ? 1 : 0, r.excepted ? 1 : 0].join(','))];
+  await writeFile(join(outDir, 'n1.csv'), csv.join('\n') + '\n');
+  const failing = rows.filter((r) => !r.pass && !r.excepted);
+  const summary = {
+    check: 'N1', variant, stride: s, t: ts, grid: [gw, gh], cam: camMode, range: [from, to],
+    limits: { mean: F1_MEAN, p99: F1_P99, splinterPct: N1_SPLINTER * 100, splinterError: SPLINTER }, except: [...except],
+    measured: rows.length, possible: perT.reduce((sum, p) => sum + p.possible, 0), perT,
+    pass: rows.length > 0 && failing.length === 0, worst: worst.map((w) => ({ t: w.t, i: w.i, splinterPct: w.splinter * 100 })),
+    seconds: (Date.now() - t0) / 1000,
+    list: failing.map((r) => ({ t: r.t, i: r.i, a: r.a, b: r.b, mean: r.mean, p99: r.p99, splinterPct: r.splinter * 100 })),
+  };
+  await writeFile(join(outDir, 'summary.json'), JSON.stringify(summary, null, 2) + '\n');
+  for (const p of perT)
+    console.log(`N1 ${variant} stride ${s} t ${p.t}: ${p.coverage} measured${p.note ? ` (${p.note})` : ''}${p.measured ? `, mean max ${p.max.mean.toFixed(2)}, p99 max ${p.max.p99.toFixed(1)}, splinters p90 ${p.splinterP90Pct.toFixed(3)} / max ${p.max.splinterPct.toFixed(3)} %` : ''}${p.failures.length ? `, FAIL at ${p.failures.join(' ')}` : ''}${p.excepted.length ? `, accepted ${p.excepted.join(' ')}` : ''}`);
+  if (!rows.length) console.log('N1: nothing measurable in this run');
+  return summary;
+}
+
 // ---------------------------------------------------------------- CLI
 
 const isMain = process.argv[1] && /flow-check\.mjs$/i.test(process.argv[1]);
@@ -239,12 +367,18 @@ if (isMain) {
   if (typeof a.cams === 'string') r = await checkCams(a.cams);
   else if (typeof a.consistency === 'string') r = await checkConsistency(a.consistency);
   else if (a.f1 && a.variant && a.raw && a.src && a.out) r = await checkF1(a);
+  else if (a.stride && a.variant && a.raw && a.src && typeof a.out === 'string') r = await checkStride(a);
   else {
-    console.error('usage: flow-check.mjs --cams <depthdir> | --consistency <depthdir> | --f1 --variant V --raw <depthdir> --src <.raw> --out <dir> [--from i --to j] [--grid WxH] [--cam true|interp]');
+    console.error('usage: flow-check.mjs --cams <depthdir> | --consistency <depthdir> | --f1 --variant V --raw <depthdir> --src <.raw> --out <dir> [--from i --to j] [--grid WxH] [--cam true|interp]'
+      + ' | --stride <s> --t <list> --variant V --raw <depthdir> --src <.raw> --out <dir> [--from i --to j] [--grid WxH] [--cam true|interp] [--except 261,185]');
     process.exit(2);
   }
-  if (a.out && !a.f1) await writeFile(a.out, JSON.stringify(r, null, 2) + '\n');
+  if (a.out && !a.f1 && !a.stride) await writeFile(a.out, JSON.stringify(r, null, 2) + '\n');
   const { list, ...short } = r;
-  console.log(JSON.stringify(short, null, 1));
+  if (r.check === 'N1') {
+    const { perT, ...head } = short;
+    console.log(JSON.stringify(head));
+    if (list.length) console.log(`N1 failing positions (t: i): ${list.map((x) => `${x.t}: ${x.i}`).join(', ')}`);
+  } else console.log(JSON.stringify(short, null, 1));
   if (r.pass === false && r.check !== 'F1') process.exitCode = 1;
 }

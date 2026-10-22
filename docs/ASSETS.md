@@ -154,7 +154,7 @@ Im Speicher liegen die komprimierten Dateien der Bewegungsebene; decodiert ist n
 
 ## Standbilder
 
-`pipeline/images/build-stills.mjs` erzeugt AVIF und WebP in mehreren Breiten und schreibt `src/data/stills.json`. Templates setzen daraus `srcset`, `sizes`, `width` und `height`; nichts ist von Hand eingetragen.
+`pipeline/images/build-stills.mjs` erzeugt AVIF und WebP in mehreren Breiten und schreibt `src/data/stills.json`. Mit Namen als Argument (`node pipeline/images/build-stills.mjs logo-wide brand-mark`) entstehen nur diese Bilder neu; die übrigen Einträge und `og.jpg` bleiben unberührt. Templates setzen daraus `srcset`, `sizes`, `width` und `height`; nichts ist von Hand eingetragen.
 
 | Bild | Quelle | Breiten |
 | --- | --- | --- |
@@ -163,9 +163,38 @@ Im Speicher liegen die komprimierten Dateien der Bewegungsebene; decodiert ist n
 | Vier Kapitelbilder (Crocus, Narbe, Safran, Glas) | Bilder der Querformat-Fahrt selbst: Essay und Fahrt zeigen dasselbe | 640–1440 |
 | Botanische Abbildung | Ansicht „E" des Masters im Web-Set, vollständig scharf, in der Seite beschriftet | 640–1920 |
 | Gläser, Catering | Fotos des Auftraggebers (`assets-src/photos/`) | 480–1200 |
+| Logo quer (Kopf), helle Variante (Fuß) | Logo von royalspices.de (`assets-src/photos/live-royalspices/`), Cremegrund beim Erzeugen freigestellt (`prepare: 'cutout'`); im Fuß ist die dunkelgrüne Schrift hell (`'cutout-light'`), das Gold bleibt | 220–660 |
+| Markenzeichen S4 | goldene Blüte von royalspices.de (dort Favicon) | 112–224 |
+| Glas 1 g, Ersatzbild ohne Store | Produktfoto von royalspices.de, dasselbe Bild wie in Shopify | 480–1254 |
+| Safranfäden im Löffel, Bildbruch S6 | Foto von royalspices.de, erscheint erst mit `LIVE_THREADS_LICENSED=1` (Lizenz offen, vermutlich Stockfoto); bis dahin Kapitelbild Safran | 640–1920 |
 | `og.jpg` | Ankunft, 1200 × 630 | – |
 
 Alle Bilder außerhalb des ersten Bildschirms laden `lazy`. Alt-Texte beschreiben, was zu sehen ist.
+
+## Video
+
+Ein Film: die Barszene (`bar`) auf der Startseite (S9) und auf /b2b/ („Zusammenarbeit“). Rechte geklärt.
+
+**Quelle:** `.raw/video/bar-0930.mp4` (H.264, 2160 × 3840, 60 fps, 28,5 s, nicht in git). Schnitt 0–25,35 s: Der Film endet auf dem letzten voll hellen Bild der 0,5-g-Flasche, vor der Abblende. Dieses Bild ist auch das Poster (`.raw/video/bar-poster.png` → Still `bar-poster`, AVIF/WebP 540–1080, über `npm run assets:stills`).
+
+**Erzeugen:** `npm run assets:video` (`pipeline/video/build-video.mjs`). ffmpeg und ffprobe kommen aus dem PATH oder aus `FFMPEG`/`FFPROBE` und brauchen libaom-av1 und libx264. Das Skript kodiert AV1 (libaom, cpu-used 3, 2 Durchgänge) und H.264 (x264 veryslow, High, 2 Durchgänge, Level fest). Es entfernt Aufnahme-Metadaten, setzt `+faststart` und prüft Budget und moov-Lage. Den Codec-String liest es per ffprobe, den Inhalts-Hash schreibt es in den Dateinamen. Das Ergebnis steht in `src/data/videos.json`, alte Fassungen räumt das Skript weg. 30 fps (Wahl des Nutzers; 60 fps lag bei gleicher Größe im VMAF deutlich darunter). Ton: auf −16 LUFS / −1,5 dBTP normalisiert, AAC 128 kbit/s, 48 kHz.
+
+| Fassung | Größe / Budget | VMAF Mittel / 1-%-Tief | Codec |
+| --- | --- | --- | --- |
+| AV1 1080 × 1920 | 7,26 / 8 MB | 96,45 / 89,29 | av01.0.08M.08 |
+| AV1 720 × 1280 | 3,89 / 4 MB | 96,00 / 85,12 | av01.0.05M.08 |
+| H.264 1080 × 1920 | 13,23 / 14 MB | 95,57 / 88,82 | avc1.640028 (4.0) |
+| H.264 720 × 1280 | 6,84 / 7 MB | 95,82 / 89,57 | avc1.64001f (3.1) |
+
+VMAF über alle 760 Bilder gegen die gleich skalierte Quelle (T-20261021-30).
+
+**Auslieferung:** `src/components/InlineVideo.astro` liest das Manifest (keine Pfade von Hand). Den Rahmen hält ein SVG-Platzhalter mit den Maßen des Films im Fluss, ohne `style`-Attribut, denn die CSP verbietet es. Die figure ist höchstens `min(420px, 100%)` breit, das SVG höchstens `85svh` hoch. Poster und Video liegen absolut darüber. `src/scripts/inline-video.ts` wählt genau eine Fassung (`chooseSource`):
+
+- AV1 nur, wenn `navigator.mediaCapabilities.decodingInfo` sie als `supported` und `powerEfficient` meldet, sonst H.264.
+- Davon die kleinste Fassung mit Breite ≥ CSS-Breite × DPR × 0,9, sonst die größte.
+- Bei Save-Data oder langsamer Verbindung (slow-2g, 2g, 3g) immer die kleinste.
+
+Die Quelle wird erst gesetzt, wenn der Rahmen höchstens einen Bildschirm entfernt ist (`preload="metadata"`). Der Film spielt einmal, stumm, ab halber Sichtbarkeit und bleibt am Ende auf der Flasche stehen. Außerhalb des Bildes oder im verborgenen Tab hält er an, nach einer Pause durch den Nutzer spielt er nicht von selbst weiter. Bedienung über eigene Knöpfe: Abspielen/Anhalten, „Ton an“/„Ton aus“, am Ende „Noch einmal“. Bei `prefers-reduced-motion: reduce` gibt es kein Autoplay: Das Poster zeigt den Abspielknopf, die Quelle lädt erst beim Klick. Ohne JS bleiben die nativen Bedienelemente mit allen Fassungen als `<source>` (AV1 vor H.264); vor dem Abspielen lädt nichts.
 
 ## Schriften
 
@@ -203,6 +232,10 @@ npm run assets:stills
 
 ```bash
 npm run assets:hero
+```
+
+```bash
+FFMPEG=/pfad/zu/ffmpeg FFPROBE=/pfad/zu/ffprobe npm run assets:video
 ```
 
 Einzelne Prüfbilder, z. B. die Ankunft im Hochformat:

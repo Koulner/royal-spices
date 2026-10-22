@@ -1,3 +1,63 @@
+# Stand 22.10.2026 — Betrieb auf IONOS-Webhosting (T-20261022-01, -02)
+
+- **Übernommen (Freigabe des Nutzers), nicht in `dev`, kein Push.** Die Website läuft jetzt auch auf einem normalen IONOS-Webhosting: Apache mit `.htaccess`, PHP 8, SFTP. Der Node-Weg (`server.mjs`) bleibt unverändert und funktioniert weiter.
+- **Neu:**
+  - `tools/ionos/`: `htaccess.mjs` erzeugt die `.htaccess` aus `redirects.mjs`, `prepare.mjs` baut `dist-ionos/`, `check.mjs` prüft Apache und die Live-Domain, `container.mjs` startet Apache im Container, `deploy.sh` lädt per SFTP über lftp mit festem Host-Schlüssel hoch.
+  - `php/` ist der Anfrage-Endpunkt (PHPMailer 6.12.0, SMTP über Google Workspace). Die Zugangsdaten liegen außerhalb des Webroots in `royalspices-private/`.
+  - `.github/workflows/ionos.yml` läuft täglich um 03:30 und 13:30 Uhr und von Hand. Er baut nur `prod` und läuft erst, wenn die Variable `IONOS_DEPLOY=1` gesetzt ist.
+  - Tests `ionos-htaccess` und `ionos-php` (106 Paritätsfälle).
+  - Doku `docs/HOSTING-IONOS.md`, neuer Abschnitt 6 in `ABSCHLUSS-TODO.md`.
+  - `package.json`: `build:ionos`, `check:ionos`.
+- **Geprüft:**
+  - `npm test`: mit PHP 234 von 234, ohne PHP 220 bestanden und 1 übersprungen. `astro check` 0/0/0.
+  - Gegen einen lokalen Apache 2.4 mit PHP 8.3: `seo.mjs --redirects` S4 ohne Fehler (35 alte URLs, ein Sprung), `check.mjs` 22 von 22.
+  - Node-Weg: `tools/qa/smtp.mjs` grün.
+  - Docker läuft auf diesem Rechner nicht, weil Hyper-V aus ist. Der Container-Weg läuft deshalb nur im CI.
+- **Abweichungen** (Details in `_agent/staging/T-20261022-01/ERGEBNIS.md`):
+  - Ein unbekannter Produkt-Handle in Großbuchstaben bekommt auf Apache direkt 404.
+  - zod zählt Längen in Code Points.
+  - Fehlt die Konfiguration, antwortet der Endpunkt mit 503 statt 403.
+  - Nur S4-Fehler stoppen den Deploy.
+- **Offen:**
+  - Q3, die Abnahme gegen `https://royalspices.de` nach dem Umzug.
+  - Der S10-Befund „Große Wirkung“ auf `/` (Inhaltsfrage).
+  - Ein Shopify-Webhook für sofortigen Neubau (Folgearbeit).
+  - Der erste echte Lauf, nach einem Push auf `prod` mit gesetzten Secrets.
+- **Backup:** `_agent/staging/T-20261022-01/backup/`.
+
+# Stand 22.10.2026 — Bar-Video im Business-Block (T-20261021-30, -31, -33, -34, -35)
+
+- **Übernommen (Freigabe des Nutzers), nicht in `dev`, kein Push:** Der Film des Kunden (Barszene mit Safran-Cocktail, endet auf dem 0,5-g-Glas) läuft auf der Startseite in S9 und auf /b2b/ unter „Zusammenarbeit“. Er startet stumm ab halber Sichtbarkeit, hat einen Knopf „Ton an“, spielt einmal und bleibt auf dem Glas stehen. Bei reduced motion gibt es kein Autoplay.
+- **Dateien:**
+  - `pipeline/video/build-video.mjs` (`npm run assets:video`), `src/data/videos.json`, `public/video/` (AV1/H.264 × 1080/720, 31,2 MB, VMAF ≥ 95,6 / 1-%-Tief ≥ 85,1, −16 LUFS, 30 fps)
+  - Poster `bar-poster`
+  - `server-static.mjs` (Range/206 für `.mp4`)
+  - `src/components/InlineVideo.astro`, `src/scripts/inline-video.ts`
+  - Tests `server-range`, `inline-video`
+- **Geprüft:** `npm test` 210/210, `astro check` 0/0/0, Build grün, keine CSP-Meldung. Poster und Video laden erst nahe am Bild, vor dem ersten Scrollen nur, wenn das Video schon zu sehen ist. 1,5 kB JS.
+- **Gemessen (T-20261021-34, 22.10., Bericht `_agent/staging/T-20261021-34/ERGEBNIS.md`):** Startseite: vor dem Scrollen keine Anfrage auf `/video/` oder `bar-poster`, danach eine Datei mit 206. H.264 im Browser erzwungen: h264-1280 (desktop) bzw. h264-1920 (mobil), spielt. `perf.mjs`: `/` CLS 0,0002 wie am 19.10., TBT 0 ms in allen Profilen. /b2b/: CLS 0 (desktop und mobil, mit Laden und Abspielen). Verhalten: Autoplay ab 50 %, Pause außerhalb und im versteckten Tab (echt geprüft, Fenster minimiert), keine Fortsetzung nach Nutzerpause, Ende bleibt stehen, Ton, reduced motion. `live-text.mjs --ohne-store` 0 offen. `a11y.mjs`: keine Befunde vom Video.
+- **Nachgebessert (T-20261021-35, 22.10., übernommen, Bericht `_agent/staging/T-20261021-35/ERGEBNIS.md`):**
+  - B2: Keine abgebrochene Zusatzanfrage mehr. Es kommt je genau eine Videodatei, auf beiden Seiten, desktop und mobil, AV1 und H.264.
+  - B3, Variante A nach Wahl des Nutzers: Das Poster steht in einem `<template>`, ohne JS in `<noscript>`. Vor dem ersten Scrollen gibt es auf /b2b/ und `/` keine Anfrage auf `/video/` oder `bar-poster` (desktop, mobil slow 4G, Tablet).
+  - B4: Der Fokus geht am Filmende vom Abspielknopf auf „Noch einmal“, sonst gibt es keinen Fokusraub.
+  - Verhalten, CLS (/b2b/ 0), `perf.mjs` (TBT 0 ms), a11y und Live-Text sind unverändert.
+  - Geändert: `src/scripts/inline-video.ts`, `src/components/InlineVideo.astro`, `docs/QA.md`. Backup in `_agent/staging/T-20261021-35/backup/`.
+- **Offen:** B6 (Altbefund, nicht beauftragt): Ohne JS deckt das native Video das Poster mit einer dunklen Fläche zu. Safari/iOS prüft der Nutzer beim Messtermin P3/P4. Nach `dev` geht das Video mit Übertrag A. Übergabe: `docs/UEBERGABE-VIDEO.md`.
+- **Nicht Video, aber bei T-34 gefunden:** B1: Die Windows-Animationseffekte sind aus. Headless Edge meldet daher `prefers-reduced-motion: reduce` und zeichnete nur mit etwa 32 Hz. QA-Läufe ohne Emulation messen so den Standbild-Weg, und Bildtakt-Messungen lassen sich nicht mit früheren vergleichen. B5: Der Brotkrumen-Link „Start“ ist mobil 33 × 44 px (`a11y.mjs` Exit 1 auf 11 Seiten).
+
+# Stand 21.10.2026, vormittags — Flüssig: keine Fragmente beim schnellen Scrollen (T-20261020-01/-02)
+
+- **Übernommen am 21.10. (Freigabe des Nutzers), nicht in `dev`, kein Push:** `src/scripts/journey.ts`, `src/scripts/journey-flow.ts`, `tests/journey-flow.test.mjs`, `tools/qa/{flow-gl,flow-check}.mjs`. Backups liegen in `_agent/staging/T-20261020-0{1,2}/backup/`.
+- **Was sich ändert:** Der Warp läuft nur noch bis Bildabstand 2. Liegen die Bilder weiter auseinander, zeigt der Player ganze Bilder. Neue Diagnose `data-journey-frame` am Canvas. Neue Prüfungen: `flow-gl.mjs --fast` (N1–N3) und `flow-check.mjs --stride` (Splitter je Abstand und t).
+- **Erfüllt:** N1–N5. Für N1 offline hat der Nutzer Entscheidung (a) getroffen. Geprüft: `npm test` 191/191, `astro check` 0 Fehler, Build ok. Konsolenläufe: `--fast` ok, `--f2` P1 143 fps und P2 112 fps, je 100 % Warp, die einzige Spitze am Wendepunkt ist ein Altbefund.
+- **Offen:** Treppenkanten des Warps in Bewegung. Option (a) MSAA + weiche Gewichte ist im Bau als T-20261021-01/-02, siehe `docs/UEBERGABE-FLUESSIG.md`.
+
+# Stand 19.10.2026, 23:30 — Live-Bilder in V1 (T-20261019-07)
+
+- **Übernommen (Freigabe des Nutzers, L1–L4, K1–K9), nicht in `dev`, kein Push:** Logo von royalspices.de in Kopf (44 px hoch) und Fuß (56 px, Schrift hell), freigestellt beim Erzeugen; goldene Blüte als Markenzeichen S4; 1-g-Produktfoto als Ersatzbild ohne Store (Kollektion, Produktseite 1 g); Safranfäden-Foto für S6 eingebaut, aber erst mit `LIVE_THREADS_LICENSED=1` sichtbar (`src/config/launch.ts`).
+- **Geprüft:** `npm test` 177/177, `astro check` 0/0/0, Build grün, `live-text.mjs --ohne-store` 0 offene Abweichungen, kein Verweis auf das Shopify-CDN für diese Bilder, größte AVIF 97 kB, Logogrund ΔE ≤ 0,39 gegen Kopf- und Fußhintergrund, 375 px ohne Überlauf, `perf.mjs` mobil TBT 0 ms, LCP Startseite 628 ms (vorher 704 ms), geschützte Dateien und alte `stills.json`-Einträge gleich. Screenshots: `_agent/staging/T-20261019-07/shots/`.
+- **Offen:** Lizenz für `saffron_threads` beim Kunden klären, dann `LIVE_THREADS_LICENSED=1` beim Build setzen.
+
 # Stand 19.10.2026, abends — Flüssig B1, R7 relativ zum Grundtakt (T-20261019-04)
 
 - **Übernommen 19.10. abends (Freigabe des Nutzers), noch nicht in `dev`, kein Push:** `src/scripts/journey-flow.ts`, `tests/journey-flow.test.mjs` (5 neue Tests), `tools/qa/flow-gl.mjs`, dazu `docs/{STATUS,UEBERGABE-FLUESSIG}.md`. `journey.ts` und `HomeJourney.astro` unverändert.

@@ -140,8 +140,10 @@ test('server.mjs answers old paths with 301 before serving files and keeps the q
   });
 
   await cp(join(project, 'server.mjs'), join(dir, 'server.mjs'));
+  await cp(join(project, 'server-static.mjs'), join(dir, 'server-static.mjs')); // server.mjs imports it
   await mkdir(join(dir, 'src', 'config'), { recursive: true });
   await cp(join(project, 'src', 'config', 'redirects.mjs'), join(dir, 'src', 'config', 'redirects.mjs'));
+  await cp(join(project, 'src', 'config', 'handles.mjs'), join(dir, 'src', 'config', 'handles.mjs')); // its only import
   await mkdir(join(dir, 'dist', 'server'), { recursive: true });
   await writeFile(join(dir, 'dist', 'server', 'entry.mjs'), 'export const handler = (req, res, next) => next();');
   for (const page of ['', 'produkte', 'kontakt', 'handel']) {

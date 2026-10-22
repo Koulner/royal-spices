@@ -36,7 +36,7 @@ Vom Nutzer am 17.10.2026 bestätigte Abweichungen (M1):
 | S3 | „Warum Royal Spices?“ vier Karten | `index.astro` | geprüft | Karte „Qualität“: „Chargenbezogene Analysen auf Anfrage“ (PRODUCT-TRUTH Nr. 14) |
 | S4 | Markengeschichte „Reine Zutaten. Echter Geschmack.“ | `index.astro` | geprüft | |
 | S5 | Kollektion „Kleine Menge. Große Wirkung.“, 2 Produkte + Geschenkbox | `home/HomeCollection.astro` | geprüft | Preise aus dem Katalog; Geschenkbox „In Vorbereitung“ ohne Preis, mit Preis, sobald es ein Shopify-Produkt „Geschenkbox“ gibt (D7, Nutzerentscheid 16.10.) |
-| S6 | Bildbruch „HERAT · 34°20' N“ (Safranfäden-Foto) | `index.astro` | geprüft | V1-Still statt Live-Foto |
+| S6 | Bildbruch „HERAT · 34°20' N“ (Safranfäden-Foto) | `index.astro` | geprüft | Live-Foto eingebaut (T-20261019-07), erscheint erst mit `LIVE_THREADS_LICENSED=1`; bis zur Lizenzklärung V1-Still |
 | S7 | „Die Geschichte hinter jedem Faden“ / „Unsere Wurzeln. Dein Genuss.“ | `index.astro` | geprüft | |
 | S8 | Safran-Ritual, drei Schritte | `index.astro` | geprüft | |
 | S9 | B2B „Für Küchen, die mehr erwarten.“ | `index.astro` | geprüft | |
@@ -61,7 +61,7 @@ Vom Nutzer am 17.10.2026 bestätigte Abweichungen (M1):
 
 ## Bilder der Live-Seite
 
-Alle auf `cdn.shopify.com/s/files/1/0969/5628/5315/files/` (bzw. `royalspices.de/cdn/shop/files/`). Download nur nach Freigabe; Produktbilder kommen headless ohnehin über die Storefront API.
+Alle auf `cdn.shopify.com/s/files/1/0969/5628/5315/files/` (bzw. `royalspices.de/cdn/shop/files/`). Am 19.10.2026 mit Freigabe des Nutzers in Originalauflösung nach `assets-src/photos/live-royalspices/` geladen (README dort). In V1 seit T-20261019-07: Logo quer in Kopf und Fuß, goldene Blüte (Favicon-Datei) als Markenzeichen S4, 1-g-Foto als Ersatzbild ohne Store, Safranfäden S6 hinter Schalter. Nicht verwendet: `logo-square`, `05-collection`, `05-story` (Plakate mit eingebranntem englischem Text), `05g-kollektion-neu` (Badge „KLASSIKER“ eingebrannt). Produktbilder kommen mit Store ohnehin über die Storefront API.
 
 | Datei | Verwendung |
 |---|---|

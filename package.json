@@ -9,12 +9,15 @@
   "scripts": {
     "dev": "astro dev --host 127.0.0.1",
     "build": "astro check && astro build",
+    "build:ionos": "npm run build && node tools/ionos/prepare.mjs",
     "preview": "node ./server.mjs",
     "start": "node ./server.mjs",
     "check": "astro check",
+    "check:ionos": "node tools/ionos/check.mjs",
     "test": "node --experimental-strip-types --no-warnings --test \"tests/**/*.test.mjs\"",
     "assets:hero": "node pipeline/images/build-hero.mjs",
-    "assets:stills": "node pipeline/images/build-stills.mjs"
+    "assets:stills": "node pipeline/images/build-stills.mjs",
+    "assets:video": "node pipeline/video/build-video.mjs"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.6",

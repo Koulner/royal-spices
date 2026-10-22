@@ -20,6 +20,8 @@ node tools/qa/freshness.mjs dist/client
 
 Die Shop-Werte liest es wie `astro.config.mjs` (`.env` oder Prozessumgebung). Mit `--fixture <datei.json>` nimmt es eine aufgenommene Antwort statt Shopify. Die Website selbst stellt dafür keine Anfrage. Es braucht Node mit Type-Stripping (22.18+), weil es den Code der Website nutzt (`storefront.ts`, `unit-price.ts`). Der automatische Neubau per Webhook und nächtlichem Lauf (B1b) wartet auf die Wahl des Hosters. Bis dahin ist dieses Werkzeug der Smoke-Test „Stufe 3“. Tests: `tests/freshness.test.mjs`.
 
+**Stand 20.10.2026, Handles (T-20261018-12):** Die zwei Handles stehen im Code nur noch in `src/config/handles.mjs`. Startseite, Produktfakten, Weiterleitung und QA-Listen lesen sie von dort. Fehlt einer davon im Shopify-Katalog, bricht der Build ab und nennt Handle und Fundstellen (Entscheidung E2: Abbruch statt Rückfall). Details und die Regel für den Kunden unter „Handles“.
+
 **Status (06.10.2026): vorbereitet, nicht aktiv.** Es gibt noch keinen Store und keine Zugangsdaten. Die Website enthält deshalb keine Preise, keinen Warenkorb und keine simulierten Commerce-Daten. Das Produkt führt in die Anfrage.
 
 Grundsatz der Spezifikation (§19–§21): Shopify ist die Commerce-Infrastruktur, die Website bleibt das Royal-Spices-Frontend. Produkte, Varianten, Preise, Verfügbarkeit, Warenkorb, Checkout und Bestellungen liegen in Shopify. Nichts davon wird im Frontend dupliziert.
@@ -78,6 +80,19 @@ Der Grundpreis kommt **nur aus Shopify** (Variante: `unitPrice`, `unitPriceMeasu
 - **JSON-LD:** Mit Grundpreis trägt das `Offer` eine `UnitPriceSpecification`, so wie Google sie liest: `price` ist der Produktpreis, `referenceQuantity` die verkaufte Menge (0,5 `GRM`), `valueReference` die Bezugsmenge (1 `KGM`). Daraus ergibt sich derselbe Grundpreis wie auf der Seite. `Offer.price` bleibt unverändert.
 - **Tests:** `tests/unit-price.test.mjs`. Die Grundpreis-Werte dort sind synthetisch, denn die Live-Aufnahme in `tests/fixtures/` enthält keinen.
 
+## Handles
+
+Der Handle ist der Name eines Produkts in Shopify und hier zugleich sein Pfad: `/produkte/<handle>/`. Zwei Handles nennt die Website im Code, `herat-negin-safran-1-g-grade-a` (1 g) und `safran-herat-negin-0-5g` (0,5 g). Sie stehen nur in **`src/config/handles.mjs`** (B2, Entscheidung E2 vom 18.10.2026). Von dort lesen sie die Karten und Buttons der Startseite, `src/data/product.ts`, die Weiterleitung der alten 1-g-Seite in `src/config/redirects.mjs` und die Seitenlisten von `tools/qa/a11y.mjs` und `perf.mjs`.
+
+- **Wache beim Build:** Fehlt einer dieser Handles im Shopify-Katalog, bricht der Build ab. Die Meldung nennt den Handle und die Dateien, die ihn nutzen (`src/lib/commerce/catalog.ts`). Der letzte Deploy bleibt online. Ohne die Wache führten die festen Links in einen 404, und die Karte der Startseite verlöre still ihren Preis. Ohne Store wird nichts geprüft. Weitere Produkte im Katalog sind kein Fehler, sie bekommen eine eigene Seite.
+- **Für den Kunden:** Handles nicht ändern. Wenn doch, vorher Bescheid geben; dann kommt in `redirects.mjs` eine Zeile alt → neu.
+- **Umbenennen, Ablauf:**
+  1. Neuen Handle in `handles.mjs` eintragen.
+  2. In `redirects.mjs` die Zeile alt → neu ergänzen, z. B. `['/produkte/<alt>', productPath(HANDLES.oneGram)]`. Alte Shopify-Adressen `/products/<alt>` leitet die allgemeine Regel auf `/produkte/<alt>/`, also in einen 404. Auch sie brauchen dann eine eigene Zeile.
+  3. `npm test`, danach ein Build mit Store. Tests, `tools/live/rules.mjs` und `tools/seo/legacy-urls.txt` nennen die Handles bewusst wörtlich, weil sie sich auf die Live-Aufnahme beziehen. Sie zeigen, was nachzuziehen ist.
+- **Neue Fundstelle:** Wer einen Handle an einer weiteren Stelle unter `src/` nutzt, trägt die Datei in `HANDLE_USES` in `handles.mjs` ein. Sonst schlägt der Test fehl.
+- **Tests:** `tests/handles.test.mjs`: Wache mit der Live-Aufnahme ohne das 1-g-Produkt, ohne das 0,5-g-Produkt und vollständig; jeder Handle steht unter `src/` nur in `handles.mjs`; die Fundstellen stimmen mit dem Code überein; die alte 1-g-Seite leitet auf den Handle-Pfad.
+
 ## Security
 
 - Im Browser liegt ausschließlich der **öffentliche Storefront-Token**. Er ist dafür gedacht. Ein Admin-API-Token gehört nicht in dieses Projekt, auch nicht in eine `PUBLIC_`-Variable.
@@ -99,12 +114,13 @@ Der Grundpreis kommt **nur aus Shopify** (Variante: `unitPrice`, `unitPriceMeasu
 - Cart funktioniert auch ohne Gerätespeicher
 - Geldbeträge im deutschen Format
 - Wachen beim Build: mehr als eine Variante je Produkt, abweichende API-Version im Header (fehlt der Header, ist das ok); der Warenkorb im Browser prüft die Version nicht
+- Wache beim Build: ein Handle aus `src/config/handles.mjs` fehlt im Katalog (`tests/handles.test.mjs`)
 
 **Nicht geprüft:** Kaufmodul und Warenkorb im Browser gegen einen echten Store, der Übergang in den Checkout, Tastatur- und Screenreader-Bedienung des Warenkorbs, Verhalten bei abgelaufenem Token. Das ist erst mit einem Store möglich und Voraussetzung für die Abnahme „Shopify: Cart/Checkout geprüft".
 
 ## Anschluss in fünf Schritten
 
-1. **Store prüfen.** Die Produkte existieren (Handles `herat-negin-safran-1-g-grade-a` und `safran-herat-negin-0-5g`). Jedes Produkt des Kanals bekommt eine Seite. `src/data/product.ts` ergänzt per Handle die V1-Fakten und liefert die Handles für den Build ohne Store. Ein Produkt ohne Eintrag dort zeigt nur Titel und Beschreibung aus Shopify. Preis, Bestand, SKU und Versandprofil in Shopify pflegen.
+1. **Store prüfen.** Die Produkte existieren (Handles `herat-negin-safran-1-g-grade-a` und `safran-herat-negin-0-5g`, im Code nur in `src/config/handles.mjs`, siehe „Handles“). Jedes Produkt des Kanals bekommt eine Seite. `src/data/product.ts` ergänzt per Handle die V1-Fakten und liefert die Handles für den Build ohne Store. Ein Produkt ohne Eintrag dort zeigt nur Titel und Beschreibung aus Shopify. Preis, Bestand, SKU und Versandprofil in Shopify pflegen.
 2. **Vertriebskanal „Headless" hinzufügen**, das Produkt für diesen Kanal veröffentlichen und einen öffentlichen Storefront-API-Token erzeugen. Benötigte Rechte: Produkte lesen, Carts schreiben und lesen.
 3. **Umgebungsvariablen beim Build setzen** (`.env.example`), entweder in `.env` oder als Umgebungsvariablen beim Hoster (die gewinnen):
 

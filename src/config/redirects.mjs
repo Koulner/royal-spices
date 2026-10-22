@@ -2,7 +2,10 @@
 // (as of 2026-10-15, docs/LIVE-INVENTAR.md rows P1–P3, Q1–Q11, W1) and from retired V1 paths.
 // server.mjs looks every GET/HEAD request up here before it serves a static file, so the table
 // also wins over pages that still exist in dist/ during the switch-over.
-// Plain JavaScript without imports: server.mjs loads this file directly at runtime.
+// Plain JavaScript, because server.mjs loads this file directly at runtime. Its only import is
+// handles.mjs next to it, plain JavaScript as well (the product handles, in one place).
+
+import { HANDLES, productPath } from './handles.mjs';
 
 /**
  * Old path → current page. Keys are lower case and without a trailing slash; lookups
@@ -42,7 +45,7 @@ export const REDIRECTS = new Map([
   // retired V1 paths
   ['/handel', '/b2b/'],
   ['/gastronomie', '/b2b/'],
-  ['/produkte/safran-negin-1g', '/produkte/herat-negin-safran-1-g-grade-a/'],
+  ['/produkte/safran-negin-1g', productPath(HANDLES.oneGram)],
 ]);
 
 // Shopify product URLs (P2, P3), also in their collection-scoped form. The handle is kept:

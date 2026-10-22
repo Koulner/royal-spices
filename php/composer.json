@@ -1,0 +1,17 @@
+{
+    "name": "royal-spices/anfrage",
+    "description": "Inquiry endpoint for IONOS webhosting (PHP mirror of src/pages/api/anfrage.ts)",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.1",
+        "phpmailer/phpmailer": "^6.12"
+    },
+    "config": {
+        "platform": {
+            "php": "8.1.0"
+        },
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}
