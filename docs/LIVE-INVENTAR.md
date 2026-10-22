@@ -53,7 +53,7 @@ Vom Nutzer am 17.10.2026 bestätigte Abweichungen (M1):
 | Q5 | /pages/contact | `/kontakt/` | geprüft | Live: Formular „über Shopify“; V1: eigenes Formular (SMTP offen); Anschrift aus V1 (C3); Einleitung ohne „über Shopify“, Feldnamen des V1-Formulars (A4) |
 | Q6 | /pages/faq | `/faq/` | geprüft | neu in V1 |
 | Q7 | /pages/versand-lieferung | `/versand-lieferung/` | geprüft | neu in V1; Versandtarife als Text, bei Tarifänderung in Shopify mit anpassen |
-| Q8 | /pages/impressum | `/impressum/` | geprüft | Bildnachweis Wakhan wörtlich übernommen, V1 zeigt kein Wakhan-Bild |
+| Q8 | /pages/impressum | `/impressum/` | geprüft | Bildnachweis Wakhan wörtlich übernommen; seit T-20261022-40 zeigt V1 das Wakhan-Foto auf `/herkunft-qualitaet/`, dafür ein zweiter Nachweis mit Quelle |
 | Q9 | /policies/privacy-policy | `/datenschutz/` | gebaut, Entwurf | Shopify-Abschnitt nur im Build mit Store; 8 PRÜFEN-Marken gibt der Kunde frei; nicht als Text verglichen (eigener Entwurf statt Shopify-Standardtext) |
 | Q10 | /policies/terms-of-service, refund-policy, shipping-policy, legal-notice | 301 / 404 | geprüft (301/404) | legal-notice → `/impressum/`, shipping-policy → `/versand-lieferung/`; **AGB und Widerruf fehlen** (auch auf Live 404), terms-of-service und refund-policy liefern 404 |
 | Q11 | /cart, /search, /blogs/news | Cart-Dialog / – / – | geprüft (301) | 301: `/cart` und `/search` → `/produkte/`, `/blogs/news` → `/` (Blog leer) |
@@ -73,6 +73,19 @@ Alle auf `cdn.shopify.com/s/files/1/0969/5628/5315/files/` (bzw. `royalspices.de
 | `royal-spices-herat-negin-1g-premium_….png` | Kollektion S5; Produktbild 1 g |
 | `royal-spices-05g-kollektion-neu.png` | Kollektion S5 (0,5 g) |
 | `saffron_threads_….jpg` | Bildbruch S6 |
+
+## Bilder der alten Hauptseite (vor Shopify)
+
+Nachprüfung 22.10.2026: Die Shopify-Seite hat dieselben Texte wie am 15.10. (Textvergleich aller 12 Seiten) und weiter genau die 8 Bilder oben; Shopify zeigt beim 0,5-g-Produkt jetzt `05g-kollektion-neu` statt `05-story` (kommt in V1 über die Storefront API). Die alte, selbst gebaute Hauptseite hatte vier weitere Bilder, ihre Adressen geben seit dem Umzug 404. Seit T-20261022-40 sind alle in V1 (Quellen und Lizenz: `assets-src/photos/old-site/README.md`):
+
+| Alte Adresse | V1 |
+|---|---|
+| `/afghanistan-mountains.jpg` („Wakhan, Tajikistan“, Ninara, CC BY 2.0) | Bergband auf `/herkunft-qualitaet/`, Original von Wikimedia Commons, Nachweis am Bild und im Impressum |
+| `/safran-display.jpg` (Visualisierung) | `/b2b/` neben „Theken-Displays“ |
+| `/safran-glaeser-real.jpg` | schon vorher: Herkunft, Über uns |
+| `/catering-event.jpg` | schon vorher: Catering |
+
+Fehlt noch: der Catering-Katalog `/royal-spices-exklusiv-catering.pdf` (404, keine lokale Kopie, Internet Archive am 22.10. offline). Der Kunde hat die Datei vermutlich noch.
 
 ## Produkte in Shopify (products.json, 15.10.)
 

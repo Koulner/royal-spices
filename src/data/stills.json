@@ -684,5 +684,91 @@
         "bytes": 66622
       }
     ]
+  },
+  "wakhan": {
+    "width": 3240,
+    "height": 1296,
+    "avif": [
+      {
+        "src": "/img/wakhan-960.avif",
+        "width": 960,
+        "bytes": 29157
+      },
+      {
+        "src": "/img/wakhan-1440.avif",
+        "width": 1440,
+        "bytes": 59509
+      },
+      {
+        "src": "/img/wakhan-1920.avif",
+        "width": 1920,
+        "bytes": 97757
+      },
+      {
+        "src": "/img/wakhan-2560.avif",
+        "width": 2560,
+        "bytes": 157227
+      }
+    ],
+    "webp": [
+      {
+        "src": "/img/wakhan-960.webp",
+        "width": 960,
+        "bytes": 39908
+      },
+      {
+        "src": "/img/wakhan-1440.webp",
+        "width": 1440,
+        "bytes": 82464
+      },
+      {
+        "src": "/img/wakhan-1920.webp",
+        "width": 1920,
+        "bytes": 134082
+      },
+      {
+        "src": "/img/wakhan-2560.webp",
+        "width": 2560,
+        "bytes": 213994
+      }
+    ]
+  },
+  "display-photo": {
+    "width": 1312,
+    "height": 1199,
+    "avif": [
+      {
+        "src": "/img/display-photo-480.avif",
+        "width": 480,
+        "bytes": 30965
+      },
+      {
+        "src": "/img/display-photo-768.avif",
+        "width": 768,
+        "bytes": 67545
+      },
+      {
+        "src": "/img/display-photo-1152.avif",
+        "width": 1152,
+        "bytes": 122706
+      }
+    ],
+    "webp": [
+      {
+        "src": "/img/display-photo-480.webp",
+        "width": 480,
+        "bytes": 50346
+      },
+      {
+        "src": "/img/display-photo-768.webp",
+        "width": 768,
+        "bytes": 106938
+      },
+      {
+        "src": "/img/display-photo-1152.webp",
+        "width": 1152,
+        "bytes": 197524
+      }
+    ]
   }
 }

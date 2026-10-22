@@ -40,8 +40,10 @@ import InlineVideo from '@/components/InlineVideo.astro';
   <div class="section band-deep">
     <div class="wrap split">
       <div class="split__a">
+        {/* Display visual of the former royalspices.de (T-20261022-40); it was labelled a visualisation there too. */}
         <figure class="figure b2b-figure">
-          <Picture name="jars-photo" alt="Reihen abgefüllter Royal-Spices-Gläser mit Korken, Siegelstreifen und Etikett." sizes="(min-width: 64rem) 38vw, 92vw" />
+          <Picture name="display-photo" alt="Thekendisplay von Royal Spices mit drei Reihen Safrangläsern mit Korken, dahinter eine Rückwand mit Logo, Gebirge und Krokusblüte." sizes="(min-width: 64rem) 38vw, 92vw" />
+          <figcaption>Visualisierung eines Theken-Displays für den Handel.</figcaption>
         </figure>
       </div>
       <div class="split__b b2b-audiences">
@@ -84,10 +86,9 @@ import InlineVideo from '@/components/InlineVideo.astro';
 </Base>
 
 <style>
-  .b2b-figure :global(img) {
-    aspect-ratio: 4 / 5;
-    object-fit: cover;
-    object-position: 50% 80%;
+  .b2b-figure figcaption {
+    font-size: 0.875rem;
+    color: var(--ink-2);
   }
 
   .b2b-audiences {
@@ -119,9 +120,4 @@ import InlineVideo from '@/components/InlineVideo.astro';
     grid-row: auto;
   }
 
-  @media (max-width: 63.99rem) {
-    .b2b-figure :global(img) {
-      aspect-ratio: 16 / 10;
-    }
-  }
 </style>

@@ -167,6 +167,8 @@ Im Speicher liegen die komprimierten Dateien der Bewegungsebene; decodiert ist n
 | Markenzeichen S4 | goldene Blüte von royalspices.de (dort Favicon) | 112–224 |
 | Glas 1 g, Ersatzbild ohne Store | Produktfoto von royalspices.de, dasselbe Bild wie in Shopify | 480–1254 |
 | Safranfäden im Löffel, Bildbruch S6 | Foto von royalspices.de, erscheint erst mit `LIVE_THREADS_LICENSED=1` (Lizenz offen, vermutlich Stockfoto); bis dahin Kapitelbild Safran | 640–1920 |
+| Bergband `wakhan` auf `/herkunft-qualitaet/` | Bergfoto der alten Hauptseite: „Wakhan, Tajikistan“ von Ninara, CC BY 2.0 (`assets-src/photos/old-site/`, README dort). Ausschnitt 3240 × 1296, Farbüberlagerung per CSS; Nachweis direkt unter dem Bild und im Impressum. Zeigt nicht Herat | 960–2560 |
+| Thekendisplay `display-photo` auf `/b2b/` | Visualisierung des Auftraggebers von der alten Hauptseite, beschriftet als Visualisierung | 480–1152 |
 | `og.jpg` | Ankunft, 1200 × 630 | – |
 
 Alle Bilder außerhalb des ersten Bildschirms laden `lazy`. Alt-Texte beschreiben, was zu sehen ist.

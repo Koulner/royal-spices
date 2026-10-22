@@ -33,6 +33,10 @@ const STILLS = {
   // client photographs
   'jars-photo': { src: 'assets-src/photos/safran-glaeser-real.jpg', widths: [480, 768, 1152] },
   'catering-photo': { src: 'assets-src/photos/catering-event.jpg', widths: [480, 768, 1200] },
+  // images of the former self-built royalspices.de (notes and licence: assets-src/photos/old-site/README.md)
+  // wakhan: CC BY 2.0, credit beside the picture; the band shows the lower-middle strip (ridges and valley)
+  'wakhan': { src: 'assets-src/photos/old-site/wakhan-ninara-43149066365.jpg', widths: [960, 1440, 1920, 2560], crop: { left: 0, top: 0.22, width: 1, height: 0.6 } },
+  'display-photo': { src: 'assets-src/photos/old-site/safran-display.jpg', widths: [480, 768, 1152] },
   // images taken over from royalspices.de (originals and notes: assets-src/photos/live-royalspices/README.md)
   'logo-wide': { src: `${LIVE}/royal-spices-atelier-logo-wide.png`, widths: [220, 330, 440, 660], prepare: 'cutout' },
   'logo-wide-light': { src: `${LIVE}/royal-spices-atelier-logo-wide.png`, widths: [220, 330, 440, 660], prepare: 'cutout-light' },

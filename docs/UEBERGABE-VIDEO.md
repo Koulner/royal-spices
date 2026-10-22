@@ -1,4 +1,4 @@
-# Übergabe Video (Bar-Film im Business-Block), Stand 22.10.2026, nach T-35
+# Übergabe Video (Bar-Film im Business-Block), Stand 22.10.2026, nach Übertrag A (lokal)
 
 Plan (vom Nutzer freigegeben): `C:\Users\lukas\.claude\plans\compiled-inventing-toucan.md`. Transaktionen im ID-Block Video `T-20261021-30` bis `-39` (LOG-Kopf).
 
@@ -19,7 +19,7 @@ Plan (vom Nutzer freigegeben): `C:\Users\lukas\.claude\plans\compiled-inventing-
 | T-20261021-34 | Teil b: Messen, nur lesend (Bericht `staging/T-20261021-34/ERGEBNIS.md`) | ÜBERNOMMEN 22.10. (Bericht angenommen, Entscheidungen siehe unten) |
 | T-20261021-35 | B2, B3 (Variante A) und B4 aus T-34: `inline-video.ts`, `InlineVideo.astro`, `docs/QA.md` (Bericht `staging/T-20261021-35/ERGEBNIS.md`) | ÜBERNOMMEN 22.10. (Nutzer-Go), K1–K6 erfüllt, `npm test` 210/210 |
 
-Projekt: `npm test` 210/210, nichts davon in `dev`.
+Projekt: `npm test` 234/234 mit PHP (`RS_PHP`, seit IONOS T-20261022-01/-02). Ohne PHP überspringt der Lauf die PHP-Tests. In `dev` und `origin/dev` als `8f135cc` (Übertrag A, T-20261022-30), Pages-Vorschau unter `https://koulner.github.io/royal-spices/`.
 
 ## Nächste Schritte
 1. ~~T-33 prüfen und übernehmen~~ (erledigt 22.10.).
@@ -33,8 +33,8 @@ Projekt: `npm test` 210/210, nichts davon in `dev`.
    - Keine Rückschritte bei Verhalten, CLS, `perf.mjs`, a11y und Live-Text. JS 1484 B gzip.
    - Prüfskripte: `staging/T-20261021-34/checks/` und `staging/T-20261021-35/checks/`.
    - **Offen, nicht beauftragt:** B6. Ohne JS deckt das native `<video controls>` das Poster dunkel zu. Das alte Markup verhielt sich genauso. Eine Idee für später: `@media (scripting: none)` mit anderer Schichtung. Ein `poster`-Attribut würde B3 brechen.
-4. Das Video geht mit **Übertrag A** nach `dev`, zusammen mit Live-Bildern T-19-07, B2 T-18-12 und Fragmentierung T-20-01/-02.
-5. Safari/iOS (H.264-Weg, Range) prüft der Nutzer beim gemeinsamen Messtermin mit P3/P4.
+4. ~~**Übertrag A**~~ (T-20261022-30, `ÜBERNOMMEN`): Commit `8f135cc` mit 120 Pfaden auf `dev`, gepusht am 22.10. um 10:07 mit Go des Nutzers (P3/P4 vorher nicht gemessen). Darin sind Video, Live-Bilder T-19-07, B2 T-18-12, Fragmentierung T-20-01/-02 und auf Wunsch des Nutzers auch IONOS T-20261022-01/-02. Der Pages-Deploy ist grün (Lauf 39745523394). Alle vier Videos auf Pages sind MD5-gleich mit H:, und eine Range-Anfrage bringt 206 (Bericht `staging/T-20261022-30/ERGEBNIS.md`). Diese Datei und `STATUS.md` wurden danach geändert und gehen mit dem nächsten Übertrag mit.
+5. Safari/iOS (H.264-Weg, Range): Der Nutzer hat kein iPhone. Nach dem Push prüft jemand mit iPhone (z. B. der Kunde) die Pages-Vorschau nach einer kurzen Liste. Die Liste ist noch zu schreiben.
 
 ## Wichtige Fakten
 - Quelle `.raw/video/bar-0930.mp4` (2160 × 3840, 60 fps, 28,5 s), nicht in git. Geschnitten wird bei 25,35 s, weil die Abblende bei 25,37 s beginnt.
@@ -50,12 +50,12 @@ Projekt: `npm test` 210/210, nichts davon in `dev`.
 
 > Weiter mit dem Bar-Video (Royal Spices, Arbeitskopie H:, kein git). Lies `H:\royal-spices\CLAUDE.md`, den Kopf von `_agent/LOG.md` (GPU-Sperre, Ports, Regel für den Übertrag) und `royal-spices-v1/docs/UEBERGABE-VIDEO.md`.
 >
-> Stand 22.10.: T-20261021-30, -31, -33, -34 und -35 sind übernommen. Keine Video-Transaktion ist `OFFEN`, im Projekt läuft `npm test` mit 210/210, nichts davon ist in `dev`. Die Befunde B1–B6 stehen in `staging/T-20261021-34/ERGEBNIS.md` und `-35/ERGEBNIS.md`.
+> Stand 22.10.: T-20261021-30, -31, -33, -34 und -35 sind übernommen. Übertrag A (T-20261022-30) ist als `8f135cc` gepusht, der Pages-Deploy ist grün, Ü7 ist erfüllt. Im Projekt läuft `npm test` mit 234/234 (mit PHP). Die Befunde B1–B6 stehen in `staging/T-20261021-34/ERGEBNIS.md` und `-35/ERGEBNIS.md`.
 >
 > Frag den Nutzer zuerst, womit es weitergeht, und nimm nichts davon eigenmächtig in Angriff:
-> 1. **Übertrag A nach `dev`**, zusammen mit T-19-07, T-18-12 und T-20-01/-02. Nur mit Freigabe und nie parallel zu einem anderen Übertrag; vorher im LOG prüfen, dass keiner `OFFEN` ist.
+> 1. **Safari/iOS-Liste** für den Prüfer mit iPhone (z. B. den Kunden) gegen `https://koulner.github.io/royal-spices/` schreiben. Der Nutzer hat kein iPhone.
 > 2. **B6:** Ohne JS deckt das native Video das Poster zu. Nicht beauftragt; vor dem Bauen die Kriterien zur Freigabe vorlegen.
-> 3. **Safari/iOS** beim Messtermin P3/P4 (der Nutzer am Gerät).
+> 3. **P3/P4** (Laptop, Android): Vor dem Push von Übertrag A hat der Nutzer sie nicht messen lassen. Nachholen, wenn er es will.
 > 4. **Aufräumen**, nur mit Freigabe: Arbeitskopie auf C: (zuerst die Junction entfernen) und Staging-Ordner T-30 bis T-35.
 >
 > Neue IDs im Video-Block nach der Regel im LOG-Kopf, vor der Vergabe prüfen. Messen: Server 4398, CDP 9333, GPU-Sperre vor `perf.mjs`. Auf diesem PC meldet Edge `reduce`, deshalb `RS_QA_MOTION=no-preference` (siehe „Messumgebung“ oben). B1 (Windows-Animationen) und B5 (Brotkrumen) gehören nicht zum Video-Block.

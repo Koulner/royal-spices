@@ -43,6 +43,23 @@ import { site } from '@/config/site';
     </div>
   </section>
 
+  {/* Mountain photograph of the former royalspices.de (T-20261022-40). CC BY 2.0: author, title, source,
+      licence and the change stay beside the picture. It shows the Wakhan corridor, not Herat. */}
+  <figure class="landscape">
+    <div class="landscape__frame">
+      <Picture
+        name="wakhan"
+        alt="Hochgebirge des Hindukusch: schneebedeckte Gipfel, braune Bergflanken und ein breites Tal unter Wolken."
+        sizes="100vw"
+      />
+      <p class="landscape__mark" aria-hidden="true">HINDUKUSCH · WAKHAN</p>
+    </div>
+    <figcaption class="wrap landscape__caption">
+      Hochgebirge des Hindukusch im Wakhan-Korridor, im Nordosten Afghanistans. Die Anbauregion Herat liegt im Westen des Landes.
+      <span>Foto: <a href="https://www.flickr.com/photos/ninara/43149066365/" rel="noopener">„Wakhan, Tajikistan“</a> von Ninara, <a href="https://creativecommons.org/licenses/by/2.0/deed.de" rel="noopener">CC BY 2.0</a>, Ausschnitt mit Farbüberlagerung.</span>
+    </figcaption>
+  </figure>
+
   <section class="section band-deep" aria-labelledby="hq-pflanze">
     <div class="wrap grid plant">
       <div class="plant__head opener">
@@ -161,6 +178,68 @@ import { site } from '@/config/site';
 </Base>
 
 <style>
+  .landscape {
+    margin: 0 0 var(--s-7);
+  }
+
+  .landscape__frame {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .landscape__frame :global(img) {
+    display: block;
+    width: 100%;
+    aspect-ratio: 5 / 2;
+    object-fit: cover;
+    object-position: 50% 40%;
+  }
+
+  /* colour overlay: the photograph's blue sky and cold shadows pulled towards paper and slate */
+  .landscape__frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--paper) 22%, transparent) 0%, transparent 40%, color-mix(in srgb, var(--slate) 58%, transparent) 100%),
+      color-mix(in srgb, var(--bronze) 26%, transparent);
+    mix-blend-mode: multiply;
+    pointer-events: none;
+  }
+
+  .landscape__mark {
+    position: absolute;
+    z-index: 1;
+    left: max(var(--gutter), calc((100% - var(--wrap)) / 2));
+    bottom: var(--s-5);
+    margin: 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    color: var(--paper-soft);
+  }
+
+  .landscape__caption {
+    display: grid;
+    gap: var(--s-1);
+    padding-top: var(--s-3);
+    font-size: 0.875rem;
+    color: var(--ink-2);
+  }
+
+  .landscape__caption span {
+    color: var(--ink-3);
+  }
+
+  .landscape__caption a {
+    color: inherit;
+  }
+
+  @media (max-width: 47.99rem) {
+    .landscape__frame :global(img) {
+      aspect-ratio: 4 / 3;
+    }
+  }
+
   .plant__head {
     grid-column: 1 / span 5;
     align-content: start;

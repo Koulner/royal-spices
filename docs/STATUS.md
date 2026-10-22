@@ -1,6 +1,28 @@
+# Stand 22.10.2026 — Bilder der alten Hauptseite (T-20261022-40)
+
+- **Übernommen, nicht in `dev`.** Die Shopify-Seite royalspices.de hat seit dem 15.10. dieselben Texte und Bilder (Textvergleich aller 12 Seiten, `.raw/live-20261022/`). Gefehlt haben Bilder der alten, selbst gebauten Hauptseite vor Shopify:
+  - Bergfoto „Wakhan, Tajikistan“ von Ninara (CC BY 2.0), Original von Wikimedia Commons (SHA1 gleich): Landschaftsband auf `/herkunft-qualitaet/` mit Farbüberlagerung und Nachweis direkt am Bild. Bildunterschrift sagt, dass es den Wakhan-Korridor zeigt, nicht Herat. Impressum: Live-Absatz unverändert, zweiter Absatz mit Quelle für die Verwendung in V1.
+  - Thekendisplay (Visualisierung des Kunden): `/b2b/` statt des Gläserfotos, beschriftet als Visualisierung.
+  - Gläserfoto und Catering-Foto waren schon drin. Der Catering-Katalog (PDF) fehlt noch, keine Kopie vorhanden.
+- **Geprüft:** `npm test` 220/220 (1 übersprungen, ohne PHP), `astro check` 0/0/0, Build in Prüfkopie grün, `live-text.mjs --ohne-store` keine offenen Abweichungen, Sichtprüfung 1024 und 375 px ohne Querüberlauf, keine Konsolenfehler. `stills.json` nur um `wakhan` und `display-photo` ergänzt.
+- Quellen und Lizenz: `assets-src/photos/old-site/README.md`. Backup: `_agent/staging/T-20261022-40/backup/`.
+
+# Stand 22.10.2026, 10:10 — Übertrag A nach `dev`, gepusht (T-20261022-30)
+
+- **In `dev` und gepusht:** `origin/dev` = `8f135cc`, ein Commit auf `29e2378` mit 120 Pfaden (90 neu, 30 geändert). Er enthält:
+  - Bar-Video T-20261021-30/-31/-33/-35
+  - Live-Bilder T-20261019-07
+  - Shopify B2 T-20261018-12
+  - Fragmentierung T-20261020-01/-02
+  - auf Wunsch des Nutzers auch IONOS T-20261022-01/-02
+- **Nicht dabei:** Flüssig-Kanten T-20261021-01/-02 (`OFFEN`), `docs/UEBERGABE-{ANGEBOT,ETIKETT,GLASFORM,PRODUKT}.md`, `assets-src/photos/ref-glas-1910.webp`. `docs/ABSCHLUSS-TODO.md` bleibt draußen, weil es internes Geschäftliches enthält und das Repo öffentlich ist.
+- **Geprüft im Klon:** `npm ci` (Lockfile unverändert), `npm test` 234/234 mit PHP 8.3 (`RS_PHP`), `astro check` 0/0/0, Build wie in der CI und Pages-Kopie grün, keine Schlüssel, keine Datei über 50 MB, Index gleich H:.
+- **Nach dem Push:** Pages-Deploy grün (Lauf 39745523394). Alle vier Videos auf `https://koulner.github.io/royal-spices/video/` sind MD5-gleich mit dem Projekt, Range → 206. P3/P4 hat der Nutzer vor dem Push nicht messen lassen.
+- **Offen:** Safari/iOS. Der Nutzer hat kein iPhone, jemand mit iPhone (z. B. der Kunde) prüft die Pages-Vorschau nach einer kurzen Liste, die noch zu schreiben ist. Dieser Abschnitt und `docs/UEBERGABE-VIDEO.md` gehen mit dem nächsten Übertrag mit. Bericht: `_agent/staging/T-20261022-30/ERGEBNIS.md`.
+
 # Stand 22.10.2026 — Betrieb auf IONOS-Webhosting (T-20261022-01, -02)
 
-- **Übernommen (Freigabe des Nutzers), nicht in `dev`, kein Push.** Die Website läuft jetzt auch auf einem normalen IONOS-Webhosting: Apache mit `.htaccess`, PHP 8, SFTP. Der Node-Weg (`server.mjs`) bleibt unverändert und funktioniert weiter.
+- **Übernommen (Freigabe des Nutzers), seit 22.10. in `dev` (`8f135cc`, Übertrag A).** Die Website läuft jetzt auch auf einem normalen IONOS-Webhosting: Apache mit `.htaccess`, PHP 8, SFTP. Der Node-Weg (`server.mjs`) bleibt unverändert und funktioniert weiter.
 - **Neu:**
   - `tools/ionos/`: `htaccess.mjs` erzeugt die `.htaccess` aus `redirects.mjs`, `prepare.mjs` baut `dist-ionos/`, `check.mjs` prüft Apache und die Live-Domain, `container.mjs` startet Apache im Container, `deploy.sh` lädt per SFTP über lftp mit festem Host-Schlüssel hoch.
   - `php/` ist der Anfrage-Endpunkt (PHPMailer 6.12.0, SMTP über Google Workspace). Die Zugangsdaten liegen außerhalb des Webroots in `royalspices-private/`.
@@ -27,7 +49,7 @@
 
 # Stand 22.10.2026 — Bar-Video im Business-Block (T-20261021-30, -31, -33, -34, -35)
 
-- **Übernommen (Freigabe des Nutzers), nicht in `dev`, kein Push:** Der Film des Kunden (Barszene mit Safran-Cocktail, endet auf dem 0,5-g-Glas) läuft auf der Startseite in S9 und auf /b2b/ unter „Zusammenarbeit“. Er startet stumm ab halber Sichtbarkeit, hat einen Knopf „Ton an“, spielt einmal und bleibt auf dem Glas stehen. Bei reduced motion gibt es kein Autoplay.
+- **Übernommen (Freigabe des Nutzers), seit 22.10. in `dev` (`8f135cc`, Übertrag A):** Der Film des Kunden (Barszene mit Safran-Cocktail, endet auf dem 0,5-g-Glas) läuft auf der Startseite in S9 und auf /b2b/ unter „Zusammenarbeit“. Er startet stumm ab halber Sichtbarkeit, hat einen Knopf „Ton an“, spielt einmal und bleibt auf dem Glas stehen. Bei reduced motion gibt es kein Autoplay.
 - **Dateien:**
   - `pipeline/video/build-video.mjs` (`npm run assets:video`), `src/data/videos.json`, `public/video/` (AV1/H.264 × 1080/720, 31,2 MB, VMAF ≥ 95,6 / 1-%-Tief ≥ 85,1, −16 LUFS, 30 fps)
   - Poster `bar-poster`
@@ -42,7 +64,7 @@
   - B4: Der Fokus geht am Filmende vom Abspielknopf auf „Noch einmal“, sonst gibt es keinen Fokusraub.
   - Verhalten, CLS (/b2b/ 0), `perf.mjs` (TBT 0 ms), a11y und Live-Text sind unverändert.
   - Geändert: `src/scripts/inline-video.ts`, `src/components/InlineVideo.astro`, `docs/QA.md`. Backup in `_agent/staging/T-20261021-35/backup/`.
-- **Offen:** B6 (Altbefund, nicht beauftragt): Ohne JS deckt das native Video das Poster mit einer dunklen Fläche zu. Safari/iOS prüft der Nutzer beim Messtermin P3/P4. Nach `dev` geht das Video mit Übertrag A. Übergabe: `docs/UEBERGABE-VIDEO.md`.
+- **Offen:** B6 (Altbefund, nicht beauftragt): Ohne JS deckt das native Video das Poster mit einer dunklen Fläche zu. Safari/iOS prüft jemand mit iPhone auf der Pages-Vorschau (siehe Übertrag A oben). Übergabe: `docs/UEBERGABE-VIDEO.md`.
 - **Nicht Video, aber bei T-34 gefunden:** B1: Die Windows-Animationseffekte sind aus. Headless Edge meldet daher `prefers-reduced-motion: reduce` und zeichnete nur mit etwa 32 Hz. QA-Läufe ohne Emulation messen so den Standbild-Weg, und Bildtakt-Messungen lassen sich nicht mit früheren vergleichen. B5: Der Brotkrumen-Link „Start“ ist mobil 33 × 44 px (`a11y.mjs` Exit 1 auf 11 Seiten).
 
 # Stand 21.10.2026, vormittags — Flüssig: keine Fragmente beim schnellen Scrollen (T-20261020-01/-02)
