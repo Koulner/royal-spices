@@ -1,6 +1,6 @@
 # Stand 22.10.2026 — Bilder der alten Hauptseite (T-20261022-40)
 
-- **Übernommen, nicht in `dev`.** Die Shopify-Seite royalspices.de hat seit dem 15.10. dieselben Texte und Bilder (Textvergleich aller 12 Seiten, `.raw/live-20261022/`). Gefehlt haben Bilder der alten, selbst gebauten Hauptseite vor Shopify:
+- **Übernommen, in `dev` und gepusht** als `05a7ab9` (Übertrag B, T-20261022-41), Pages-Deploy grün, ausgelieferte Bilder MD5-gleich mit H:. Dieser Nachtrag geht mit dem nächsten Übertrag mit. Die Shopify-Seite royalspices.de hat seit dem 15.10. dieselben Texte und Bilder (Textvergleich aller 12 Seiten, `.raw/live-20261022/`). Gefehlt haben Bilder der alten, selbst gebauten Hauptseite vor Shopify:
   - Bergfoto „Wakhan, Tajikistan“ von Ninara (CC BY 2.0), Original von Wikimedia Commons (SHA1 gleich): Landschaftsband auf `/herkunft-qualitaet/` mit Farbüberlagerung und Nachweis direkt am Bild. Bildunterschrift sagt, dass es den Wakhan-Korridor zeigt, nicht Herat. Impressum: Live-Absatz unverändert, zweiter Absatz mit Quelle für die Verwendung in V1.
   - Thekendisplay (Visualisierung des Kunden): `/b2b/` statt des Gläserfotos, beschriftet als Visualisierung.
   - Gläserfoto und Catering-Foto waren schon drin. Der Catering-Katalog (PDF) fehlt noch, keine Kopie vorhanden.

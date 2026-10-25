@@ -20,6 +20,9 @@ from math import sin, cos, sqrt, radians, exp
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 
+def _spow(v, p):
+    return (abs(v) ** p) * (1 if v >= 0 else -1)
+
 # =========================================================================== constants
 PRODUCT_EMPTY = 'PRODUCT | Royal Spices 0.5g'
 OLD_OBJECTS = ['JAR | solid glass wall / open neck / thick base', 'CORK | natural stopper',
@@ -27,6 +30,7 @@ OLD_OBJECTS = ['JAR | solid glass wall / open neck / thick base', 'CORK | natura
 GLASS_NAME = 'JAR | pressed soda-lime glass after photo'
 CORK_NAME = 'CORK | tapered stopper after photo'
 SEAL_NAME = 'SEAL | fitted charcoal strip'
+JAR_SHAPE = 'ref1910'       # 'ref1910' = ref-glas-1910.webp (T-20261020-12), 'photo' = safran-glaeser-real.jpg (T-20261007-01)
 BASE_Z = 0.07               # glass bottom in empty-local z (BU); the empty sits at world z -0.07
 
 # --- scale. Photo: the right body silhouette lies 24.3 mm from the label centre on the label plane.
@@ -53,6 +57,9 @@ LIP_OFFSET_MM = (0.11, -0.066)
 LIP_ELLIPSE = 0.006         # lip 0.6 % wider in x than in y
 WAVE_MM = (0.038, 0.027)    # low-frequency waviness of the outer wall
 SEAM_H_MM, SEAM_W_MM = 0.066, 0.20   # mould seam ridge on both side faces (height, gauss width)
+SHOULDER_RC_GROW = 1.0      # corner radius grows with the shoulder round (constant offset)
+WAVE_TOP_MM = (41, 44)      # waviness fades out below the wall top
+LIP_OFFSET_Z_MM = (48.5, 51.5)   # LIP_OFFSET_MM fades in over this height
 
 # --- neck, lip, bore, cork: (radius, height) in mm, read from the photo at the solved pose
 NECK_DR_MM = -1.20          # radius correction for the deeper axis (body half width 25.89 instead of 24.30)
@@ -68,6 +75,8 @@ CORK = [(9.85, 48.49), (11.60, 48.56), (12.04, 48.71), (12.20, 48.98), (None, 49
         (13.88, 66.22), (14.01, 67.54), (13.97, 68.08), (13.79, 68.47), (13.46, 68.74), (12.81, 68.91),
         (8.76, 68.96)]      # None = bore radius minus CORK_GAP (contact)
 CORK_GAP_MM = 0.03          # radial gap to the bore: reads as contact, never intersects
+BORE_CHECK_MM = (49.5 + TOP_DZ_MM, 53.0 + TOP_DZ_MM)   # straight bore range for the contact check
+CORK_DX_MM, CORK_DX_Z_MM = 0.0, (0.0, 1.0)            # lean of the visible cork (none for 'photo')
 
 # --- inner cavity (exact rounded square, written to jar-interior.json)
 IN_HALF = 2.01              # BU (23.44 mm: side walls 2.45 mm, front/back 2.33 mm)
@@ -90,10 +99,62 @@ CORK_GRAIN_MM = 0.8                    # granule size (a second, finer set at 0.
 CORK_PORE_SHARE = 0.06                 # approximate area share of dark pores on the side
 CORK_EDGE_MM = 0.35                    # shading radius of the slightly broken top edge
 
+# --- cork material for JAR_SHAPE 'ref1910' (T-20261021-11, G3): ref-glas-1910.webp shows coarse pressed cork, flat
+#     roundish light honey granules of 12-17 px at 1x (1.4-2.0 mm) with narrow dark joints and dark gaps at some
+#     junctions, hardly any fine structure inside a granule. Used by build_jar only for 'ref1910'.
+CORK1910_LIGHT = (0.663, 0.271, 0.042)   # linear albedo of the light honey granules (2b2b: x 0.78/0.775/1.05 for G3 and the weaker rim, was (0.85, 0.35, 0.040))
+CORK1910_DARK = (0.153, 0.057, 0.0081)  # darker granules (lower end of the per-granule tone) (t2214l: x 0.7, sigma luma 19.7 vs ref 32.6; 2b2b: (0.218, 0.081, 0.0115), was (0.28, 0.105, 0.011))
+CORK1910_JOINT = (0.281, 0.115, 0.018)  # narrow joints along the granule borders (2b2b: light brown, no dark net, was (0.22, 0.088, 0.010); T-20261022-10: browner, was (0.13, 0.050, 0.006))
+CORK1910_PORE = (0.07, 0.030, 0.0065)    # open gaps at junctions (2b2b: dark brown, t2214j (0.039, 0.017, 0.0042) read as a black net, was (0.05, 0.022, 0.004); T-20261022-10: dark brown, was (0.012, 0.006, 0.002) = black net)
+CORK1910_GRAIN_MM = 1.7                 # 3D cell spacing (2b2b: was 2.3, granules read about 1.4x too coarse in tafel2)
+CORK1910_JOINT_W = 0.030                # joint half width, Voronoi cell units
+CORK1910_PORE_K = 0.5                   # smoothness for the junction gaps (F1 minus smooth F1), cell units
+CORK1910_PORE_T = 0.34                  # gap where F1 - smooth F1 > T * K (largest at junctions) (t2214l: back to 0.34 with brown PORE, gaps 0.4 % vs ref 11 %; T-20261022-10: was 0.34, fewer dark gaps)
+CORK1910_RIM_DARK = 0.45                # granule rim: plate x (1 - RIM_DARK) at the joint .. 1 inside (2b2b: was 0.6, the rims drew a dark net)
+CORK1910_SHADE = (0.139, 0.126, 0.30)   # shadow side (2b2b, G3): base colour factor right of the band (reference lit from the left); t2214n: B log-interpolated (0.275 -> B 0.70, 0.32 -> 1.23, 0.43 -> 2.05 rel. ref); t2214k 0.275; t2214j (0.143, 0.125, 0.165) with gloss
+CORK1910_SHADE_X = (0.05, 0.35)         # camera-space normal x over which the shadow side fades in (smoothstep)
+
 # --- glass material
 GLASS_IOR = 1.52
 ABSORB_COLOR = (0.925, 0.965, 0.945)   # 0.075/0.035/0.055 per BU at density 1: edges and base went dark green
 ABSORB_DENSITY = 0.33       # a third (T-20261015-01): the glass reads colourless as in the website photo
+
+# =========================================================================== shape after ref-glas-1910.webp (T-20261020-12)
+# Reference assets-src/photos/ref-glas-1910.webp seen through the Abgleich camera (abgleich.py: level, 20 B in front
+# of the front face, 2.5 B above the glass bottom; B = body width = 52.7 mm). Derivation and measurements: ERGEBNIS.md
+# of T-20261020-12. JAR_SHAPE = 'photo' keeps every value above (T-20261007-01, safran-glaeser-real.jpg).
+if JAR_SHAPE == 'ref1910':
+    TOP_DZ_MM = 0.0
+    NECK_DR_MM = 0.0
+    LEAN_MM = (0.0, 0.0)
+    LIP_ELLIPSE = 0.0
+    OUT_WALL_TOP_MM = 62.0          # vertical edges end here (T-17: 61.5 -> 62.0)
+    OUT_SHOULDER_R_MM = 1.5         # T-17: 2.6 -> 1.5, flat shoulder top at 63.5 (ref x 44 / x 79 / x 451, x 62 = artefact)
+    SHOULDER_TOP_MM = 63.8          # nearly flat shoulder meets the neck fillet (T-17: 65.0 -> 63.8)
+    WAVE_TOP_MM = (58.0, 61.0)
+    LIP_OFFSET_MM = (0.15, 0.0)     # neck and lip 0.15 mm right of the body axis (T-17: lip columns x 79 / x 434)
+    LIP_OFFSET_Z_MM = (63.0, 66.0)
+    LIP_C_MM, LIP_A_MM, LIP_B_MM, LIP_N = (20.13, 76.13), 2.22, 2.65, 4.0   # lip bead: centre (r, z), semi-axes, superellipse exponent
+    LIP_DZ = LIP_C_MM[1] + LIP_B_MM - 79.08   # lip top against T-12 (2.95 mm): inner lip edge, bore chamfer and cork seat follow
+    NECK_OUT = [(21.2, 64.1), (20.6, 65.0), (20.3, 66.1), (20.15, 67.5), (20.13, 70.0), (20.13, 72.8)] + \
+        [(round(LIP_C_MM[0] + LIP_A_MM * _spow(cos(radians(a)), 2 / LIP_N), 3), round(LIP_C_MM[1] + LIP_B_MM * _spow(sin(radians(a)), 2 / LIP_N), 3))
+         for a in (-80, -65, -50, -35, -20, 0, 20, 35, 50, 65, 80, 90)] + [(19.3, 79.05 + LIP_DZ), (18.6, 78.9 + LIP_DZ)]
+    BORE = [(18.2, 78.66 + LIP_DZ), (17.75, 78.3 + LIP_DZ), (17.45, 77.78 + LIP_DZ), (17.3, 77.0 + LIP_DZ), (17.3, 72.0), (17.3, 68.0),
+            (17.4, 66.5), (17.8, 64.8), (18.6, 63.9), (19.8, 63.3)]   # T-17: underside 0.5 lower with the neck foot
+    NECK_IN_MM = 17.3
+    BORE_CHECK_MM = (68.5, 76.5)
+    CORK_TOP_DZ_MM = 0.0
+    # T-17: cork seat 0.15 mm above the T-12 values: the lip (LIP_OFFSET_MM) sits off the bore axis, so its inner edge
+    # comes 0.15 mm closer on the left; T-12 seat gave 48 glass x cork overlaps there (z 78.5-78.7, r 18.3-18.8)
+    CORK = [(14.5, 68.3), (16.6, 68.4), (17.1, 68.6), (17.25, 68.9), (None, 69.3), (None, 73.0), (None, 77.0 + LIP_DZ),
+            (17.5, 78.2 + LIP_DZ), (17.85, 78.6 + LIP_DZ), (18.25, 78.9 + LIP_DZ), (18.75, 79.27 + LIP_DZ), (19.02, 80.1), (19.4, 82.5), (19.85, 85.3),
+            (20.25, 88.0), (20.5, 89.45), (20.36, 89.95), (20.05, 90.4), (19.45, 90.72), (18.75, 90.84), (10.0, 90.88)]
+    CORK_DX_MM = 0.60               # visible cork leans 0.6 mm right (reference +6.1 / +6.8 px)
+    CORK_DX_Z_MM = (78.9, 81.0)
+    OUT_HALF_Y_MM = OUT_HALF_MM     # T-17: square body (the 0.12 mm thinner front/back was read from the photo)
+    IN_FLOOR_MM = 5.80              # thick base, 0.11 B
+    IN_SHOULDER_MM = 59.3           # T-17: 59.8 -> 59.3 with the lower shoulder (glass >= 1.4 mm)
+    SHOULDER_RC_GROW = -1.0         # T-17: plan corner radius 2.5 - d over the round (rolling-ball fillet), 1.0 mm at its top
 
 # --- derived BU values (used by the scripts)
 OUT_HALF_X = bu(OUT_HALF_MM)
@@ -162,7 +223,7 @@ def _outer_profile():
         d = rb - rb * cos(radians(a))
         P.append((bu(hx - d), bu(hy - d), bu(max(rc0 - d, 0.4 + (rc0 - 0.4) * (1 - d / rb))), bu(rb + rb * sin(radians(a))), 'base'))
     # straight wall
-    for z in [rb, 2.4, 5, 8, 12, 16, 20, 24, 28, 32, 36, 40, 42.5, OUT_WALL_TOP_MM]:
+    for z in [rb, 2.4, 5, 8] + [z for z in range(12, 200, 4) if z < OUT_WALL_TOP_MM - 4] + [OUT_WALL_TOP_MM - 3.38, OUT_WALL_TOP_MM]:
         d = OUT_DRAFT_MM * (1 - 2 * _smooth(rb, OUT_WALL_TOP_MM, z))
         P.append((bu(OUT_HALF_MM + d), bu(OUT_HALF_Y_MM + d), bu(rc0), bu(z), 'wall'))
     # shoulder round, then the nearly flat shoulder turns from the rounded square into the round neck
@@ -170,8 +231,8 @@ def _outer_profile():
     R = OUT_SHOULDER_R_MM
     for a in (15, 30, 45, 60, 75, 90):
         d = R * (1 - cos(radians(a)))
-        P.append((bu(ax0 - d), bu(ay0 - d), bu(rc0 + d), bu(OUT_WALL_TOP_MM + R * sin(radians(a))), 'shoulder'))
-    a1, b1, r1 = ax0 - R, ay0 - R, rc0 + R
+        P.append((bu(ax0 - d), bu(ay0 - d), bu(rc0 + d * SHOULDER_RC_GROW), bu(OUT_WALL_TOP_MM + R * sin(radians(a))), 'shoulder'))
+    a1, b1, r1 = ax0 - R, ay0 - R, rc0 + R * SHOULDER_RC_GROW
     neck_r, neck_z = NECK_OUT[0][0] + dr, NECK_OUT[0][1] + TOP_DZ_MM
     z1 = OUT_WALL_TOP_MM + R
     for t in (0.3, 0.6, 0.85):
@@ -197,7 +258,7 @@ def _outer_profile():
     for ang in (90, 70, 50, 30, 15):
         a = a0 + IN_SHOULDER_R * cos(radians(ang))
         P.append((a, a, IN_CORNER_R + (IN_HALF - a), IN_SHOULDER + IN_SHOULDER_R * sin(radians(ang)), 'in'))
-    for z in [IN_SHOULDER, 3.4, 3.0, 2.6, 2.2, 1.8, 1.4, 1.0, IN_FLOOR + IN_FLOOR_FILLET]:
+    for z in [IN_SHOULDER, 4.6, 4.2, 3.8, 3.4, 3.0, 2.6, 2.2, 1.8, 1.4, 1.0, IN_FLOOR + IN_FLOOR_FILLET]:
         if z <= IN_SHOULDER + 1e-9:
             P.append((IN_HALF, IN_HALF, IN_CORNER_R, z, 'inwall'))
     fx, fz = IN_HALF - IN_FLOOR_FILLET, IN_FLOOR + IN_FLOOR_FILLET
@@ -218,7 +279,7 @@ def _ring(ax, ay, rc, z, tag):
         if tag in ('base', 'wall', 'shoulder', 'neck'):
             if tag == 'wall':   # waviness: only a few microns of slope, visible in reflections
                 w = (WAVE_MM[0] * sin(0.27 * zmm + 2 * th + 0.7) + WAVE_MM[1] * sin(0.45 * zmm - 3 * th + 2.1)) \
-                    * _smooth(3, 7, zmm) * (1 - _smooth(41, 44, zmm))
+                    * _smooth(3, 7, zmm) * (1 - _smooth(WAVE_TOP_MM[0], WAVE_TOP_MM[1], zmm))
                 n = sqrt(x * x + y * y) or 1
                 x += bu(w) * x / n; y += bu(w) * y / n
             if tag != 'base' or zmm > 0.8:   # mould seam on both side faces
@@ -227,7 +288,7 @@ def _ring(ax, ay, rc, z, tag):
                     b = bu(SEAM_H_MM) * exp(-(y / bu(SEAM_W_MM)) ** 2)
                     x += b if c > 0 else -b
             if tag == 'neck':
-                k = _smooth(48.5, 51.5, zmm)
+                k = _smooth(LIP_OFFSET_Z_MM[0], LIP_OFFSET_Z_MM[1], zmm)
                 x += bu(LIP_OFFSET_MM[0]) * k; y += bu(LIP_OFFSET_MM[1]) * k
             else:
                 x += bu(LEAN_MM[0]) * lean; y += bu(LEAN_MM[1]) * lean
@@ -392,6 +453,104 @@ def cork_material():
     L(p.outputs['BSDF'], out.inputs['Surface'])
     return m
 
+def cork_material_1910():
+    """Pressed cork after ref-glas-1910.webp (T-20261021-11, G3): coarse flat roundish granules (3D Voronoi cells),
+    mostly light honey with some darker ones and a faint mottling, slightly darker towards their rim, narrow dark
+    joints at the cell borders, dark open gaps at junctions (F1 minus smooth F1 is largest where three or more
+    granules meet), matte. The cut top face opens a few more gaps. Top edge shading as in cork_material()."""
+    m = D.materials.new('Cork | pressed after ref1910')
+    m.use_nodes = True
+    nt = m.node_tree; nt.nodes.clear(); L = nt.links.new
+    N = nt.nodes.new
+    def math(op, a, b=None, clamp=False):
+        n = N('ShaderNodeMath'); n.operation = op; n.use_clamp = clamp
+        for i, v in enumerate((a, b)):
+            if v is None:
+                continue
+            if isinstance(v, (int, float)):
+                n.inputs[i].default_value = v
+            else:
+                L(v, n.inputs[i])
+        return n.outputs[0]
+    def noise(size_mm, vec, detail=2):
+        n = N('ShaderNodeTexNoise'); n.inputs['Scale'].default_value = MM_PER_BU / size_mm
+        n.inputs['Detail'].default_value = detail; L(vec, n.inputs['Vector'])
+        return n.outputs['Fac']
+    g = CORK1910_GRAIN_MM
+    out = N('ShaderNodeOutputMaterial')
+    p = N('ShaderNodeBsdfPrincipled')
+    p.inputs['Roughness'].default_value = 0.85
+    p.inputs['Specular IOR Level'].default_value = 0.25
+    tc = N('ShaderNodeTexCoord')
+    # gentle warp: rounded, irregular granules instead of a cell pattern
+    warp = N('ShaderNodeTexNoise'); warp.inputs['Scale'].default_value = MM_PER_BU / (1.6 * g); warp.inputs['Detail'].default_value = 1
+    L(tc.outputs['Object'], warp.inputs['Vector'])
+    wsub = N('ShaderNodeVectorMath'); wsub.operation = 'SUBTRACT'; wsub.inputs[1].default_value = (0.5, 0.5, 0.5)
+    L(warp.outputs['Color'], wsub.inputs[0])
+    wsc = N('ShaderNodeVectorMath'); wsc.operation = 'SCALE'; wsc.inputs['Scale'].default_value = bu(g) * 0.3
+    L(wsub.outputs['Vector'], wsc.inputs[0])
+    co = N('ShaderNodeVectorMath'); co.operation = 'ADD'
+    L(tc.outputs['Object'], co.inputs[0]); L(wsc.outputs['Vector'], co.inputs[1])
+    def voronoi(feature='F1', smooth=None):
+        v = N('ShaderNodeTexVoronoi'); v.feature = feature; v.inputs['Scale'].default_value = MM_PER_BU / g
+        v.inputs['Randomness'].default_value = 1.0
+        if smooth is not None:
+            v.inputs['Smoothness'].default_value = 2 * smooth   # Blender halves the Smoothness input (max 0.5)
+        L(co.outputs['Vector'], v.inputs['Vector'])
+        return v
+    cell = voronoi(); edge = voronoi('DISTANCE_TO_EDGE'); sm = voronoi('SMOOTH_F1', CORK1910_PORE_K)
+    sc = N('ShaderNodeSeparateColor'); L(cell.outputs['Color'], sc.inputs['Color'])
+    # granule tone: one random value per granule, mostly light; faint mottling inside
+    shade = math('ADD', sc.outputs['Red'], math('MULTIPLY', math('SUBTRACT', noise(1.0, co.outputs['Vector']), 0.5), 0.10))
+    tone = N('ShaderNodeValToRGB')
+    tone.color_ramp.elements[0].color = (*CORK1910_DARK, 1); tone.color_ramp.elements[1].color = (*CORK1910_LIGHT, 1)
+    tone.color_ramp.elements[0].position = 0.0; tone.color_ramp.elements[1].position = 0.6
+    L(shade, tone.inputs['Fac'])
+    rim = math('MINIMUM', math('DIVIDE', edge.outputs['Distance'], 0.35), 1.0)       # 0 at the joint .. 1 inside
+    plate = N('ShaderNodeVectorMath'); plate.operation = 'SCALE'
+    L(tone.outputs['Color'], plate.inputs[0]); L(math('ADD', math('MULTIPLY', rim, CORK1910_RIM_DARK), 1.0 - CORK1910_RIM_DARK), plate.inputs['Scale'])   # 2b2b: was rim * 0.6 + 0.4
+    # joints along the borders, gaps at the junctions (irregular: thresholds wobble with a coarse noise)
+    brk = noise(1.2, tc.outputs['Object'])
+    joint = math('LESS_THAN', edge.outputs['Distance'], math('MULTIPLY', math('ADD', brk, 0.5), CORK1910_JOINT_W))
+    geo = N('ShaderNodeNewGeometry')
+    sep = N('ShaderNodeSeparateXYZ')
+    vt = N('ShaderNodeVectorTransform'); vt.vector_type = 'NORMAL'; vt.convert_from = 'WORLD'; vt.convert_to = 'OBJECT'
+    L(geo.outputs['Normal'], vt.inputs['Vector']); L(vt.outputs['Vector'], sep.inputs['Vector'])
+    top = math('MULTIPLY', math('SUBTRACT', sep.outputs['Z'], 0.6, clamp=True), 2.5)   # 0 side .. 1 top
+    thr = math('MULTIPLY', math('SUBTRACT', math('ADD', CORK1910_PORE_T, math('MULTIPLY', math('SUBTRACT', brk, 0.5), 0.12)),
+                                math('MULTIPLY', top, 0.04)), CORK1910_PORE_K)
+    gap = math('GREATER_THAN', math('SUBTRACT', cell.outputs['Distance'], sm.outputs['Distance']), thr)
+    mj = N('ShaderNodeMix'); mj.data_type = 'RGBA'; mj.inputs['B'].default_value = (*CORK1910_JOINT, 1)
+    L(joint, mj.inputs['Factor']); L(plate.outputs['Vector'], mj.inputs['A'])
+    mp = N('ShaderNodeMix'); mp.data_type = 'RGBA'; mp.inputs['B'].default_value = (*CORK1910_PORE, 1)
+    L(gap, mp.inputs['Factor']); L(mj.outputs['Result'], mp.inputs['A'])
+    # shadow side (2b2b, G3): the reference cork is lit from the left and stays dark brown right of the band, the scene
+    # light reaches that side from the front right. Base colour x CORK1910_SHADE where the camera-space normal points
+    # right (smoothstep over CORK1910_SHADE_X). Was: mp straight into Base Color.
+    vc = N('ShaderNodeVectorTransform'); vc.vector_type = 'NORMAL'; vc.convert_from = 'WORLD'; vc.convert_to = 'CAMERA'
+    L(geo.outputs['Normal'], vc.inputs['Vector'])
+    scx = N('ShaderNodeSeparateXYZ'); L(vc.outputs['Vector'], scx.inputs['Vector'])
+    x0, x1 = CORK1910_SHADE_X
+    t = math('MULTIPLY', math('SUBTRACT', scx.outputs['X'], x0), 1.0 / (x1 - x0), clamp=True)
+    s = math('MULTIPLY', math('MULTIPLY', t, t), math('SUBTRACT', 3.0, math('MULTIPLY', t, 2.0)))
+    shf = N('ShaderNodeVectorMath'); shf.operation = 'MULTIPLY_ADD'; L(s, shf.inputs[0])
+    shf.inputs[1].default_value = tuple(c - 1.0 for c in CORK1910_SHADE); shf.inputs[2].default_value = (1.0, 1.0, 1.0)
+    shc = N('ShaderNodeVectorMath'); shc.operation = 'MULTIPLY'
+    L(mp.outputs['Result'], shc.inputs[0]); L(shf.outputs['Vector'], shc.inputs[1])
+    L(shc.outputs['Vector'], p.inputs['Base Color'])
+    L(math('MULTIPLY', math('SUBTRACT', 1.0, s), 0.25), p.inputs['Specular IOR Level'])   # no gloss on the shadow side (t2214j: grey sheen)
+    # relief: flat granules with rounded rims, the gaps sink in (no step at the joints: keeps fine shading out)
+    hgt = math('SUBTRACT', math('MULTIPLY', math('POWER', rim, 0.5), 0.8), math('MULTIPLY', gap, 0.6))
+    bump = N('ShaderNodeBump')
+    bump.inputs['Strength'].default_value = 0.4; bump.inputs['Distance'].default_value = bu(0.15)
+    L(hgt, bump.inputs['Height'])
+    bev = N('ShaderNodeBevel'); bev.samples = 8
+    L(math('MULTIPLY', math('ADD', brk, 0.5), bu(CORK_EDGE_MM)), bev.inputs['Radius'])
+    L(bev.outputs['Normal'], bump.inputs['Normal'])
+    L(bump.outputs['Normal'], p.inputs['Normal'])
+    L(p.outputs['BSDF'], out.inputs['Surface'])
+    return m
+
 # =========================================================================== build
 def _hide(ob):
     ob.hide_render = True; ob.hide_viewport = True
@@ -447,12 +606,13 @@ def _cork_rings():
     for r, z in CORK:
         r = NECK_IN_MM + NECK_DR_MM - CORK_GAP_MM if r is None else r + NECK_DR_MM
         zz = z + TOP_DZ_MM + CORK_TOP_DZ_MM * _smooth(zl, CORK[-1][1], z)
+        dx = bu(CORK_DX_MM) * _smooth(CORK_DX_Z_MM[0], CORK_DX_Z_MM[1], z)   # lean of the visible cork (ref1910)
         r, zz = bu(r), bu(zz)
         ring = []
         for th in THETAS:
             x, y = rs_point(r * 1.004, r * 0.996, r, th) if zz > LIP_TOP + 0.05 else rs_point(r, r, r, th)
             zt = zz + (0.012 * x / bu(14.0)) * _smooth(CORK_TOP - 0.2, CORK_TOP - 0.05, zz)   # top cut a little out of square
-            ring.append((x, y, zt + BASE_Z))
+            ring.append((x + dx, y, zt + BASE_Z))
         rings.append(ring)
     return rings
 
@@ -465,7 +625,7 @@ def build_jar():
     rings = [_ring(*p) for p in _outer_profile()]
     glass = _loft(GLASS_NAME, rings, bu(PUSHUP_MM), IN_FLOOR, glass_material(), empty)
     cork = _loft(CORK_NAME, _cork_rings(), bu(CORK[0][1] + TOP_DZ_MM), CORK_TOP + 0.0002,
-                 cork_material(), empty)
+                 cork_material_1910() if JAR_SHAPE == 'ref1910' else cork_material(), empty)
     bpy.context.view_layer.update()
     _seat_labels(empty)
     _fit_seal(empty, [glass, cork])
@@ -538,7 +698,7 @@ def check_jar(glass, cork):
     rep['ground'] = 'lowest glass point world z %.5f, floor z %.5f, gap %.5f BU' % (zmin, fz, zmin - fz)
     tg = _bvh_world(glass, deps); tc = _bvh_world(cork, deps)
     rep['glass_x_cork'] = len(tg.overlap(tc))
-    zl, zh = bu(49.5 + TOP_DZ_MM) + BASE_Z, bu(53.0 + TOP_DZ_MM) + BASE_Z   # straight bore
+    zl, zh = bu(BORE_CHECK_MM[0]) + BASE_Z, bu(BORE_CHECK_MM[1]) + BASE_Z   # straight bore
     gap = min(tg.find_nearest(cork.matrix_world @ v.co)[3] for v in cork.data.vertices if zl < v.co.z < zh)
     rep['cork_contact_gap'] = '%.4f BU (%.3f mm)' % (gap, gap * MM_PER_BU)
     hits = {}
