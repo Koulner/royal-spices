@@ -14,6 +14,9 @@ const MESSAGES: Record<string, string> = {
   badInput: 'Bitte prüfe die Eingabe.',
 };
 const FALLBACK_ERROR = 'Die Anfrage konnte gerade nicht gesendet werden. Bitte schreib uns direkt oder ruf an.';
+// The static preview (tools/pages/prepare.mjs marks it) has no inquiry endpoint: show the result without sending.
+const PREVIEW = document.documentElement.hasAttribute('data-preview');
+const PREVIEW_NOTE = 'Vorschau: Diese Anfrage wurde nicht gesendet.';
 
 type Field = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -96,12 +99,25 @@ function enhance(form: HTMLFormElement) {
     status.hidden = !message;
   }
 
+  function showDone() {
+    form.hidden = true;
+    done.hidden = false;
+    done.focus();
+  }
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     showStatus('');
     const invalid = fields().filter((field) => !field.disabled && !check(field));
     if (invalid.length) {
       invalid[0].focus();
+      return;
+    }
+    if (PREVIEW) {
+      const note = document.createElement('p');
+      note.textContent = PREVIEW_NOTE;
+      done.append(note);
+      showDone();
       return;
     }
 
@@ -118,9 +134,7 @@ function enhance(form: HTMLFormElement) {
       const result = (await response.json().catch(() => null)) as { ok: boolean; message?: string; fields?: Record<string, string> } | null;
 
       if (response.ok && result?.ok) {
-        form.hidden = true;
-        done.hidden = false;
-        done.focus();
+        showDone();
         return;
       }
       if (result?.fields) {

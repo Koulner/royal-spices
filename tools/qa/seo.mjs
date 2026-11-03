@@ -285,7 +285,8 @@ async function browserChecks(base, origin, paths, { port, storeDomain }, add) {
       urls.length = 0;
       await page.goto(new URL(path, base).href, { settle: 1500 });
       const state = await page.eval('({ cookie: document.cookie, localStorage: Object.keys(localStorage), sessionStorage: Object.keys(sessionStorage) })');
-      const { cookies } = await page.send('Network.getAllCookies');
+      // Only cookies for the page itself: getAllCookies also lists the browser's own (Edge sets Bing/MSN cookies).
+      const { cookies } = await page.send('Network.getCookies', { urls: [new URL(path, base).href] });
       state.cookies = cookies.map((c) => c.name);
       add(C.checkStorage(state), { path });
       add(C.checkRequests([...urls], { self: [base.host, new URL(origin).host], storeDomain }), { path });

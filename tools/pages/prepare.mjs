@@ -12,9 +12,10 @@
 //   - absolute URLs on the build's site (canonical, og:image, JSON-LD, sitemap) likewise
 //   - CSP hashes of inline <script>/<style> blocks are recomputed where their content changed
 //   - .nojekyll, so GitHub serves the _astro folder as it is
+//   - data-preview on <html>: the inquiry form shows its confirmation without sending (forms.ts)
 //
 // Not available on GitHub Pages: the inquiry endpoint (/api/anfrage/ needs the Node server),
-// the security headers and cache rules from server.mjs. The form then shows its error text.
+// the security headers and cache rules from server.mjs.
 import { createHash } from 'node:crypto';
 import { cp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
@@ -73,7 +74,7 @@ function rewriteHtml(html) {
     .replace(/(\scontent=")(https?:\/\/[^"]*)"/g, (_, start, url) => `${start}${onSite(url)}"`);
 
   for (const [before, after] of hashes) html = html.split(`'${before}'`).join(`'${after}'`);
-  return html;
+  return html.replace(/<html(?=[\s>])/, '<html data-preview');
 }
 
 async function* files(dir) {

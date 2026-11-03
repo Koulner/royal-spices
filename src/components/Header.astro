@@ -7,10 +7,15 @@ const path = Astro.url.pathname;
 const isCurrent = (href: string) => path === href || (href !== '/' && path.startsWith(href));
 ---
 
-<header class="site-header" data-header>
-  <div class="announcement">
-    <p class="announcement__text wrap">{announcement}</p>
-  </div>
+{/* Announcement (free shipping) and login (Shopify account) only make sense with the shop. */}
+<header class:list={['site-header', { 'site-header--bare': !commerceEnabled }]} data-header>
+  {
+    commerceEnabled && (
+      <div class="announcement">
+        <p class="announcement__text wrap">{announcement}</p>
+      </div>
+    )
+  }
 
   <div class="site-header__bar wrap">
     {/* Logo von royalspices.de, Hintergrund freigestellt (pipeline/images/build-stills.mjs) */}
@@ -54,11 +59,15 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
           ))
         }
       </ul>
-      <ul class="site-nav__account">
-        <li>
-          <a href={shopifyAccountUrl}>Einloggen</a>
-        </li>
-      </ul>
+      {
+        commerceEnabled && (
+          <ul class="site-nav__account">
+            <li>
+              <a href={shopifyAccountUrl}>Einloggen</a>
+            </li>
+          </ul>
+        )
+      }
     </nav>
   </div>
 </header>
@@ -233,6 +242,11 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
     .announcement__text {
       letter-spacing: 0.1em;
     }
+  }
+
+  /* Without the announcement the bar sits at the top (after the rule above, which it overrides). */
+  .site-header--bare {
+    --announce-h: 0rem;
   }
 
   /* ------------------------------------------------------------ compact navigation */
