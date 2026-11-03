@@ -1,19 +1,26 @@
 ---
 // Result page for form posts without JavaScript (the scripted form shows the result in place).
+// Redesign T-20261103-04: Gold wie das Ende des Aufgusses, von hier geht es in den warmen Fuß.
 import Base from '@/layouts/Base.astro';
 import Arrow from '@/components/Arrow.astro';
+import RedThread from '@/components/RedThread.astro';
 import { site } from '@/config/site';
 ---
 
-<Base title="Anfrage gesendet" description="Deine Anfrage ist bei Royal Spices eingegangen." noindex>
-  <section class="page-head result">
-    <div class="wrap opener">
-      <p class="eyebrow">Gesendet</p>
-      <h1 class="display-xl">Danke.<br />Deine Anfrage ist bei uns.</h1>
-      <p class="lead">Wir melden uns bei dir unter der angegebenen E-Mail-Adresse. Wenn es eilt, erreichst du uns unter <a href={site.phone.href}>{site.phone.display}</a>.</p>
-      <div class="actions">
-        <a class="btn" href="/">Zur Startseite <Arrow /></a>
-        <a class="link" href="/produkte/">Produkte ansehen <Arrow /></a>
+<Base title="Anfrage gesendet" description="Deine Anfrage ist bei Royal Spices eingegangen." noindex headerWorld="gold">
+  <section class="result world-gold zone" data-world="gold">
+    <RedThread class="thread--tief" d="M2.2 0C1.6 22 2.8 44 2.2 62S1.6 88 2.2 100" m="M2.6 0C2 22 3.2 44 2.6 62S2 88 2.6 100" />
+    <div class="wrap">
+      <div class="kopf kopf--seite">
+        <p class="eyebrow">Gesendet</p>
+      </div>
+      <div class="result__body">
+        <h1 class="chapter chapter--m">Danke.<br /><em>Deine Anfrage ist bei uns.</em></h1>
+        <p class="lead">Wir melden uns bei dir unter der angegebenen E-Mail-Adresse. Wenn es eilt, erreichst du uns unter <a href={site.phone.href}>{site.phone.display}</a>.</p>
+        <div class="actions">
+          <a class="btn" href="/">Zur Startseite <Arrow /></a>
+          <a class="link" href="/produkte/">Produkte ansehen <Arrow /></a>
+        </div>
       </div>
     </div>
   </section>
@@ -21,10 +28,17 @@ import { site } from '@/config/site';
 
 <style>
   .result {
-    min-height: 70svh;
+    min-height: 80svh;
+    padding-bottom: clamp(4rem, 8vw, 7rem);
+  }
+
+  .result__body {
+    display: grid;
+    gap: var(--s-5);
+    margin-top: clamp(2.5rem, 8vh, 6rem);
   }
 
   .actions {
-    margin-top: var(--s-5);
+    margin-top: var(--s-3);
   }
 </style>

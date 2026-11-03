@@ -1,0 +1,41 @@
+---
+// Der rote Faden: eine dekorative Linie je Zone (Redesign T-20261103-02). Die Zone streckt die SVG
+// (preserveAspectRatio none), non-scaling-stroke hält die Strichstärke. In Textbereichen läuft der
+// Faden im Rand, große Bögen nur in textfreien Zonen. `d` gilt für Desktop, `m` für das Telefon.
+// src/scripts/worlds.ts deckt ihn über --r auf und setzt die Farbwelt der Kopfzeile; ohne Bewegung steht er ganz da.
+interface Props {
+  d: string;
+  m?: string;
+  /** leuchtender Hof auf dunklen Flächen */
+  glow?: boolean;
+  /** Übergang Papier zu Nacht: Verlauf statt einfacher Farbe */
+  band?: boolean;
+  class?: string;
+}
+
+const { d, m = d, glow = false, band = false, class: className } = Astro.props;
+const id = band ? 'thread-band' : undefined;
+const stroke = id ? `url(#${id})` : undefined;
+---
+
+<svg class:list={['thread', className]} data-zone viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+  {
+    id && (
+      <defs>
+        <linearGradient id={id} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="100">
+          <stop offset="0" stop-color="#a3241a" />
+          <stop offset=".55" stop-color="#b52a18" />
+          <stop offset="1" stop-color="#e0431f" />
+        </linearGradient>
+      </defs>
+    )
+  }
+  {glow && <path class="glow d" d={d} />}
+  <path class="d" stroke={stroke} d={d} />
+  {glow && <path class="glow m" d={m} />}
+  <path class="m" stroke={stroke} d={m} />
+</svg>
+
+<script>
+  import '@/scripts/worlds';
+</script>

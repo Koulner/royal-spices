@@ -1,18 +1,31 @@
 ---
+// Redesign T-20261103-04: Nacht, und der Faden reißt wirklich. Die Lücke liegt rechts in der textfreien Zone.
 import Base from '@/layouts/Base.astro';
 import Arrow from '@/components/Arrow.astro';
+import RedThread from '@/components/RedThread.astro';
 ---
 
-<Base title="Seite nicht gefunden" description="Diese Seite gibt es bei Royal Spices nicht." noindex>
-  <section class="page-head lost">
-    <div class="wrap opener">
-      <p class="eyebrow">Fehler 404</p>
-      <h1 class="display-xl">Hier ist der Faden gerissen.</h1>
-      <p class="lead">Diese Seite gibt es nicht oder nicht mehr. Von hier aus geht es weiter:</p>
-      <div class="actions">
-        <a class="btn" href="/">Zur Startseite <Arrow /></a>
-        <a class="link" href="/produkte/">Produkte <Arrow /></a>
-        <a class="link" href="/kontakt/">Kontakt <Arrow /></a>
+<Base title="Seite nicht gefunden" description="Diese Seite gibt es bei Royal Spices nicht." noindex headerWorld="nacht">
+  <section class="lost world-nacht zone" data-world="nacht">
+    <RedThread
+      class="thread--glut"
+      glow
+      d="M97.5 0C97.9 10 96.4 22 92 31S85 42 84 47M84 47C83 48.4 82.2 49 81 49.6M84 47C84.4 48.8 84.4 49.8 84.1 51.2M87 60C86.6 58.4 86.8 57.2 87.2 56M87 60C88 58.8 88.8 58 90 57.6M87 60C90 68 96.6 74 97.2 84S97.5 94 97.5 100"
+      m="M96.8 0C97.2 10 96.4 22 96.8 34M96.8 34C96.2 35.6 95.6 36.4 94.8 37M96.8 34C97.2 35.8 97.2 37 97 38.4M96.8 48C96.6 46.6 96.7 45.6 97 44.4M96.8 48C96.2 46.8 95.6 46 94.8 45.6M96.8 48C96.4 66 97.2 82 96.8 100"
+    />
+    <div class="wrap">
+      <div class="kopf kopf--seite">
+        <p class="eyebrow">Fehler 404</p>
+        <p class="kapitel">Faden</p>
+      </div>
+      <div class="lost__body">
+        <h1 class="chapter chapter--s chapter--akzent">Hier ist der <em>Faden gerissen.</em></h1>
+        <p class="lead">Diese Seite gibt es nicht oder nicht mehr. Von hier aus geht es weiter:</p>
+        <div class="actions">
+          <a class="btn" href="/">Zur Startseite <Arrow /></a>
+          <a class="link" href="/produkte/">Produkte <Arrow /></a>
+          <a class="link" href="/kontakt/">Kontakt <Arrow /></a>
+        </div>
       </div>
     </div>
   </section>
@@ -20,10 +33,32 @@ import Arrow from '@/components/Arrow.astro';
 
 <style>
   .lost {
-    min-height: 70svh;
+    min-height: 100svh;
+    padding-bottom: clamp(4rem, 8vw, 7rem);
+  }
+
+  .lost__body {
+    display: grid;
+    gap: var(--s-5);
+    margin-top: clamp(3rem, 12vh, 8rem);
+    max-width: 76%;
+  }
+
+  .lost h1 em {
+    display: block;
+  }
+
+  .lost .lead {
+    max-width: 30rem;
   }
 
   .actions {
-    margin-top: var(--s-5);
+    margin-top: var(--s-3);
+  }
+
+  @media (max-width: 47.99rem) {
+    .lost__body {
+      max-width: none;
+    }
   }
 </style>

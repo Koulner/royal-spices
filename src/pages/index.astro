@@ -1,15 +1,19 @@
 ---
-// Home page (T-20261016-04, Shopify B). Live sections S1–S10 of royalspices.de word for word
-// (docs/LIVE-INVENTAR.md; quality as on the label: Grade 1, D3/D4), in Live order:
-//   S1 hero        -> HomeJourney (V1 render sequence with the Live hero text, D5)
-//   S2 ticker, S3 "Warum Royal Spices?", S4 brand story
-//   S5 collection  -> HomeCollection (prices only from the catalog, gift box without price, D7)
-//   S6 picture break + S7 "Unsere Wurzeln" (one block on Live: picture beside copy)
-//   S8 ritual, S9 business, then two V1 blocks (V1/Live rule, see ERGEBNIS.md), S10 last line.
+// Home page (T-20261016-04, Shopify B; Redesign „Der rote Faden“ T-20261103-02). Live sections S1–S10 of
+// royalspices.de word for word (docs/LIVE-INVENTAR.md; quality as on the label: Grade 1, D3/D4), in the
+// order of the chapters (docs/UEBERGABE-REDESIGN.md):
+//   Blüte   S1 hero    -> HomeJourney (V1 render sequence with the Live hero text, D5)
+//   Faden   S2 ticker, S4 brand story, S3 "Warum Royal Spices?", S6 + S7 "Unsere Wurzeln"
+//   Glas    S5         -> HomeCollection (prices only from the catalog, gift box without price, D7)
+//   Aufguss S8         -> Infusion
+//   Teller  V1 catering kitchen
+//   Tisch   S9 business, V1 trade formats, S10 last line, then the footer
 // Live arrows "↗" are the V1 <Arrow />.
 import Base from '@/layouts/Base.astro';
 import HomeJourney from '@/components/home/HomeJourney.astro';
 import HomeCollection from '@/components/home/HomeCollection.astro';
+import Infusion from '@/components/home/Infusion.astro';
+import RedThread from '@/components/RedThread.astro';
 import Picture from '@/components/Picture.astro';
 import InlineVideo from '@/components/InlineVideo.astro';
 import Arrow from '@/components/Arrow.astro';
@@ -47,13 +51,6 @@ const benefits = [
   { sign: '⌁', title: 'Aus Herat', text: 'Verbunden mit der Tradition Afghanistans.' },
   { sign: '◇', title: 'Qualität', text: 'Chargenbezogene Analysen auf Anfrage.' },
 ];
-
-// S8
-const ritual = [
-  { no: '01', title: 'Fäden dosieren', text: 'Einige Fäden genügen, um deinen Kreationen Farbe und Charakter zu verleihen.' },
-  { no: '02', title: 'Sanft ziehen lassen', text: 'Die Fäden in etwas warmem Wasser ziehen lassen – so lösen sich Farbe und Aroma.' },
-  { no: '03', title: 'Gerichte veredeln', text: 'Den Aufguss zu Reis, Saucen oder Desserts geben und bewusst genießen.' },
-];
 ---
 
 <Base
@@ -66,257 +63,306 @@ const ritual = [
 
   {/* id="herkunft": scripts/journey.ts (unchanged) scrolls here after the last chapter. */}
   <div class="home" id="herkunft">
-    {/* S2 */}
-    <div class="ticker band-slate">
-      <ul class="ticker__list wrap">
-        {
-          trust.map((t) => (
-            <li>
-              <span aria-hidden="true">✧</span> {t}
-            </li>
-          ))
-        }
-      </ul>
-    </div>
+    {/* Kapitel Faden */}
+    <div class="faden" data-world="papier">
+      <RedThread d="M2.2 0C1.5 14 3 28 2.2 44S1.4 80 2.2 100" m="M2.6 0C2 14 3.2 28 2.6 44S2 80 2.6 100" />
 
-    {/* S3 */}
-    <section class="section why" id="warum" aria-labelledby="warum-title">
-      <div class="wrap">
-        <div class="why__head opener">
-          <p class="eyebrow">DAS MACHT UNS AUS</p>
-          <h2 class="display-l" id="warum-title">Warum Royal Spices?</h2>
-        </div>
-        <ul class="why__grid">
+      {/* S2 */}
+      <div class="ticker">
+        <ul class="ticker__list wrap">
           {
-            benefits.map((b) => (
+            trust.map((t) => (
               <li>
-                <span class="why__sign" aria-hidden="true">{b.sign}</span>
-                <h3 class="display-s">{b.title}</h3>
-                <p>{b.text}</p>
+                <span aria-hidden="true">✧</span> {t}
               </li>
             ))
           }
         </ul>
       </div>
-    </section>
 
-    {/* S4 */}
-    <section class="section band-deep story" id="geschichte" aria-labelledby="geschichte-title">
-      <div class="wrap grid">
-        <div class="story__copy opener">
-          <p class="eyebrow">WARUM ROYAL SPICES</p>
-          <h2 class="display-l" id="geschichte-title">Reine Zutaten.<br />Echter Geschmack.</h2>
-          <p class="lead">
-            Von Herat direkt in deine kulinarische Welt: handverlesene Safranfäden, charaktervoll und sorgfältig ausgewählt. Unsere Liebe zur Gastronomie und unsere Verbindung zur Herkunft prägen Royal Spices.
-          </p>
-          <p><a class="link" href="/herkunft-qualitaet/">Entdecke unsere Geschichte <Arrow /></a></p>
-          {/* Markenzeichen: goldene Blüte von royalspices.de */}
-          <Picture class="story__mark" name="brand-mark" alt="" sizes="3.5rem" />
-        </div>
-        <figure class="story__photo figure">
-          <Picture
-            name="jars-photo"
-            alt="Reihen abgefüllter Royal-Spices-Gläser mit Korken, grauem Siegelstreifen und Etikett auf einem Tisch."
-            sizes="(min-width: 64rem) 40vw, 92vw"
-          />
-          <figcaption>Abbildung zeigt die 0,5-g-Ausführung.</figcaption>
-        </figure>
-      </div>
-    </section>
-
-    {/* S5 */}
-    <HomeCollection />
-
-    {/* S6 + S7 */}
-    <section class="section band-deep roots" id="wurzeln" aria-labelledby="wurzeln-title">
-      <div class="wrap grid">
-        <figure class="roots__figure figure">
-          {
-            liveThreadsLicensed ? (
+      {/* S4 */}
+      <section class="story" id="geschichte" aria-labelledby="geschichte-title">
+        <div class="wrap">
+          <div class="kopf">
+            <p class="eyebrow">WARUM ROYAL SPICES</p>
+            <p class="kapitel">Faden</p>
+          </div>
+          <h2 class="chapter" id="geschichte-title">Reine Zutaten.<br /><em>Echter Geschmack.</em></h2>
+          <div class="story__body">
+            <figure class="story__photo figure">
               <Picture
-                name="live-threads"
-                alt="Rot leuchtende Safranfäden in einem Holzlöffel auf dunklem Grund."
-                sizes="(min-width: 64rem) 50vw, 92vw"
+                name="jars-photo"
+                alt="Reihen abgefüllter Royal-Spices-Gläser mit Korken, grauem Siegelstreifen und Etikett auf einem Tisch."
+                sizes="(min-width: 64rem) 34vw, 92vw"
               />
-            ) : (
-              <Picture
-                name="saffron"
-                alt="Getrocknete Safranfäden auf hellem Papier: dunkelrot, unregelmäßig gedreht, mit verbreiterten Enden."
-                sizes="(min-width: 64rem) 50vw, 92vw"
-              />
-            )
-          }
-          <figcaption class="roots__caption">HERAT · 34°20' N</figcaption>
-        </figure>
-        <div class="roots__copy opener">
-          <p class="eyebrow">DIE GESCHICHTE HINTER JEDEM FADEN</p>
-          <h2 class="display-l" id="wurzeln-title">Unsere Wurzeln.<br />Dein Genuss.</h2>
-          <p class="lead">
-            In der Region Herat hat Safran Tradition. Hier beginnt unsere Geschichte – mit Sorgfalt, Handarbeit und dem Respekt vor einer außergewöhnlichen Zutat.
-          </p>
-          <p>Wir bringen den Charakter dieser Herkunft in deine Küche. Für Risotto, Reisgerichte, Desserts und die ganz besonderen Augenblicke.</p>
-          <p><a class="link" href="/herkunft-qualitaet/">Mehr über Herkunft &amp; Qualität <Arrow /></a></p>
+              <figcaption>Abbildung zeigt die 0,5-g-Ausführung.</figcaption>
+            </figure>
+            <div class="story__copy">
+              {/* Markenzeichen: goldene Blüte von royalspices.de */}
+              <Picture class="story__mark" name="brand-mark" alt="" sizes="3.5rem" />
+              <p class="lead">
+                Von Herat direkt in deine kulinarische Welt: handverlesene Safranfäden, charaktervoll und sorgfältig ausgewählt. Unsere Liebe zur Gastronomie und unsere Verbindung zur Herkunft prägen Royal Spices.
+              </p>
+              <p><a class="link" href="/herkunft-qualitaet/">Entdecke unsere Geschichte <Arrow /></a></p>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    {/* S8 */}
-    <section class="section ritual" id="ritual" aria-labelledby="ritual-title">
-      <div class="wrap">
-        <div class="opener">
-          <p class="eyebrow">DAS SAFRAN-RITUAL</p>
-          <h2 class="display-l" id="ritual-title">Entfalte das Aroma.</h2>
-        </div>
-        <ol class="ritual__steps">
-          {
-            ritual.map((r) => (
-              <li>
-                <span class="ritual__no" aria-hidden="true">{r.no}</span>
-                <h3 class="display-s">{r.title}</h3>
-                <p>{r.text}</p>
-              </li>
-            ))
-          }
-        </ol>
-      </div>
-    </section>
-
-    {/* S9 */}
-    <section class="section band-slate business" id="business" aria-labelledby="business-title">
-      <div class="wrap business__grid">
-        <div class="business__head opener">
-          <p class="eyebrow">ROYAL SPICES BUSINESS</p>
-          <h2 class="display-l" id="business-title">Für Küchen, die<br />mehr erwarten.</h2>
-          <p class="lead">Safran für Gastronomie und Handel. Exklusive kulinarische Erlebnisse und Catering für Unternehmen und Veranstaltungen.</p>
-        </div>
-        <InlineVideo class="business__video" name="bar" label="Ein Barkeeper mixt einen Cocktail mit Royal-Spices-Safran; am Ende das 0,5-g-Glas." />
-        <div class="actions">
-          <a class="btn" href="/b2b/">B2B kennenlernen <Arrow /></a>
-          <a class="link" href="/catering/">Catering entdecken</a>
-        </div>
-      </div>
-    </section>
-
-    {/* V1: trade formats (facts PRODUCT-TRUTH Nr. 43/44, missing on Live) */}
-    <section class="section trade" id="handel" aria-labelledby="handel-title">
-      <div class="wrap grid">
-        <div class="trade__head opener">
-          <p class="eyebrow">Handel &amp; Gastronomie</p>
-          <h2 class="display-l" id="handel-title">Vom Glas bis zur Kiste.</h2>
-          <p class="lead">Für Küchen und Bars, für Feinkost und Einzelhandel, für Großhandel und Import. Drei Gebinde, ein Ansprechpartner.</p>
-        </div>
-        <ul class="trade__formats">
-          {
-            formats.map((f) => (
-              <li>
-                <p class="eyebrow">{f.spec}</p>
-                <h3 class="display-m">{f.title}</h3>
-                <p class="small">{f.audience}</p>
-              </li>
-            ))
-          }
-        </ul>
-        <div class="trade__actions actions">
-          <a class="btn" href="/kontakt/?anliegen=handel#anfrage">Handelsanfrage senden <Arrow /></a>
-        </div>
-      </div>
-    </section>
-
-    {/* V1: catering kitchen with the saffron dishes of the catalogue (PRODUCT-TRUTH Nr. 46) */}
-    <section class="section band-deep kitchen" id="kueche" aria-labelledby="kueche-title">
-      <div class="wrap grid">
-        <div class="kitchen__head opener">
-          <p class="eyebrow">Catering · Hamburg</p>
-          <h2 class="display-l" id="kueche-title">Wir kochen auch damit.</h2>
-          <p class="lead">Royal Spices ist Safranhandel und Küche zugleich. {site.owner} plant und kocht als Inhaber für Empfänge, Firmenveranstaltungen und private Anlässe.</p>
-          <p><a class="link" href="/catering/">Catering ansehen <Arrow /></a></p>
-        </div>
-        <div class="kitchen__dishes">
-          <p class="eyebrow">Safran in unserem Katalog</p>
-          <ul>
+      {/* S3: Vorteile als Etikettzeilen */}
+      <section class="why" id="warum" aria-labelledby="warum-title">
+        <div class="wrap why__grid">
+          <div class="why__head">
+            <p class="eyebrow">DAS MACHT UNS AUS</p>
+            <h2 class="display-xl" id="warum-title">Warum <em>Royal Spices?</em></h2>
+          </div>
+          <ul class="etikett label">
             {
-              saffronDishes.map((d) => (
+              benefits.map((b) => (
                 <li>
-                  <span class="display-s">{d.name}</span>
-                  <span class="small">{d.detail}</span>
+                  <span class="etikett__sign" aria-hidden="true">{b.sign}</span>
+                  <h3 class="display-m">{b.title}</h3>
+                  <p>{b.text}</p>
                 </li>
               ))
             }
           </ul>
         </div>
+      </section>
+
+      {/* S6 + S7 */}
+      <section class="roots" id="wurzeln" aria-labelledby="wurzeln-title">
+        <div class="wrap">
+          <div class="kopf">
+            <p class="eyebrow">DIE GESCHICHTE HINTER JEDEM FADEN</p>
+          </div>
+          <h2 class="chapter" id="wurzeln-title">Unsere Wurzeln.<br /><em>Dein Genuss.</em></h2>
+          <div class="roots__body">
+            <figure class="roots__figure figure">
+              {
+                liveThreadsLicensed ? (
+                  <Picture
+                    name="live-threads"
+                    alt="Rot leuchtende Safranfäden in einem Holzlöffel auf dunklem Grund."
+                    sizes="(min-width: 64rem) 38vw, 92vw"
+                  />
+                ) : (
+                  <Picture
+                    name="saffron"
+                    alt="Getrocknete Safranfäden auf hellem Papier: dunkelrot, unregelmäßig gedreht, mit verbreiterten Enden."
+                    sizes="(min-width: 64rem) 38vw, 92vw"
+                  />
+                )
+              }
+            </figure>
+            <div class="roots__copy">
+              <p class="lead">
+                In der Region Herat hat Safran Tradition. Hier beginnt unsere Geschichte – mit Sorgfalt, Handarbeit und dem Respekt vor einer außergewöhnlichen Zutat.
+              </p>
+              <p>Wir bringen den Charakter dieser Herkunft in deine Küche. Für Risotto, Reisgerichte, Desserts und die ganz besonderen Augenblicke.</p>
+              <p><a class="link" href="/herkunft-qualitaet/">Mehr über Herkunft &amp; Qualität <Arrow /></a></p>
+            </div>
+          </div>
+          <p class="koordinate">HERAT · 34°20' N</p>
+        </div>
+      </section>
+    </div>
+
+    {/* Übergang Faden zu Glas: textfrei, das Licht geht, nur ein CSS-Verlauf */}
+    <div class="daemmerung" data-world="papier" aria-hidden="true">
+      <span class="daemmerung__nacht" data-world="nacht"></span>
+      <RedThread
+        band
+        d="M2.2 0C2 16 26 10 38 28S28 58 56 62S97.5 70 97.5 100"
+        m="M2.6 0C2 14 62 12 72 30S20 52 34 68S96.8 78 96.8 100"
+      />
+    </div>
+
+    {/* S5 */}
+    <HomeCollection />
+
+    {/* S8 */}
+    <Infusion />
+
+    {/* V1: catering kitchen with the saffron dishes of the catalogue (PRODUCT-TRUTH Nr. 46) */}
+    <section class="teller world-gold" id="kueche" aria-labelledby="kueche-title" data-world="gold">
+      <RedThread class="thread--tief" d="M2.2 0C1.6 22 2.8 44 2.2 62S1.6 88 2.2 100" m="M2.6 0C2 22 3.2 44 2.6 62S2 88 2.6 100" />
+      <div class="wrap">
+        <div class="kopf">
+          <p class="eyebrow">Catering · Hamburg</p>
+          <p class="kapitel">Teller</p>
+        </div>
+        <h2 class="chapter" id="kueche-title">Wir kochen <em>auch damit.</em></h2>
+        <div class="teller__body">
+          <figure class="teller__photo">
+            <Picture
+              name="catering-photo"
+              alt="Royal-Spices-Catering bei einem Business-Event: Menükarte als Aufsteller, dahinter eine Theke mit angerichteten Löffelgerichten."
+              sizes="(min-width: 64rem) 44vw, 100vw"
+            />
+          </figure>
+          <div class="teller__copy">
+            <p class="lead">Royal Spices ist Safranhandel und Küche zugleich. {site.owner} plant und kocht als Inhaber für Empfänge, Firmenveranstaltungen und private Anlässe.</p>
+            <p><a class="link" href="/catering/">Catering ansehen <Arrow /></a></p>
+            <div class="karte">
+              <p class="eyebrow">Safran in unserem Katalog</p>
+              <ul>
+                {
+                  saffronDishes.map((d) => (
+                    <li>
+                      <span class="karte__name">{d.name}</span>
+                      <span class="karte__detail">{d.detail}</span>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    {/* S10 */}
-    <div class="lastline">
-      <p class="wrap">ROYAL SPICES — FROM HERAT WITH CHARACTER — THE ART OF SAFFRON</p>
+    {/* Kapitel Tisch */}
+    <div class="tisch world-tisch" data-world="tisch">
+      <RedThread class="thread--glut" glow d="M97.5 0C97.9 30 97.1 60 97.5 100" m="M96.8 0C97.2 30 96.4 60 96.8 100" />
+
+      {/* S9 */}
+      <section class="business" id="business" aria-labelledby="business-title">
+        <div class="wrap business__grid">
+          <InlineVideo class="business__video" name="bar" label="Ein Barkeeper mixt einen Cocktail mit Royal-Spices-Safran; am Ende das 0,5-g-Glas." />
+          <div class="business__head">
+            <div class="kopf">
+              <p class="eyebrow">ROYAL SPICES BUSINESS</p>
+              <p class="kapitel">Tisch</p>
+            </div>
+            <h2 class="display-xl" id="business-title">Für Küchen, die<br /><em>mehr erwarten.</em></h2>
+            <div class="business__foot">
+              <p class="lead">Safran für Gastronomie und Handel. Exklusive kulinarische Erlebnisse und Catering für Unternehmen und Veranstaltungen.</p>
+              <div class="actions">
+                <a class="btn" href="/b2b/">B2B kennenlernen <Arrow /></a>
+                <a class="link" href="/catering/">Catering entdecken</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* V1: trade formats (facts PRODUCT-TRUTH Nr. 43/44, missing on Live), als Maßreihe */}
+      <section class="trade" id="handel" aria-labelledby="handel-title">
+        <div class="wrap">
+          <div class="trade__head">
+            <div>
+              <p class="eyebrow">Handel &amp; Gastronomie</p>
+              <h2 class="display-xl" id="handel-title">Vom Glas <em>bis zur Kiste.</em></h2>
+            </div>
+            <div class="trade__lead">
+              <p class="lead">Für Küchen und Bars, für Feinkost und Einzelhandel, für Großhandel und Import. Drei Gebinde, ein Ansprechpartner.</p>
+              <div class="actions">
+                <a class="btn" href="/kontakt/?anliegen=handel#anfrage">Handelsanfrage senden <Arrow /></a>
+              </div>
+            </div>
+          </div>
+          <ul class="mass">
+            {
+              formats.map((f) => (
+                <li>
+                  <h3>{f.title}</h3>
+                  <div>
+                    <p class="eyebrow">{f.spec}</p>
+                    <p class="small">{f.audience}</p>
+                  </div>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+
+      {/* S10 */}
+      <div class="lastline">
+        <p class="wrap">ROYAL SPICES — FROM HERAT WITH CHARACTER — THE ART OF SAFFRON</p>
+      </div>
     </div>
   </div>
 </Base>
 
 <style>
-  .home > [id] {
+  .home [id] {
     scroll-margin-top: var(--header-h);
   }
 
-  /* ---------------------------------------------------------------- S2 ticker */
+  /* ---------------------------------------------------------------- Kapitel Faden */
+  .faden {
+    position: relative;
+    background: var(--paper);
+  }
+
+  .faden .chapter em,
+  .faden .kapitel {
+    color: var(--saffron-deep);
+  }
+
+  .faden .kopf .eyebrow::before {
+    background: var(--saffron);
+  }
+
+  /* S2: eine Etikettzeile, die Marken zwischen den Einträgen sind der Faden */
   .ticker {
-    padding-block: var(--s-4);
+    border-bottom: 1px solid var(--rule);
   }
 
   .ticker__list {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: space-between;
     gap: var(--s-2) var(--s-6);
-    margin: 0 auto;
-    list-style: none;
+    padding-block: var(--s-4);
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-  }
-
-  .ticker__list span {
-    color: #c9bd9c;
-  }
-
-  /* ---------------------------------------------------------------- S3 why */
-  .why__head {
-    max-width: 40rem;
-  }
-
-  .why__grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--s-6) clamp(1rem, 2.4vw, 2.5rem);
-    margin: var(--s-7) 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .why__grid li {
-    display: grid;
-    gap: var(--s-3);
-    align-content: start;
-    padding-top: var(--s-5);
-    border-top: 1px solid var(--rule-strong);
-  }
-
-  .why__grid p {
     color: var(--ink-2);
   }
 
-  .why__sign {
-    font-size: 1.25rem;
-    line-height: 1;
+  .ticker__list span {
     color: var(--saffron);
   }
 
-  /* ---------------------------------------------------------------- S4 story */
+  /* S4: Überschrift über die ganze Breite, das Foto hängt rechts darunter */
+  .story {
+    padding-block: clamp(4rem, 8vw, 7rem) clamp(4rem, 7vw, 6.5rem);
+  }
+
+  .story .chapter {
+    margin-top: clamp(1.5rem, 2.6vw, 2.5rem);
+  }
+
+  .story .chapter em {
+    display: inline-block;
+    margin-left: 0.62em;
+  }
+
+  .story__body {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2.4vw, 2.5rem);
+    row-gap: var(--s-6);
+    margin-top: clamp(3rem, 6vw, 6rem);
+    align-items: end;
+  }
+
   .story__copy {
-    grid-column: 1 / span 6;
-    align-content: center;
+    grid-column: 2 / span 5;
+    grid-row: 1;
+    display: grid;
+    gap: var(--s-5);
+    justify-items: start;
+    padding-bottom: 2.25rem;
+  }
+
+  .story__photo {
+    grid-column: 8 / span 5;
+    grid-row: 1;
   }
 
   .story :global(.story__mark img) {
@@ -325,213 +371,416 @@ const ritual = [
     height: auto;
   }
 
-  .story__photo {
-    grid-column: 8 / span 5;
-  }
-
   .story__photo :global(img) {
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 1;
     object-fit: cover;
-    object-position: 50% 78%;
+    object-position: 50% 94%;
   }
 
-  /* ---------------------------------------------------------------- S6 + S7 roots */
+  /* S3: Etikett statt Symbolraster */
+  .why {
+    padding-block: clamp(2rem, 4vw, 3.5rem) clamp(4rem, 8vw, 7.5rem);
+  }
+
+  .why__grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2.4vw, 2.5rem);
+    row-gap: var(--s-7);
+    align-items: start;
+  }
+
+  .why__head {
+    grid-column: 1 / span 5;
+    display: grid;
+    gap: var(--s-5);
+  }
+
+  .etikett {
+    grid-column: 7 / span 6;
+    display: grid;
+    padding: clamp(1.5rem, 3vw, 2.75rem);
+  }
+
+  .etikett li {
+    display: grid;
+    grid-template-columns: 1.75rem minmax(0, 1fr);
+    column-gap: var(--s-2);
+    row-gap: var(--s-1);
+    align-items: baseline;
+    padding-block: var(--s-4);
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .etikett li:first-child {
+    border-top: 0;
+  }
+
+  .etikett p {
+    grid-column: 2;
+    color: var(--ink-2);
+  }
+
+  .etikett__sign {
+    color: var(--saffron);
+  }
+
+  /* S6 + S7 */
+  .roots {
+    padding-bottom: clamp(1rem, 2vw, 2rem);
+  }
+
+  .roots .chapter {
+    margin-top: clamp(1.5rem, 2.6vw, 2.5rem);
+    text-align: right;
+  }
+
+  .roots__body {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2.4vw, 2.5rem);
+    row-gap: 2.5rem;
+    margin-top: clamp(3rem, 6vw, 6rem);
+    align-items: end;
+  }
+
   .roots__figure {
-    grid-column: 1 / span 6;
-    position: relative;
+    grid-column: 2 / span 5;
   }
 
   .roots__figure :global(img) {
-    aspect-ratio: 5 / 4;
+    aspect-ratio: 3 / 2;
     object-fit: cover;
-  }
-
-  .roots__caption {
-    position: absolute;
-    left: var(--s-4);
-    bottom: var(--s-4);
-    margin: 0;
-    padding: 0.375rem 0.625rem;
-    background: var(--paper-soft);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    color: var(--ink);
   }
 
   .roots__copy {
     grid-column: 8 / span 5;
-    align-content: center;
+    display: grid;
+    gap: 1.25rem;
+    justify-items: start;
   }
 
-  .roots__copy p:not(.eyebrow):not(.lead) {
+  .roots__copy p:not(.lead) {
     color: var(--ink-2);
   }
 
-  /* ---------------------------------------------------------------- S8 ritual */
-  .ritual__steps {
+  .roots .koordinate {
+    margin-top: clamp(3.5rem, 7vw, 7rem);
+  }
+
+  /* ---------------------------------------------------------------- Übergang */
+  .daemmerung {
+    position: relative;
+    height: clamp(30rem, 118vh, 72rem);
+    background: linear-gradient(to bottom, #f2ede2 0%, #eadfc9 10%, #cdb48a 26%, #93703f 44%, #4e3519 60%, #211507 76%, #0f0b08 90%, var(--nacht) 100%);
+  }
+
+  .daemmerung__nacht {
+    position: absolute;
+    inset: 44% 0 0;
+  }
+
+  .daemmerung :global(.thread path) {
+    stroke-width: 1.8px;
+  }
+
+  /* ---------------------------------------------------------------- Kapitel Teller */
+  .teller {
+    position: relative;
+    padding-block: clamp(5rem, 9vw, 8rem);
+  }
+
+  .teller .chapter {
+    margin-top: clamp(1.5rem, 2.6vw, 2.5rem);
+  }
+
+  .teller .chapter em {
+    display: block;
+    margin-left: 0.62em;
+  }
+
+  .teller__body {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--s-6) clamp(1rem, 2.4vw, 2.5rem);
-    margin: var(--s-7) 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .ritual__steps li {
-    display: grid;
-    gap: var(--s-3);
-    align-content: start;
-    padding-top: var(--s-5);
-    border-top: 1px solid var(--rule-strong);
-  }
-
-  .ritual__no {
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    color: var(--bronze);
-  }
-
-  .ritual__steps p {
-    color: var(--ink-2);
-  }
-
-  /* ---------------------------------------------------------------- S9 business */
-  /* desktop: copy and actions left, the film right; phone: copy, film, actions */
-  .business__grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 26.25rem);
-    grid-template-rows: auto 1fr;
-    grid-template-areas:
-      'head video'
-      'actions video';
-    column-gap: clamp(2rem, 6vw, 6rem);
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2.4vw, 2.5rem);
+    row-gap: var(--s-6);
+    margin-top: clamp(3rem, 6vw, 6rem);
     align-items: start;
   }
 
-  .business__head {
-    grid-area: head;
-    max-width: 44rem;
+  .teller__photo {
+    grid-column: 1 / span 6;
   }
 
-  .business .actions {
-    grid-area: actions;
+  /* Nur der untere Bildteil mit Menükarte und Theke: darüber stehen fremde Logos (Nutzer 03.11., T-20261103-03) */
+  .teller__photo :global(img) {
+    width: 100%;
+    aspect-ratio: 1200 / 765;
+    object-fit: cover;
+    object-position: 50% 100%;
+  }
+
+  .teller__copy {
+    grid-column: 7 / span 6;
+    display: grid;
+    gap: var(--s-5);
+    justify-items: start;
+    padding-left: clamp(0rem, 2vw, 2rem);
+  }
+
+  /* Die Gerichte als Menükarte im Satzbild, auf Papier wie das Etikett */
+  .karte {
+    --ink-2: #4d483e;
+    width: 100%;
+    margin-top: var(--s-5);
+    padding: clamp(2rem, 3.6vw, 3.25rem) clamp(1.25rem, 3vw, 2.5rem);
+    background: var(--paper-soft);
+    box-shadow: inset 0 0 0 1px var(--paper-soft), inset 0 0 0 2px rgb(107 97 70 / 0.5);
+    text-align: center;
+  }
+
+  .karte ul {
+    display: grid;
+    gap: 1.625rem;
+    margin: var(--s-6) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .karte li {
+    display: grid;
+    gap: 0.125rem;
+  }
+
+  .karte__name {
+    font-family: var(--font-display), Georgia, serif;
+    font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+    line-height: 1.1;
+  }
+
+  .karte__detail {
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+  }
+
+  /* ---------------------------------------------------------------- Kapitel Tisch */
+  .tisch {
+    position: relative;
+  }
+
+  .tisch .kapitel,
+  .tisch h2 em,
+  .tisch .kopf .eyebrow {
+    color: var(--blatt);
+  }
+
+  /* S9: Film groß, die Anfrage direkt daneben */
+  .business {
+    padding-block: clamp(5rem, 9vw, 8rem) clamp(4rem, 7vw, 6rem);
+  }
+
+  .business__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(2rem, 6vw, 6rem);
+    align-items: stretch;
+  }
+
+  .business :global(.business__video.ivideo) {
+    max-width: 100%;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .business :global(.business__video .ivideo__frame) {
+    width: 100%;
+  }
+
+  .business__head {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: var(--s-6);
+  }
+
+  .business__foot {
+    display: grid;
+    gap: var(--s-5);
+    justify-items: start;
     margin-top: var(--s-6);
   }
 
-  .business :global(.business__video) {
-    grid-area: video;
-    justify-self: end;
+  /* V1 trade: Maßreihe, die Schrift und die Marke wachsen mit dem Gebinde */
+  .trade {
+    padding-bottom: clamp(4rem, 8vw, 7rem);
   }
 
-  @media (max-width: 63.99rem) {
-    .business__grid {
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: none;
-      grid-template-areas: 'head' 'video' 'actions';
-    }
-
-    .business :global(.business__video) {
-      justify-self: start;
-      margin-top: var(--s-6);
-    }
-  }
-
-  /* ---------------------------------------------------------------- V1 trade */
   .trade__head {
-    grid-column: 1 / span 7;
-  }
-
-  .trade__formats {
-    grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0 clamp(1rem, 2.4vw, 2.5rem);
-    margin: 0;
-    padding: 0;
-    list-style: none;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: clamp(2rem, 6vw, 6rem);
+    row-gap: var(--s-6);
+    align-items: end;
   }
 
-  .trade__formats li {
-    padding-top: var(--s-5);
-    border-top: 1px solid var(--rule-strong);
+  .trade__head .eyebrow {
+    margin-bottom: var(--s-5);
+  }
+
+  .trade__lead {
     display: grid;
-    gap: var(--s-3);
-    align-content: start;
+    gap: var(--s-5);
+    justify-items: start;
   }
 
-  .trade__actions {
-    grid-column: 1 / -1;
+  .mass {
+    margin-top: clamp(3rem, 6vw, 5.5rem);
   }
 
-  /* ---------------------------------------------------------------- V1 kitchen */
-  .kitchen__head {
-    grid-column: 1 / span 6;
-    align-content: start;
-  }
-
-  .kitchen__dishes {
-    grid-column: 8 / span 5;
-  }
-
-  .kitchen__dishes ul {
-    margin: var(--s-4) 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .kitchen__dishes li {
+  .mass li {
+    position: relative;
     display: grid;
-    gap: 0.125rem;
-    padding-block: var(--s-4);
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: clamp(2rem, 6vw, 6rem);
+    row-gap: var(--s-3);
+    align-items: baseline;
+    padding-block: var(--s-5) var(--s-6);
     border-top: 1px solid var(--rule);
   }
 
-  .kitchen__dishes li:last-child {
-    border-bottom: 1px solid var(--rule);
+  .mass li::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    width: 22%;
+    height: 3px;
+    background: var(--blatt);
   }
 
-  /* ---------------------------------------------------------------- S10 last line */
+  .mass li:nth-child(2)::before {
+    width: 52%;
+  }
+
+  .mass li:nth-child(3)::before {
+    width: 100%;
+  }
+
+  .mass h3 {
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(1.75rem, 1.5vw + 1.2rem, 2.625rem);
+    line-height: 1.05;
+    letter-spacing: -0.012em;
+  }
+
+  .mass li:nth-child(2) h3 {
+    font-size: clamp(2.25rem, 3.3vw + 0.8rem, 4rem);
+  }
+
+  .mass li:nth-child(3) h3 {
+    font-size: clamp(3rem, 6vw + 0.6rem, 6.5rem);
+  }
+
+  .mass .small {
+    margin-top: var(--s-2);
+  }
+
+  /* S10 */
   .lastline {
     padding-block: var(--s-6);
     border-top: 1px solid var(--rule);
   }
 
   .lastline p {
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
+    font-family: var(--font-display), Georgia, serif;
+    font-size: clamp(1.25rem, 2vw, 1.75rem);
+    line-height: 1.25;
+    letter-spacing: 0.04em;
     text-align: center;
-    color: var(--bronze);
+    color: var(--blatt);
   }
 
   /* ---------------------------------------------------------------- responsive composition */
   @media (max-width: 63.99rem) {
-    .why__grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .story__copy,
-    .story__photo,
-    .roots__figure,
-    .roots__copy,
-    .trade__head,
-    .kitchen__head,
-    .kitchen__dishes {
+    .why__head,
+    .etikett {
       grid-column: 1 / -1;
     }
 
-    .ritual__steps,
-    .trade__formats {
-      grid-template-columns: 1fr;
-      gap: var(--s-5);
+    .business__grid {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      column-gap: var(--s-6);
     }
   }
 
-  @media (max-width: 35.99rem) {
-    .why__grid {
-      grid-template-columns: 1fr;
+  @media (max-width: 47.99rem) {
+    .ticker__list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      letter-spacing: 0.1em;
+    }
+
+    .story .chapter em,
+    .teller .chapter em {
+      margin-left: 0;
+    }
+
+    .story__body,
+    .roots__body,
+    .teller__body {
+      grid-template-columns: minmax(0, 1fr);
+      margin-top: 2.5rem;
+    }
+
+    /* Telefon: Überschrift, Bild, dann der Text */
+    .story__photo,
+    .story__copy,
+    .roots__figure,
+    .roots__copy,
+    .teller__photo,
+    .teller__copy {
+      grid-column: 1;
+      grid-row: auto;
+    }
+
+    .story__copy {
+      padding-bottom: 0;
+    }
+
+    .roots .chapter {
+      text-align: left;
+    }
+
+    .teller__photo {
+      margin-inline: calc(var(--gutter) * -1);
+    }
+
+    .teller__copy {
+      padding-left: 0;
+    }
+
+    .business__grid {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: var(--s-6);
+    }
+
+    /* Telefon: Überschrift, Film, dann Text und Anfrage */
+    .business__head {
+      display: contents;
+    }
+
+    .business :global(.business__video.ivideo) {
+      order: 1;
+    }
+
+    .business__foot {
+      order: 2;
+      margin-top: 0;
+    }
+
+    .trade__head,
+    .mass li {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 </style>

@@ -1,45 +1,82 @@
 ---
 // Error page for form posts without JavaScript. The reason is never taken from the URL into the
 // markup: the page lists the possible causes and the direct ways to reach us.
+// Redesign T-20261103-04: ruhig auf Papier, die beiden Wege stehen nebeneinander.
 import Base from '@/layouts/Base.astro';
 import Arrow from '@/components/Arrow.astro';
+import RedThread from '@/components/RedThread.astro';
 import { site } from '@/config/site';
 ---
 
 <Base title="Anfrage nicht gesendet" description="Die Anfrage konnte nicht gesendet werden." noindex>
-  <section class="page-head result">
-    <div class="wrap opener">
-      <p class="eyebrow">Nicht gesendet</p>
-      <h1 class="display-xl">Das hat leider<br />nicht geklappt.</h1>
-      <p class="lead">Deine Anfrage ist nicht bei uns angekommen. Mögliche Gründe: eine unvollständige Angabe, zu viele Versuche in kurzer Zeit oder eine Störung bei der Zustellung.</p>
-      <ul class="rows result__ways">
-        <li>
-          <h2 class="display-s">Noch einmal versuchen</h2>
-          <p>Bitte prüfe Name und E-Mail-Adresse und sende das Formular erneut.</p>
-          <p><a class="link" href="/kontakt/#anfrage">Zurück zum Formular <Arrow /></a></p>
-        </li>
-        <li>
-          <h2 class="display-s">Direkt schreiben oder anrufen</h2>
-          <p><a href={`mailto:${site.email}`}>{site.email}</a> · <a href={site.phone.href}>{site.phone.display}</a></p>
-        </li>
-      </ul>
+  <section class="result zone">
+    <RedThread d="M2.2 0C1.8 24 2.6 52 2.2 100" m="M2.6 0C2.2 24 3 52 2.6 100" />
+    <div class="wrap">
+      <div class="kopf kopf--seite">
+        <p class="eyebrow">Nicht gesendet</p>
+      </div>
+      <div class="result__body">
+        <h1 class="chapter chapter--m chapter--akzent">Das hat leider<br /><em>nicht geklappt.</em></h1>
+        <p class="lead">Deine Anfrage ist nicht bei uns angekommen. Mögliche Gründe: eine unvollständige Angabe, zu viele Versuche in kurzer Zeit oder eine Störung bei der Zustellung.</p>
+        <ul class="result__ways">
+          <li>
+            <h2 class="display-m">Noch einmal versuchen</h2>
+            <p>Bitte prüfe Name und E-Mail-Adresse und sende das Formular erneut.</p>
+            <p><a class="link" href="/kontakt/#anfrage">Zurück zum Formular <Arrow /></a></p>
+          </li>
+          <li>
+            <h2 class="display-m">Direkt schreiben oder anrufen</h2>
+            <p><a href={`mailto:${site.email}`}>{site.email}</a> · <a href={site.phone.href}>{site.phone.display}</a></p>
+          </li>
+        </ul>
+      </div>
     </div>
   </section>
 </Base>
 
 <style>
   .result {
-    min-height: 70svh;
+    min-height: 80svh;
+    padding-bottom: var(--section-pad);
+  }
+
+  .result__body {
+    display: grid;
+    gap: var(--s-5);
+    margin-top: clamp(2.5rem, 8vh, 6rem);
   }
 
   .result__ways {
-    margin-top: var(--s-5);
-    max-width: 40rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-6) clamp(2rem, 6vw, 6rem);
+    margin: var(--s-6) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .result__ways li {
+    display: grid;
+    align-content: start;
+    gap: var(--s-3);
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .result__ways p {
+    color: var(--ink-2);
   }
 
   .result__ways a:not(.link) {
     display: inline-flex;
     align-items: center;
     min-height: 2.75rem;
+    text-decoration-color: var(--saffron);
+  }
+
+  @media (max-width: 47.99rem) {
+    .result__ways {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 </style>

@@ -1,8 +1,10 @@
 ---
 // V1 facts below the Shopify description (V1/Live rule, 16.10.2026): what the live text does not say.
 // Section as on the V1 product page ("Die Fäden"); rows from product.ts, per handle.
+// Kapitel Glas (Redesign T-20261103-03): the threads are only an inset, the picture has 960 px at most.
 import Picture from '@/components/Picture.astro';
 import Arrow from '@/components/Arrow.astro';
+import RedThread from '@/components/RedThread.astro';
 import type { ProductFacts } from '@/data/product';
 
 interface Props {
@@ -13,19 +15,18 @@ const { facts } = Astro.props;
 
 {
   facts.more.length > 0 && (
-    <section class="section band-deep" aria-labelledby="faeden-title">
-      <div class="wrap split">
-        <div class="split__a">
-          <div class="opener">
-            <p class="eyebrow">Die Fäden</p>
-            <h2 class="display-l" id="faeden-title">Ganz, rot, getrocknet.</h2>
-          </div>
-          <figure class="figure">
-            <Picture name="saffron" alt="Getrocknete Safranfäden in der Nahaufnahme: dunkelrot, gedreht, mit verbreiterten Enden." sizes="(min-width: 64rem) 38vw, 92vw" />
-          </figure>
+    <section class="faeden world-nacht zone" aria-labelledby="faeden-title" data-world="nacht">
+      <RedThread class="thread--glut" glow d="M97.5 0C97.1 26 97.9 58 97.5 100" m="M96.8 0C96.5 30 97.1 60 96.8 100" />
+      <div class="wrap">
+        <div class="kopf">
+          <p class="eyebrow">Die Fäden</p>
         </div>
-        <div class="split__b">
-          <ul class="rows">
+        <h2 class="chapter chapter--s chapter--akzent" id="faeden-title">Ganz, rot, <em>getrocknet.</em></h2>
+        <div class="faeden__body">
+          <figure class="faeden__bild">
+            <Picture name="saffron" alt="Getrocknete Safranfäden in der Nahaufnahme: dunkelrot, gedreht, mit verbreiterten Enden." sizes="(min-width: 64rem) 28vw, (min-width: 48rem) 44vw, 100vw" />
+          </figure>
+          <ul class="faeden__liste">
             {facts.more.map((fact) => (
               <li>
                 <h3 class="display-s">{fact.heading}</h3>
@@ -45,3 +46,71 @@ const { facts } = Astro.props;
     </section>
   )
 }
+
+<style>
+  .faeden {
+    padding-block: clamp(4rem, 8vw, 8rem);
+  }
+
+  .faeden__body {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    column-gap: clamp(2.5rem, 6vw, 6rem);
+    row-gap: var(--s-6);
+    margin-top: clamp(2.5rem, 5vw, 5rem);
+    align-items: start;
+  }
+
+  .faeden__bild :global(img) {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    outline: 1px solid rgb(217 180 106 / 0.55);
+    outline-offset: 0.625rem;
+  }
+
+  .faeden__liste {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(1.5rem, 3vw, 3rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .faeden__liste li {
+    display: grid;
+    gap: var(--s-2);
+    align-content: start;
+    padding-block: var(--s-4) var(--s-6);
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .faeden__liste p {
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 63.99rem) {
+    .faeden__body {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .faeden__bild {
+      width: min(100%, 24rem);
+    }
+
+    .faeden__bild :global(img) {
+      aspect-ratio: 3 / 2;
+    }
+  }
+
+  @media (max-width: 47.99rem) {
+    .faeden__liste {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .faeden__liste li {
+      padding-bottom: var(--s-5);
+    }
+  }
+</style>

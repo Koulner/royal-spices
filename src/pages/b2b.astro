@@ -1,110 +1,161 @@
 ---
 // Q3 – Texte wörtlich wie Live /pages/b2b-zusammenarbeit (docs/LIVE-INVENTAR.md), V1-Aufbau.
 // Ersetzt /handel/ und /gastronomie/ (Entscheidung D6).
+// Kapitel Tisch (Redesign T-20261103-04): warm dunkel bis in den Fuß, Film groß, die Anfrage schon im ersten Bild.
 import Base from '@/layouts/Base.astro';
 import Picture from '@/components/Picture.astro';
 import InquiryForm from '@/components/InquiryForm.astro';
 import Arrow from '@/components/Arrow.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import InlineVideo from '@/components/InlineVideo.astro';
+import RedThread from '@/components/RedThread.astro';
 ---
 
 <Base
   title="B2B & Großhandel"
   description="Du führst einen Feinkostladen, ein Restaurant oder einen Großhandel? Royal Spices bietet Negin-Safran aus Herat für Profiküchen und den Wiederverkauf an."
+  headerWorld="tisch"
 >
-  <section class="page-head">
-    <div class="wrap opener">
-      <Breadcrumbs
-        items={[
-          { name: 'Start', path: '/' },
-          { name: 'B2B & Großhandel', path: '/b2b/' },
-        ]}
-      />
-      <h1 class="display-xl">B2B &amp; Großhandel</h1>
-    </div>
-  </section>
+  <div class="b2b world-tisch zone" data-world="tisch">
+    <RedThread class="thread--glut" glow d="M97.5 0C97.9 30 97.1 60 97.5 100" m="M96.8 0C97.2 30 96.4 60 96.8 100" />
 
-  <section class="section--tight" aria-labelledby="b2b-partner">
-    <div class="wrap split">
-      <div class="split__a opener">
-        <p class="eyebrow">ROYAL SPICES BUSINESS</p>
-        <h2 class="display-l" id="b2b-partner">Premium-Safran für anspruchsvolle Partner.</h2>
+    <section class="b2b-kopf">
+      <div class="wrap">
+        <div class="kopf kopf--seite">
+          <Breadcrumbs
+            items={[
+              { name: 'Start', path: '/' },
+              { name: 'B2B & Großhandel', path: '/b2b/' },
+            ]}
+          />
+          <p class="kapitel">Tisch</p>
+        </div>
+        <h1 class="chapter chapter--s chapter--akzent">B2B &amp; <em>Großhandel</em></h1>
       </div>
-      <div class="split__b">
-        <p class="lead">Du führst einen Feinkostladen, Supermarkt, ein Restaurant oder einen Großhandel? Royal Spices bietet Negin-Safran aus Herat für den professionellen Einsatz und den Wiederverkauf an.</p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <div class="section band-deep">
-    <div class="wrap split">
-      <div class="split__a">
+    <div class="b2b-partner">
+      <div class="wrap b2b-partner__grid">
+        <section class="b2b-partner__text" aria-labelledby="b2b-partner">
+          <p class="eyebrow">ROYAL SPICES BUSINESS</p>
+          <h2 class="display-l" id="b2b-partner">Premium-Safran für anspruchsvolle Partner.</h2>
+          <p class="lead">Du führst einen Feinkostladen, Supermarkt, ein Restaurant oder einen Großhandel? Royal Spices bietet Negin-Safran aus Herat für den professionellen Einsatz und den Wiederverkauf an.</p>
+          <div class="actions">
+            <a class="btn" href="#anfrage">B2B-Anfrage senden <Arrow dir="down" /></a>
+          </div>
+        </section>
         {/* Display visual of the former royalspices.de (T-20261022-40); it was labelled a visualisation there too. */}
-        <figure class="figure b2b-figure">
+        <figure class="figure lichtbild b2b-figure">
           <Picture name="display-photo" alt="Thekendisplay von Royal Spices mit drei Reihen Safrangläsern mit Korken, dahinter eine Rückwand mit Logo, Gebirge und Krokusblüte." sizes="(min-width: 64rem) 38vw, 92vw" />
           <figcaption>Visualisierung eines Theken-Displays für den Handel.</figcaption>
         </figure>
-      </div>
-      <div class="split__b b2b-audiences">
-        <section aria-labelledby="b2b-handel">
-          <h2 class="display-m" id="b2b-handel">Für Einzelhandel &amp; Feinkost</h2>
-          <p>Unsere 1-g-Safrangläser eignen sich für hochwertige Sortimente. Theken-Displays und individuelle Abnahmemengen können angefragt werden.</p>
-        </section>
-        <section aria-labelledby="b2b-gastro">
-          <h2 class="display-m" id="b2b-gastro">Für Gastronomie &amp; Profiküchen</h2>
-          <p>Für Restaurants, Cateringunternehmen und professionelle Küchen bieten wir Safran in passenden Verpackungsgrößen und individuelle Angebote je nach Menge und Bedarf.</p>
-        </section>
-      </div>
-    </div>
-  </div>
-
-  <section class="section band-slate" aria-labelledby="b2b-zusammenarbeit">
-    <div class="wrap split">
-      <div class="split__a opener">
-        <h2 class="display-l" id="b2b-zusammenarbeit">Zusammenarbeit</h2>
-        <InlineVideo name="bar" label="Ein Barkeeper mixt einen Cocktail mit Royal-Spices-Safran; am Ende das 0,5-g-Glas." />
-      </div>
-      <div class="split__b">
-        <ol class="steps">
-          <li><p>Teile uns deinen Bedarf und die geplante Menge mit.</p></li>
-          <li><p>Wir besprechen verfügbare Ware, Verpackungen und Konditionen.</p></li>
-          <li><p>Du erhältst ein individuelles Angebot mit allen relevanten Angaben.</p></li>
-        </ol>
-        <div class="actions">
-          <a class="btn" href="#anfrage">B2B-Anfrage senden <Arrow dir="down" /></a>
+        <div class="b2b-audiences">
+          <div>
+            <h2 class="display-m">Für Einzelhandel &amp; Feinkost</h2>
+            <p>Unsere 1-g-Safrangläser eignen sich für hochwertige Sortimente. Theken-Displays und individuelle Abnahmemengen können angefragt werden.</p>
+          </div>
+          <div>
+            <h2 class="display-m">Für Gastronomie &amp; Profiküchen</h2>
+            <p>Für Restaurants, Cateringunternehmen und professionelle Küchen bieten wir Safran in passenden Verpackungsgrößen und individuelle Angebote je nach Menge und Bedarf.</p>
+          </div>
         </div>
       </div>
     </div>
-  </section>
 
-  <div class="section band-deep">
-    <div class="wrap">
-      <InquiryForm topic="handel" heading="B2B-Anfrage" />
+    <section class="b2b-zusammen" aria-labelledby="b2b-zusammenarbeit">
+      <div class="wrap">
+        <h2 class="chapter chapter--m" id="b2b-zusammenarbeit">Zusammenarbeit</h2>
+        <div class="b2b-zusammen__grid">
+          <InlineVideo class="b2b-film" name="bar" label="Ein Barkeeper mixt einen Cocktail mit Royal-Spices-Safran; am Ende das 0,5-g-Glas." />
+          <div class="b2b-zusammen__schritte">
+            <ol class="steps">
+              <li><p>Teile uns deinen Bedarf und die geplante Menge mit.</p></li>
+              <li><p>Wir besprechen verfügbare Ware, Verpackungen und Konditionen.</p></li>
+              <li><p>Du erhältst ein individuelles Angebot mit allen relevanten Angaben.</p></li>
+            </ol>
+            <div class="actions">
+              <a class="btn" href="#anfrage">B2B-Anfrage senden <Arrow dir="down" /></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="b2b-anfrage">
+      <div class="wrap">
+        <InquiryForm topic="handel" heading="B2B-Anfrage" />
+      </div>
     </div>
   </div>
 </Base>
 
 <style>
+  /* Der Lichtaustritt des Displays darf nicht quer überlaufen. */
+  .b2b {
+    overflow-x: clip;
+  }
+
+  .b2b-kopf .chapter {
+    margin-top: clamp(1rem, 2vw, 2rem);
+  }
+
+  .b2b-kopf .chapter em {
+    display: block;
+    margin-left: 0.62em;
+  }
+
+  .b2b-partner {
+    padding-block: clamp(2.5rem, 5vw, 4.5rem) clamp(4rem, 7vw, 6.5rem);
+  }
+
+  .b2b-partner__grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2.4vw, 2.5rem);
+    row-gap: clamp(3rem, 5vw, 4.5rem);
+    align-items: start;
+  }
+
+  .b2b-partner__text {
+    grid-column: 1 / span 6;
+    display: grid;
+    gap: var(--s-5);
+    justify-items: start;
+  }
+
+  .b2b-partner__text .actions {
+    margin-top: var(--s-3);
+  }
+
+  .b2b-figure {
+    grid-column: 8 / span 5;
+  }
+
   .b2b-figure figcaption {
+    margin-top: var(--s-5);
     font-size: 0.875rem;
     color: var(--ink-2);
   }
 
+  /* Zwei Etikettzeilen nebeneinander statt Karten */
   .b2b-audiences {
-    align-content: center;
-    gap: 0;
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(2rem, 6vw, 6rem);
+    row-gap: var(--s-6);
   }
 
-  .b2b-audiences > section {
+  .b2b-audiences > div {
     display: grid;
+    align-content: start;
     gap: var(--s-3);
-    padding-block: var(--s-5);
+    padding-top: var(--s-5);
     border-top: 1px solid var(--rule-strong);
   }
 
-  .b2b-audiences > section:last-child {
-    border-bottom: 1px solid var(--rule-strong);
+  .b2b-audiences h2 {
+    color: var(--blatt);
   }
 
   .b2b-audiences p {
@@ -112,12 +163,85 @@ import InlineVideo from '@/components/InlineVideo.astro';
     max-width: 36rem;
   }
 
+  .b2b-zusammen {
+    padding-bottom: clamp(4rem, 7vw, 6.5rem);
+  }
+
+  .b2b-zusammen__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(2rem, 6vw, 6rem);
+    row-gap: var(--s-6);
+    margin-top: clamp(2rem, 4vw, 3.5rem);
+    align-items: end;
+  }
+
+  .b2b-zusammen :global(.b2b-film.ivideo) {
+    max-width: 100%;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .b2b-zusammen :global(.b2b-film .ivideo__frame) {
+    width: 100%;
+  }
+
+  .b2b-zusammen__schritte {
+    display: grid;
+    gap: var(--s-6);
+    justify-items: start;
+  }
+
+  .steps {
+    width: 100%;
+  }
+
   .steps > li {
+    grid-template-columns: clamp(3.5rem, 7vw, 6rem) 1fr;
     align-items: baseline;
   }
 
-  .steps > li::before {
-    grid-row: auto;
+  .steps > li:last-child {
+    border-bottom: 1px solid var(--rule-strong);
   }
 
+  /* Die Ziffern stehen in der Etikettschrift, wie im Aufguss */
+  .steps > li::before {
+    grid-row: auto;
+    padding-top: 0;
+    font-family: var(--font-display), Georgia, serif;
+    font-size: clamp(2.25rem, 4vw, 3.5rem);
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1;
+    color: var(--blatt);
+  }
+
+  .steps p {
+    font-size: clamp(1.125rem, 1.5vw, 1.375rem);
+    line-height: 1.4;
+    color: var(--ink);
+  }
+
+  .b2b-anfrage {
+    padding-bottom: clamp(4rem, 8vw, 7rem);
+  }
+
+  @media (max-width: 63.99rem) {
+    .b2b-partner__text,
+    .b2b-figure {
+      grid-column: 1 / -1;
+    }
+
+    .b2b-figure {
+      max-width: 34rem;
+    }
+  }
+
+  @media (max-width: 47.99rem) {
+    .b2b-audiences,
+    .b2b-zusammen__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
 </style>

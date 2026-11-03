@@ -1,0 +1,407 @@
+---
+// Live S8 "Das Safran-Ritual" als Kapitel Aufguss (Redesign T-20261103-02), Text wörtlich.
+// Beim Scrollen geben die Fäden Farbe ins Wasser ab, die Fläche und dann die Seite gehen in Gold über.
+// Der Grundzustand im CSS ist das gefärbte Ende: ohne JavaScript, bei reduzierter Bewegung und im Druck.
+// Die Bühne gibt es nur unter html.js und prefers-reduced-motion: no-preference (src/layouts/Base.astro
+// setzt html.js vor dem ersten Bild, kein eigenes Inline-Script, keine Änderung an der CSP).
+// Masken: tools/redesign/gen-dye.mjs, Zeitplan siehe docs/UEBERGABE-REDESIGN.md.
+import RedThread from '@/components/RedThread.astro';
+
+const ritual = [
+  { no: '01', title: 'Fäden dosieren', text: 'Einige Fäden genügen, um deinen Kreationen Farbe und Charakter zu verleihen.' },
+  { no: '02', title: 'Sanft ziehen lassen', text: 'Die Fäden in etwas warmem Wasser ziehen lassen – so lösen sich Farbe und Aroma.' },
+  { no: '03', title: 'Gerichte veredeln', text: 'Den Aufguss zu Reis, Saucen oder Desserts geben und bewusst genießen.' },
+];
+---
+
+<section class="aufguss world-gold" id="ritual" aria-labelledby="ritual-title" data-world="nacht" data-infusion>
+  <div class="stage" data-infusion-pin>
+    <div class="luft" aria-hidden="true"></div>
+    <div class="wasser" aria-hidden="true">
+      <div class="wasser__gold"></div>
+      <div class="dye-box">
+        <picture>
+          <source type="image/avif" srcset="/img/infusion/dye-soft.avif" />
+          <img class="dye dye--soft" src="/img/infusion/dye-soft.webp" width="680" height="952" alt="" loading="lazy" decoding="async" />
+        </picture>
+        <picture>
+          <source type="image/avif" srcset="/img/infusion/dye-fine.avif" />
+          <img class="dye dye--fine" src="/img/infusion/dye-fine.webp" width="1000" height="1400" alt="" loading="lazy" decoding="async" />
+        </picture>
+      </div>
+    </div>
+    <div class="oberflaeche" aria-hidden="true">
+      <span class="oberflaeche__linie"></span>
+      <div class="oberflaeche__box"><img class="faeden" src="/img/infusion/threads.svg" width="1000" height="90" alt="" loading="lazy" decoding="async" /></div>
+    </div>
+    <RedThread
+      class="thread--stage thread--glut"
+      glow
+      d="M97.5 0C97.9 26 97.1 56 97.5 80C97.7 92 94 99.4 86 100"
+      m="M96.8 0C97.2 30 96.4 62 96.8 86C97 96 91 99.5 78 100"
+    />
+    <div class="stage__text">
+      <div class="kopf">
+        <p class="eyebrow">DAS SAFRAN-RITUAL</p>
+        <p class="kapitel">Aufguss</p>
+      </div>
+      <h2 class="chapter chapter--aufguss" id="ritual-title">Entfalte <em>das Aroma.</em></h2>
+      <ol class="schritte">
+        {
+          ritual.map((r) => (
+            <li>
+              <span class="schritte__no" aria-hidden="true">{r.no}</span>
+              <h3>{r.title}</h3>
+              <p>{r.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  import '@/scripts/infusion';
+</script>
+
+<style>
+  /* Grundzustand: das gefärbte Ende */
+  .aufguss {
+    position: relative;
+  }
+
+  .stage {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(5.5rem, 13vw, 12.5rem) clamp(4rem, 7vw, 6rem);
+    background: linear-gradient(to bottom, var(--gold-hell), var(--gold));
+  }
+
+  .luft,
+  .wasser__gold,
+  .oberflaeche__linie,
+  .stage :global(.thread--stage) {
+    display: none;
+  }
+
+  .wasser {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .dye-box {
+    position: absolute;
+    inset: 0;
+  }
+
+  .dye {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 0;
+  }
+
+  .dye--soft {
+    opacity: 0.32;
+  }
+
+  .dye--fine {
+    opacity: 0.26;
+  }
+
+  .oberflaeche {
+    position: absolute;
+    top: clamp(1rem, 2vw, 2rem);
+    left: 0;
+    right: 0;
+  }
+
+  .faeden {
+    width: 100%;
+    max-width: none;
+    height: auto;
+  }
+
+  .stage__text {
+    position: relative;
+    width: 100%;
+    max-width: calc(var(--wrap) + 2 * var(--gutter));
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .chapter--aufguss {
+    margin-top: clamp(1.25rem, 2vw, 2rem);
+    font-size: clamp(4.5rem, 11.35vw, 10.25rem);
+  }
+
+  .schritte {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-6) clamp(1rem, 2.4vw, 2.5rem);
+    margin-top: clamp(3rem, 6vw, 5.5rem);
+  }
+
+  .schritte li {
+    display: grid;
+    gap: var(--s-2);
+    align-content: start;
+  }
+
+  .schritte__no {
+    font-family: var(--font-display), Georgia, serif;
+    font-style: italic;
+    font-size: clamp(2.75rem, 5vw, 4.5rem);
+    line-height: 1;
+  }
+
+  .schritte h3 {
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(2rem, 3.4vw, 3.125rem);
+    line-height: 1.05;
+  }
+
+  .schritte p {
+    max-width: 26rem;
+    font-size: 1.0625rem;
+  }
+
+  @media (max-width: 47.99rem) {
+    .schritte {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .faeden {
+      width: 220%;
+      margin-left: -60%;
+    }
+
+    .chapter--aufguss em {
+      display: block;
+    }
+  }
+
+  /* Die Bühne: gepinnt, bewegt werden nur transform und opacity */
+  @media screen and (prefers-reduced-motion: no-preference) {
+    :global(html.js) .aufguss {
+      --p: 0;
+      --bronze: var(--blatt);
+      height: 460vh;
+      background: var(--nacht);
+      color: var(--kerze);
+    }
+
+    :global(html.js) .aufguss.is-gold {
+      --bronze: var(--ink);
+      color: var(--ink);
+    }
+
+    :global(html.js) .stage {
+      --water-top: max(37%, 21rem);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      height: 100svh;
+      padding: 0;
+      background: var(--nacht);
+    }
+
+    :global(html.js) .luft {
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, #f4cb6e, var(--gold-hell) 40%);
+      opacity: clamp(0, (var(--p) - 0.62) / 0.12, 1);
+      will-change: opacity;
+    }
+
+    :global(html.js) .wasser {
+      inset: var(--water-top) 0 0;
+    }
+
+    :global(html.js) .wasser__gold {
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, var(--gold-hell), var(--gold));
+      opacity: clamp(0, (var(--p) - 0.53) / 0.13, 1);
+      will-change: opacity;
+    }
+
+    :global(html.js) .dye-box,
+    :global(html.js) .oberflaeche__box {
+      position: absolute;
+      inset: 0 0 auto auto;
+      height: 220%;
+      width: auto;
+      aspect-ratio: 1 / 1.4;
+    }
+
+    /* Die Maske sinkt als Ganzes, die zwei Schichten laufen verschieden schnell: So verformt sich der Farbkörper. */
+    :global(html.js) .dye {
+      height: 100%;
+      object-fit: fill;
+      will-change: transform, opacity;
+    }
+
+    :global(html.js) .dye--fine {
+      --q: calc(0.33 + 0.67 * clamp(0, (var(--p) - 0.04) / 0.66, 1));
+      transform: translate3d(0, calc((var(--q) - 1) * 100%), 0);
+      opacity: calc(1 - 0.62 * clamp(0, (var(--p) - 0.62) / 0.14, 1));
+    }
+
+    :global(html.js) .dye--soft {
+      --q: calc(0.28 + 0.72 * clamp(0, (var(--p) - 0.08) / 0.68, 1));
+      transform: translate3d(0, calc((var(--q) - 1) * 100%), 0);
+      opacity: calc(0.9 - 0.5 * clamp(0, (var(--p) - 0.62) / 0.14, 1));
+    }
+
+    :global(html.js) .oberflaeche {
+      position: absolute;
+      inset: var(--water-top) 0 0;
+      pointer-events: none;
+    }
+
+    :global(html.js) .oberflaeche__linie {
+      display: block;
+      position: absolute;
+      inset: 0 0 auto;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgb(244 236 220 / 0.34) 30%, rgb(244 236 220 / 0.5) 72%, transparent);
+    }
+
+    :global(html.js) .faeden {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      margin-left: 0;
+      transform: translateY(calc(-44% + var(--p) * 0.6rem));
+    }
+
+    :global(html.js) .stage :global(.thread--stage) {
+      display: block;
+      inset: 0 0 auto;
+      height: var(--water-top);
+    }
+
+    :global(html.js) .stage__text {
+      position: absolute;
+      inset: 0;
+      max-width: none;
+      padding-top: calc(var(--header-h) + 1.25rem);
+    }
+
+    :global(html.js) .chapter--aufguss {
+      margin-top: 0.75rem;
+      font-size: clamp(4.5rem, 13vw, 11.75rem);
+      white-space: nowrap;
+      color: var(--kerze);
+      transition: color 0.2s linear;
+    }
+
+    :global(html.js) .chapter--aufguss em {
+      color: var(--blatt);
+      transition: color 0.2s linear;
+    }
+
+    :global(html.js) .stage__text .kopf {
+      opacity: max(clamp(0, (0.62 - var(--p)) / 0.02, 1), clamp(0, (var(--p) - 0.72) / 0.02, 1));
+    }
+
+    :global(html.js) .aufguss.is-gold .chapter--aufguss,
+    :global(html.js) .aufguss.is-gold .chapter--aufguss em {
+      color: var(--ink);
+    }
+
+    :global(html.js) .schritte {
+      position: absolute;
+      top: calc(var(--water-top) + 3rem);
+      left: var(--gutter);
+      grid-template-columns: minmax(0, 1fr);
+      width: min(25rem, 30vw);
+      margin: 0;
+    }
+
+    :global(html.js) .schritte li {
+      grid-area: 1 / 1;
+      will-change: opacity;
+    }
+
+    :global(html.js) .schritte__no {
+      color: var(--blatt);
+    }
+
+    :global(html.js) .schritte li:nth-child(1) {
+      opacity: clamp(0, (0.29 - var(--p)) / 0.02, 1);
+    }
+
+    :global(html.js) .schritte li:nth-child(2) {
+      opacity: min(clamp(0, (var(--p) - 0.3) / 0.02, 1), clamp(0, (0.53 - var(--p)) / 0.02, 1));
+    }
+
+    :global(html.js) .schritte li:nth-child(3) {
+      opacity: clamp(0, (var(--p) - 0.72) / 0.02, 1);
+      color: var(--ink);
+    }
+
+    :global(html.js) .schritte li:nth-child(3) .schritte__no {
+      color: var(--ink);
+    }
+
+    /* Bis Tablet steht der Text über dem Wasser, damit die Farbe nie hinter dem Text läuft */
+    @media (max-width: 63.99rem) {
+      :global(html.js) .stage {
+        --water-top: max(47.4%, 28rem);
+      }
+
+      :global(html.js) .dye-box,
+      :global(html.js) .oberflaeche__box {
+        inset: 0 auto auto 50%;
+        transform: translateX(-50%);
+      }
+
+      :global(html.js) .stage__text {
+        padding-top: calc(var(--header-h) + 0.25rem);
+      }
+
+      :global(html.js) .chapter--aufguss {
+        white-space: normal;
+        font-size: clamp(3.75rem, 21vw, 7rem);
+      }
+
+      :global(html.js) .chapter--aufguss em {
+        display: block;
+      }
+
+      :global(html.js) .schritte {
+        position: static;
+        width: auto;
+        margin-top: var(--s-4);
+        padding-right: var(--s-3);
+      }
+
+      :global(html.js) .schritte li {
+        grid-template-columns: auto minmax(0, 1fr);
+        column-gap: 0.625rem;
+        align-items: baseline;
+      }
+
+      :global(html.js) .schritte__no,
+      :global(html.js) .schritte h3 {
+        font-size: 1.875rem;
+      }
+
+      :global(html.js) .schritte p {
+        grid-column: 1 / -1;
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+    }
+  }
+</style>

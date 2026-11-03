@@ -4,56 +4,92 @@
 // form, which posts to this site's server (src/pages/api/anfrage.ts), so "über Shopify" is dropped.
 // The contact block is the live one: name, owner, phone, e-mail (no postal address; that stays in the Impressum).
 // Phone and e-mail appear once: the form is rendered without its own "Direkt" block (direct={false}).
+// Kapitel Tisch (Redesign T-20261103-04): Text links, das Formular als helles Etikett gleich daneben.
 import Base from '@/layouts/Base.astro';
 import InquiryForm from '@/components/InquiryForm.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import RedThread from '@/components/RedThread.astro';
 import { site } from '@/config/site';
 ---
 
 <Base
   title="Kontakt & Anfragen"
   description="Anfrage an Royal Spices in Hamburg: Safran im Glas, Handel und Großhandel, Gastronomie oder Catering. Telefon 040 59374940, info@royalspices.de."
+  headerWorld="tisch"
 >
-  <section class="page-head" aria-labelledby="kontakt-title">
-    <div class="wrap opener">
-      <Breadcrumbs
-        items={[
-          { name: 'Start', path: '/' },
-          { name: 'Kontakt', path: '/kontakt/' },
-        ]}
-      />
-      <h1 class="display-xl" id="kontakt-title">Kontakt &amp; Anfragen</h1>
-    </div>
-  </section>
+  <div class="kontakt world-tisch zone" data-world="tisch">
+    <RedThread class="thread--glut" glow d="M97.5 0C97.9 30 97.1 60 97.5 100" m="M96.8 0C97.2 30 96.4 60 96.8 100" />
+    <div class="wrap">
+      <section aria-labelledby="kontakt-title">
+        <div class="kopf kopf--seite">
+          <Breadcrumbs
+            items={[
+              { name: 'Start', path: '/' },
+              { name: 'Kontakt', path: '/kontakt/' },
+            ]}
+          />
+          <p class="kapitel">Tisch</p>
+        </div>
+        <h1 class="chapter chapter--s chapter--akzent kontakt__titel" id="kontakt-title">Kontakt &amp; <em>Anfragen</em></h1>
+      </section>
 
-  <section class="section--tight" aria-labelledby="kontakt-nachricht">
-    <div class="wrap split">
-      <div class="split__a">
-        <h2 class="display-l" id="kontakt-nachricht">Wir freuen uns auf deine Nachricht.</h2>
-      </div>
-      <div class="split__b">
-        <div class="prose">
-          <p>Du hast Fragen zu unserem Safran, möchtest ein B2B-Angebot anfordern oder planst ein Catering in Hamburg? Verwende dafür das Kontaktformular auf dieser Seite – deine Nachricht erreicht uns direkt.</p>
-          <address class="contact">
-            <strong>{site.name}</strong><br />
-            {site.owner} · Inhaber und Koch<br />
-            <a href={site.phone.href}>{site.phone.display}</a><br />
-            <a href={`mailto:${site.email}`}>{site.email}</a>
-          </address>
-          <p>Für ein Cateringangebot teile uns möglichst Datum, Ort, Anlass und Gästezahl mit. Für Handelsanfragen hilft die gewünschte Menge.</p>
+      <div class="kontakt__grid">
+        <section class="kontakt__text" aria-labelledby="kontakt-nachricht">
+          <h2 class="display-l" id="kontakt-nachricht">Wir freuen uns auf deine Nachricht.</h2>
+          <div class="prose">
+            <p>Du hast Fragen zu unserem Safran, möchtest ein B2B-Angebot anfordern oder planst ein Catering in Hamburg? Verwende dafür das Kontaktformular auf dieser Seite – deine Nachricht erreicht uns direkt.</p>
+            <address class="contact">
+              <strong>{site.name}</strong><br />
+              {site.owner} · Inhaber und Koch<br />
+              <a href={site.phone.href}>{site.phone.display}</a><br />
+              <a href={`mailto:${site.email}`}>{site.email}</a>
+            </address>
+            <p>Für ein Cateringangebot teile uns möglichst Datum, Ort, Anlass und Gästezahl mit. Für Handelsanfragen hilft die gewünschte Menge.</p>
+          </div>
+        </section>
+
+        <div class="kontakt__form">
+          <InquiryForm heading="Kontaktformular" direct={false} solo />
         </div>
       </div>
-    </div>
-  </section>
-
-  <div class="section--tight">
-    <div class="wrap">
-      <InquiryForm heading="Kontaktformular" direct={false} />
     </div>
   </div>
 </Base>
 
 <style>
+  .kontakt {
+    padding-bottom: clamp(4rem, 8vw, 7rem);
+  }
+
+  .kontakt__titel {
+    margin-top: clamp(1rem, 2vw, 2rem);
+  }
+
+  .kontakt__titel em {
+    display: block;
+    margin-left: 0.62em;
+  }
+
+  .kontakt__grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2.4vw, 2.5rem);
+    row-gap: var(--s-7);
+    margin-top: clamp(2.5rem, 5vw, 4.5rem);
+    align-items: start;
+  }
+
+  .kontakt__text {
+    grid-column: 1 / span 5;
+    display: grid;
+    gap: var(--s-5);
+  }
+
+  .kontakt__form {
+    grid-column: 6 / span 7;
+    min-width: 0;
+  }
+
   .contact {
     font-style: normal;
     margin-block: var(--s-4);
@@ -66,5 +102,19 @@ import { site } from '@/config/site';
     min-height: 2.75rem;
     margin-block: -0.625rem;
     text-decoration-color: var(--saffron);
+  }
+
+  @media (min-width: 64rem) {
+    .kontakt__text {
+      position: sticky;
+      top: calc(var(--header-h) + var(--s-5));
+    }
+  }
+
+  @media (max-width: 63.99rem) {
+    .kontakt__text,
+    .kontakt__form {
+      grid-column: 1 / -1;
+    }
   }
 </style>

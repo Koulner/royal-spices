@@ -1,32 +1,32 @@
 ---
 // Q6 – Texte wörtlich wie Live /pages/faq (docs/LIVE-INVENTAR.md), V1-Aufbau.
 // Fragen als details/summary (Muster wie der Katalog auf der früheren Catering-Seite).
+// Redesign T-20261103-04: ruhig auf Papier, die offene Frage wird kursiv wie der Akzent der Kapitel.
 import Base from '@/layouts/Base.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import RedThread from '@/components/RedThread.astro';
 ---
 
 <Base
   title="Häufige Fragen zu Safran, B2B und Versand"
   description="Was ist Herat Negin Safran? Negin bezeichnet besonders sorgfältig sortierte Safranfäden. Unser Safran stammt aus der Region Herat in Afghanistan."
 >
-  <section class="page-head">
-    <div class="wrap opener">
-      <Breadcrumbs
-        items={[
-          { name: 'Start', path: '/' },
-          { name: 'Häufige Fragen', path: '/faq/' },
-        ]}
-      />
-      <h1 class="display-xl">Häufige Fragen</h1>
-    </div>
-  </section>
-
-  <div class="section--tight faq-section">
+  <div class="ruhig zone">
+    <RedThread d="M2.2 0C1.8 24 2.6 52 2.2 100" m="M2.6 0C2.2 24 3 52 2.6 100" />
     <div class="wrap">
-      <div class="faq">
+      <div class="kopf kopf--seite">
+        <Breadcrumbs
+          items={[
+            { name: 'Start', path: '/' },
+            { name: 'Häufige Fragen', path: '/faq/' },
+          ]}
+        />
+      </div>
+      <h1 class="chapter chapter--s chapter--akzent ruhig__titel">Häufige <em>Fragen</em></h1>
+      <div class="faq ruhig__text">
         <details class="faq__item">
           <summary>
-            <span class="display-s">Was ist Herat Negin Safran?</span>
+            <span class="display-m">Was ist Herat Negin Safran?</span>
             <span class="faq__icon" aria-hidden="true"></span>
           </summary>
           <div class="faq__body">
@@ -35,7 +35,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro';
         </details>
         <details class="faq__item">
           <summary>
-            <span class="display-s">Wie verwende ich Safran?</span>
+            <span class="display-m">Wie verwende ich Safran?</span>
             <span class="faq__icon" aria-hidden="true"></span>
           </summary>
           <div class="faq__body">
@@ -44,7 +44,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro';
         </details>
         <details class="faq__item">
           <summary>
-            <span class="display-s">Wie lagere ich Safran?</span>
+            <span class="display-m">Wie lagere ich Safran?</span>
             <span class="faq__icon" aria-hidden="true"></span>
           </summary>
           <div class="faq__body">
@@ -53,7 +53,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro';
         </details>
         <details class="faq__item">
           <summary>
-            <span class="display-s">Kann ich Safran verschenken?</span>
+            <span class="display-m">Kann ich Safran verschenken?</span>
             <span class="faq__icon" aria-hidden="true"></span>
           </summary>
           <div class="faq__body">
@@ -62,7 +62,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro';
         </details>
         <details class="faq__item">
           <summary>
-            <span class="display-s">Ist ein B2B-Angebot möglich?</span>
+            <span class="display-m">Ist ein B2B-Angebot möglich?</span>
             <span class="faq__icon" aria-hidden="true"></span>
           </summary>
           <div class="faq__body">
@@ -71,7 +71,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro';
         </details>
         <details class="faq__item">
           <summary>
-            <span class="display-s">Wo finde ich Angaben zum Versand?</span>
+            <span class="display-m">Wo finde ich Angaben zum Versand?</span>
             <span class="faq__icon" aria-hidden="true"></span>
           </summary>
           <div class="faq__body">
@@ -84,12 +84,13 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro';
 </Base>
 
 <style>
-  .faq-section {
-    padding-bottom: clamp(4rem, 8vw, 7rem);
-  }
-
   .faq {
     max-width: 52rem;
+  }
+
+  .faq__item[open] summary > :first-child {
+    font-style: italic;
+    color: var(--saffron-deep);
   }
 
   .faq__item {

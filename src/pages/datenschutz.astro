@@ -9,6 +9,7 @@
 // Must be completed and legally reviewed by the responsible party before launch.
 import Base from '@/layouts/Base.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import RedThread from '@/components/RedThread.astro';
 import { site } from '@/config/site';
 import { commerceEnabled, commerceConfig } from '@/lib/commerce/config';
 
@@ -16,16 +17,19 @@ const rightsNumber = commerceEnabled ? 7 : 6;
 ---
 
 <Base title="Datenschutzhinweise · Royal Spices, Hamburg" description="Datenschutzhinweise von Royal Spices: Verantwortlicher, Hosting, Anfragen, Speicherdauer, Cookies und Ihre Rechte.">
-  <section class="page-head">
+  <section class="ruhig zone">
+    <RedThread d="M2.2 0C1.8 24 2.6 52 2.2 100" m="M2.6 0C2.2 24 3 52 2.6 100" />
     <div class="wrap">
-      <Breadcrumbs
-        items={[
-          { name: 'Start', path: '/' },
-          { name: 'Datenschutz', path: '/datenschutz/' },
-        ]}
-      />
-      <h1 class="display-l">Datenschutzhinweise</h1>
-      <div class="longform">
+      <div class="kopf kopf--seite">
+        <Breadcrumbs
+          items={[
+            { name: 'Start', path: '/' },
+            { name: 'Datenschutz', path: '/datenschutz/' },
+          ]}
+        />
+      </div>
+      <h1 class="chapter chapter--recht ruhig__titel">Datenschutzhinweise</h1>
+      <div class="longform ruhig__text">
         <p><span class="open">Entwurf – vor Veröffentlichung zu vervollständigen und rechtlich zu prüfen.</span></p>
 
         <h2>1. Verantwortlicher</h2>
@@ -123,16 +127,7 @@ const rightsNumber = commerceEnabled ? 7 : 6;
 </Base>
 
 <style>
-  .page-head {
-    padding-bottom: var(--section-pad);
-  }
-
-  /* Breadcrumbs above the h1: the same gap as the .opener grid on the other pages (SEO-C). */
-  .page-head :global(.crumbs) {
-    margin-bottom: var(--s-5);
-  }
-
-  h1 {
-    margin-bottom: var(--s-5);
+  .longform > :first-child {
+    margin-top: 0;
   }
 </style>

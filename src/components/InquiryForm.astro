@@ -12,15 +12,17 @@ interface Props {
   intro?: string;
   /** Show the phone and e-mail block beside the form. Off where the page already shows them (/kontakt/). */
   direct?: boolean;
+  /** Stack the heading above the form, for a page that sets the form into its own column (/kontakt/). */
+  solo?: boolean;
 }
-const { topic = 'produkt', heading = 'Deine Anfrage', intro, direct = true } = Astro.props;
+const { topic = 'produkt', heading = 'Deine Anfrage', intro, direct = true, solo = false } = Astro.props;
 ---
 
-<section class="inquiry" id="anfrage" aria-labelledby="anfrage-title">
+<section class:list={['inquiry', solo && 'inquiry--solo']} id="anfrage" aria-labelledby="anfrage-title">
   <div class="inquiry__head">
     <div class="opener">
       <p class="eyebrow">Anfrage</p>
-      <h2 class="display-l" id="anfrage-title">{heading}</h2>
+      <h2 class={solo ? 'display-m' : 'display-l'} id="anfrage-title">{heading}</h2>
     </div>
     {intro && <p class="lead">{intro}</p>}
     {direct && (
@@ -205,6 +207,31 @@ const { topic = 'produkt', heading = 'Deine Anfrage', intro, direct = true } = A
     padding: clamp(1.5rem, 3.4vw, 3rem);
   }
 
+  /* Das Etikett zum Ausfüllen bleibt auf jeder Farbwelt Papier: Felder, Auswahlpfeil, Fehlertext und
+     Datumswähler brauchen die helle Fläche (Redesign T-20261103-04). */
+  .inquiry .inquiry__panel {
+    --ink: #221f1a;
+    --ink-2: #4d483e;
+    --ink-3: #66604f;
+    --bronze: #6b6146;
+    --saffron: #a3241a;
+    --saffron-deep: #7c1a13;
+    --paper-soft: #f7f4ec;
+    --rule: rgb(34 31 26 / 0.16);
+    --rule-strong: rgb(34 31 26 / 0.34);
+    color-scheme: light;
+    background: var(--paper-soft);
+    color: var(--ink);
+  }
+
+  .inquiry--solo {
+    display: block;
+  }
+
+  .inquiry--solo .inquiry__head {
+    margin-bottom: var(--s-5);
+  }
+
   .form {
     display: grid;
     gap: var(--s-5);
@@ -297,6 +324,12 @@ const { topic = 'produkt', heading = 'Deine Anfrage', intro, direct = true } = A
     box-shadow: 0 1px 0 var(--saffron);
   }
 
+  /* Das Datumsfeld fokussiert seine Segmente im Schatten-DOM, :focus und :focus-visible greifen am Feld selbst nicht. */
+  .field:focus-within input[type='date'] {
+    border-bottom-color: var(--saffron);
+    box-shadow: 0 1px 0 var(--saffron);
+  }
+
   .field [aria-invalid='true'] {
     border-bottom-color: var(--saffron);
     box-shadow: 0 1px 0 var(--saffron);
@@ -380,6 +413,15 @@ const { topic = 'produkt', heading = 'Deine Anfrage', intro, direct = true } = A
 
   .inquiry__done:focus {
     outline: none;
+  }
+
+  /* Überschrift und Direktkontakt bleiben stehen, während das lange Formular vorbeiläuft. */
+  @media (min-width: 64rem) {
+    .inquiry:not(.inquiry--solo) .inquiry__head {
+      position: sticky;
+      top: calc(var(--header-h) + var(--s-5));
+      align-self: start;
+    }
   }
 
   @media (max-width: 63.99rem) {

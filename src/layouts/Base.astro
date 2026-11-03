@@ -12,6 +12,8 @@ interface Props {
   description: string;
   /** Open Graph type of the page. */
   ogType?: 'website' | 'product' | 'article';
+  /** Farbwelt der ersten Fläche: Die Kopfzeile ist dann ab dem ersten Bild lesbar (Redesign T-20261103-03). */
+  headerWorld?: 'nacht' | 'tisch' | 'gold';
   /**
    * Open Graph image: path relative to the site root or absolute URL (e.g. cdn.shopify.com). Width and
    * height are only written when both are known; without an image the site's /og.jpg (1200×630) is used.
@@ -25,7 +27,7 @@ interface Props {
   preloads?: { href: string; type: string; media?: string; imagesrcset?: string; imagesizes?: string }[];
 }
 
-const { title, description, ogType = 'website', ogImage, noindex = false, schema = [], preloads = [] } = Astro.props;
+const { title, description, ogType = 'website', ogImage, noindex = false, schema = [], preloads = [], headerWorld } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const fullTitle = title.includes(site.name) ? title : `${title} · ${site.name}`;
 const ogSource = ogImage ?? { src: '/og.jpg', width: 1200, height: 630 };
@@ -89,7 +91,7 @@ const ogSize = typeof ogSource === 'object' && ogSource.width && ogSource.height
   </head>
   <body>
     <a class="skip-link" href="#inhalt">Direkt zum Inhalt</a>
-    <Header />
+    <Header world={headerWorld} />
     <main id="inhalt" tabindex="-1">
       <slot />
     </main>

@@ -4,10 +4,12 @@
 // The eyebrow follows the h1 as on the live page (live order).
 // Added from V1 (T-20261016-05): "Was wir tun" (filling in Germany, display, loose goods, catering in Hamburg;
 // docs/PRODUCT-TRUTH.md) and the contact block with address. Duplicates of the live text were trimmed.
+// Redesign T-20261103-04: Kapitel Faden auf Papier. „Zwei Dinge“ stehen als Nacht und Gold nebeneinander, der Faden verbindet sie.
 import Base from '@/layouts/Base.astro';
 import Picture from '@/components/Picture.astro';
 import Arrow from '@/components/Arrow.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import RedThread from '@/components/RedThread.astro';
 import { site } from '@/config/site';
 ---
 
@@ -15,113 +17,204 @@ import { site } from '@/config/site';
   title="Über Royal Spices – Negin-Safran aus Herat"
   description="Royal Spices steht für Negin-Safran aus Herat in Afghanistan: sorgfältig ausgewählte ganze Fäden für die anspruchsvolle Küche, in Deutschland abgefüllt."
 >
-  <section class="page-head" aria-labelledby="about-title">
-    <div class="wrap opener">
-      <Breadcrumbs
-        items={[
-          { name: 'Start', path: '/' },
-          { name: 'Über uns', path: '/ueber-uns/' },
-        ]}
-      />
-      <h1 class="display-xl" id="about-title">Über Royal Spices</h1>
-      <p class="eyebrow">THE ART OF SAFFRON</p>
-    </div>
-  </section>
+  <div class="about-anfang zone">
+    <RedThread d="M2.2 0C1.8 24 2.6 52 2.2 100" m="M2.6 0C2.2 24 3 52 2.6 100" />
 
-  <section class="section--tight" aria-labelledby="about-herkunft">
-    <div class="wrap split">
-      <div class="split__a">
+    <section aria-labelledby="about-title">
+      <div class="wrap">
+        <div class="kopf kopf--seite">
+          <Breadcrumbs
+            items={[
+              { name: 'Start', path: '/' },
+              { name: 'Über uns', path: '/ueber-uns/' },
+            ]}
+          />
+          <p class="kapitel">Faden</p>
+        </div>
+        <h1 class="chapter chapter--s chapter--akzent about-titel" id="about-title">Über <em>Royal Spices</em></h1>
+        <p class="eyebrow about-motto">THE ART OF SAFFRON</p>
+      </div>
+    </section>
+
+    <section class="about-herkunft" aria-labelledby="about-herkunft">
+      <div class="wrap about-herkunft__grid">
         <figure class="figure about-photo">
           <Picture name="jars-photo" alt="Reihen abgefüllter Royal-Spices-Gläser mit Korken, Siegelstreifen und Etikett auf einem Tisch." sizes="(min-width: 64rem) 38vw, 92vw" loading="eager" />
           <figcaption>Originalaufnahme aus der Abfüllung. Abgebildet ist die 0,5-g-Ausführung.</figcaption>
         </figure>
-      </div>
-      <div class="split__b">
-        <h2 class="display-l" id="about-herkunft">Eine Herkunft. Eine Leidenschaft.</h2>
-        <div class="prose">
-          <p>Royal Spices steht für außergewöhnliche Gewürze und bewussten Genuss. Im Mittelpunkt: Negin-Safran aus Herat in Afghanistan – sorgfältig ausgewählte ganze Fäden für die anspruchsvolle Küche.</p>
-          <p>Die Idee hinter unserer Marke ist einfach: Ein besonderes Produkt verdient eine ebenso besondere Präsentation. Deshalb verbinden wir die kulinarische Tradition unserer Herkunft mit einem modernen Anspruch an Ästhetik, Qualität und Genuss.</p>
+        <div class="about-herkunft__text">
+          <h2 class="display-l" id="about-herkunft">Eine Herkunft. Eine Leidenschaft.</h2>
+          <div class="prose">
+            <p>Royal Spices steht für außergewöhnliche Gewürze und bewussten Genuss. Im Mittelpunkt: Negin-Safran aus Herat in Afghanistan – sorgfältig ausgewählte ganze Fäden für die anspruchsvolle Küche.</p>
+            <p>Die Idee hinter unserer Marke ist einfach: Ein besonderes Produkt verdient eine ebenso besondere Präsentation. Deshalb verbinden wir die kulinarische Tradition unserer Herkunft mit einem modernen Anspruch an Ästhetik, Qualität und Genuss.</p>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="section band-slate" aria-labelledby="about-teller">
-    <div class="wrap split">
-      <div class="split__a">
-        <h2 class="display-l" id="about-teller">Von der Herkunft bis zum Teller</h2>
-      </div>
-      <div class="split__b">
+    <section class="about-teller" aria-labelledby="about-teller">
+      <div class="wrap about-teller__grid">
+        <h2 class="chapter chapter--m chapter--akzent" id="about-teller">Von der Herkunft <em>bis zum Teller</em></h2>
         <div class="prose">
           <p>Als Marke mit gastronomischer Erfahrung verstehen wir, welche Rolle gute Zutaten spielen. Ob Safranreis, feine Saucen, Patisserie oder zeitgenössische Interpretationen afghanischer und persischer Küche: Safran macht aus wenigen Handgriffen etwas Besonderes.</p>
         </div>
       </div>
+    </section>
+
+    <div class="wrap opener about-was">
+      <p class="eyebrow">Was wir tun</p>
+      <h2 class="display-l" id="about-was">Zwei Dinge, die zusammengehören.</h2>
     </div>
+  </div>
+
+  <section class="about-zwei zone" aria-labelledby="about-was">
+    <RedThread class="thread--glut" d="M50 0C50.5 30 49.5 66 50 100" m="M96.8 0C97.2 30 96.4 66 96.8 100" />
+    <ul>
+      <li class="world-nacht" data-world="nacht">
+        <h3 class="chapter chapter--m">Safran</h3>
+        <p>In Deutschland abgefüllt. Im Glas, im Display für den Handel und als lose Ware.</p>
+        <p><a class="link" href="/b2b/">B2B &amp; Großhandel <Arrow /></a></p>
+      </li>
+      <li class="world-gold" data-world="gold">
+        <h3 class="chapter chapter--m">Catering</h3>
+        <p>Für Firmenveranstaltungen, Empfänge und private Anlässe in Hamburg und Umgebung. {site.owner} plant und kocht selbst.</p>
+        <p><a class="link" href="/catering/">Catering <Arrow /></a></p>
+      </li>
+    </ul>
   </section>
 
-  <section class="section" aria-labelledby="about-was">
-    <div class="wrap split">
-      <div class="split__a opener">
-        <p class="eyebrow">Was wir tun</p>
-        <h2 class="display-l" id="about-was">Zwei Dinge, die zusammengehören.</h2>
-      </div>
-      <div class="split__b">
-        <ul class="rows">
-          <li>
-            <h3 class="display-s">Safran</h3>
-            <p>In Deutschland abgefüllt. Im Glas, im Display für den Handel und als lose Ware.</p>
-            <p><a class="link" href="/b2b/">B2B &amp; Großhandel <Arrow /></a></p>
-          </li>
-          <li>
-            <h3 class="display-s">Catering</h3>
-            <p>Für Firmenveranstaltungen, Empfänge und private Anlässe in Hamburg und Umgebung. {site.owner} plant und kocht selbst.</p>
-            <p><a class="link" href="/catering/">Catering <Arrow /></a></p>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </section>
+  <div class="about-ende zone">
+    <RedThread d="M2.2 0C1.8 24 2.6 52 2.2 100" m="M2.6 0C2.2 24 3 52 2.6 100" />
+    <section class="wrap about-philosophie" aria-labelledby="about-philosophie">
+      <h2 class="eyebrow" id="about-philosophie">Unsere Philosophie</h2>
+      <p class="about-satz">Wir lieben klare Zutaten, ehrliche Herkunftsinformation und die Kunst, besondere Momente am Tisch zu schaffen. Royal Spices entwickelt sich mit diesem Anspruch weiter – von ausgewählten Produkten bis zu kulinarischen Erlebnissen.</p>
+      <p><a class="link" href="/produkte/">Unsere Safran-Kollektion entdecken <Arrow /></a></p>
+    </section>
 
-  <section class="section band-slate" aria-labelledby="about-philosophie">
-    <div class="wrap split">
-      <div class="split__a">
-        <h2 class="display-l" id="about-philosophie">Unsere Philosophie</h2>
-      </div>
-      <div class="split__b">
-        <div class="prose">
-          <p>Wir lieben klare Zutaten, ehrliche Herkunftsinformation und die Kunst, besondere Momente am Tisch zu schaffen. Royal Spices entwickelt sich mit diesem Anspruch weiter – von ausgewählten Produkten bis zu kulinarischen Erlebnissen.</p>
+    <section class="about-kontakt" aria-labelledby="about-kontakt">
+      <div class="wrap split">
+        <div class="split__a opener">
+          <p class="eyebrow">Kontakt</p>
+          <h2 class="display-l" id="about-kontakt">Royal Spices, Hamburg.</h2>
         </div>
-        <p><a class="link" href="/produkte/">Unsere Safran-Kollektion entdecken <Arrow /></a></p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" aria-labelledby="about-kontakt">
-    <div class="wrap split">
-      <div class="split__a opener">
-        <p class="eyebrow">Kontakt</p>
-        <h2 class="display-l" id="about-kontakt">Royal Spices, Hamburg.</h2>
-      </div>
-      <div class="split__b">
-        <dl class="facts">
-          <div><dt>Unternehmen</dt><dd>{site.name} · {site.owner}</dd></div>
-          <div><dt>Anschrift</dt><dd>{site.address.street}, {site.address.postalCode} {site.address.city}</dd></div>
-          <div><dt>Telefon</dt><dd><a href={site.phone.href}>{site.phone.display}</a></dd></div>
-          <div><dt>E-Mail</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></div>
-        </dl>
-        <div class="actions">
-          <a class="btn" href="/kontakt/#anfrage">Anfrage senden <Arrow /></a>
+        <div class="split__b">
+          <dl class="facts">
+            <div><dt>Unternehmen</dt><dd>{site.name} · {site.owner}</dd></div>
+            <div><dt>Anschrift</dt><dd>{site.address.street}, {site.address.postalCode} {site.address.city}</dd></div>
+            <div><dt>Telefon</dt><dd><a href={site.phone.href}>{site.phone.display}</a></dd></div>
+            <div><dt>E-Mail</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></div>
+          </dl>
+          <div class="actions">
+            <a class="btn" href="/kontakt/#anfrage">Anfrage senden <Arrow /></a>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 </Base>
 
 <style>
+  .about-titel {
+    margin-top: clamp(1rem, 2vw, 2rem);
+  }
+
+  .about-motto {
+    margin-top: var(--s-5);
+  }
+
+  .about-herkunft {
+    padding-block: clamp(3rem, 6vw, 5.5rem);
+  }
+
+  .about-herkunft__grid,
+  .about-teller__grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2.4vw, 2.5rem);
+    row-gap: var(--s-6);
+  }
+
+  .about-photo {
+    grid-column: 1 / span 5;
+  }
+
   .about-photo :global(img) {
     aspect-ratio: 4 / 5;
     object-fit: cover;
     object-position: 50% 80%;
+  }
+
+  .about-herkunft__text {
+    grid-column: 7 / span 6;
+    align-self: end;
+    display: grid;
+    gap: var(--s-5);
+  }
+
+  .about-teller {
+    padding-block: clamp(2.5rem, 5vw, 4.5rem);
+  }
+
+  .about-teller .chapter {
+    grid-column: 1 / -1;
+  }
+
+  .about-teller .chapter em {
+    display: block;
+    margin-left: 0.62em;
+  }
+
+  .about-teller .prose {
+    grid-column: 7 / span 6;
+  }
+
+  .about-was {
+    padding-block: clamp(3rem, 6vw, 5rem) clamp(2.5rem, 4vw, 3.5rem);
+  }
+
+  /* Die beiden Hälften stoßen aneinander, der Faden läuft auf der Naht. */
+  .about-zwei ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Von oben gesetzt, damit „Safran“ und „Catering“ auf einer Linie stehen, auch bei ungleich langem Text. */
+  .about-zwei li {
+    display: grid;
+    align-content: start;
+    justify-items: start;
+    gap: var(--s-4);
+    min-height: clamp(20rem, 32vw, 30rem);
+    padding: clamp(3.5rem, 8vw, 8rem) clamp(2rem, 4.2vw, 3.75rem) clamp(2.5rem, 4vw, 4rem);
+  }
+
+  .about-zwei p {
+    max-width: 30rem;
+  }
+
+  .about-zwei p:not(:has(a)) {
+    color: var(--ink-2);
+  }
+
+  .about-philosophie {
+    display: grid;
+    gap: var(--s-5);
+    justify-items: start;
+    padding-block: clamp(4.5rem, 8vw, 7.5rem) clamp(3rem, 5vw, 4.5rem);
+  }
+
+  .about-satz {
+    max-width: 58rem;
+    font-family: var(--font-display), Georgia, serif;
+    font-size: clamp(1.75rem, 2.5vw + 0.75rem, 3.25rem);
+    line-height: 1.16;
+  }
+
+  .about-kontakt {
+    padding-block: clamp(3rem, 5vw, 4.5rem) var(--section-pad);
   }
 
   .facts a {
@@ -134,5 +227,29 @@ import { site } from '@/config/site';
 
   .actions {
     margin-top: var(--s-3);
+  }
+
+  @media (max-width: 63.99rem) {
+    .about-photo,
+    .about-herkunft__text,
+    .about-teller .prose {
+      grid-column: 1 / -1;
+    }
+
+    .about-photo {
+      max-width: 30rem;
+    }
+  }
+
+  @media (max-width: 47.99rem) {
+    .about-zwei ul {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .about-zwei li {
+      min-height: 0;
+      padding-inline: var(--gutter);
+      padding-right: calc(var(--gutter) + 0.5rem);
+    }
   }
 </style>

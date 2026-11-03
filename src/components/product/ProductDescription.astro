@@ -4,6 +4,7 @@
 //   otherwise (text changed in Shopify, product unknown to product.ts) -> the blocks read from the
 //   Shopify editor HTML (rich-text.ts) in the same look: h2 with a lead, h3 sections, rows
 // Everything is text: Astro escapes it, nothing from Shopify is ever rendered as HTML.
+// Redesign T-20261103-03: headline over the full width, the sections as label lines beside the lead.
 import { structuredDescription, type CatalogProduct } from '@/lib/commerce/catalog';
 import { groupByHeading } from '@/lib/commerce/rich-text';
 import DescriptionInline from './DescriptionInline.astro';
@@ -17,11 +18,11 @@ const groups = facts ? [] : groupByHeading(product.body);
 const lines = (text: string) => text.split('\n');
 ---
 
-<div class="pdesc prose">
+<div class="pdesc">
   {
     facts ? (
       <>
-        <h2 class="display-l">{facts.intro.heading}</h2>
+        <h2 class="pdesc__title">{facts.intro.heading}</h2>
         <p class="lead">{facts.intro.text}</p>
         {facts.sections.map((section) => (
           <section class="pdesc__section">
@@ -76,7 +77,7 @@ const lines = (text: string) => text.split('\n');
         ) : (
           <>
             {heading && (
-              <h2 class="display-l">
+              <h2 class="pdesc__title">
                 <DescriptionInline inline={heading.inline} />
               </h2>
             )}
@@ -89,28 +90,100 @@ const lines = (text: string) => text.split('\n');
 </div>
 
 <style>
+  /* Links die Einleitung, rechts die Abschnitte. Die Einleitung läuft über die Abschnittszeilen. */
   .pdesc {
     display: grid;
-    gap: var(--s-5);
-    max-width: 44rem;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(2.5rem, 7vw, 7rem);
+    row-gap: var(--s-6);
+    align-items: start;
+  }
+
+  .pdesc > :not(.pdesc__section, .pdesc__title) {
+    grid-column: 1;
+  }
+
+  .pdesc > :global(.lead) {
+    grid-row: 2 / span 8;
+    position: sticky;
+    top: calc(var(--header-h) + var(--s-5));
+  }
+
+  .pdesc__title {
+    grid-column: 1 / -1;
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(2.75rem, 6.6vw, 6.25rem);
+    line-height: 0.98;
+    letter-spacing: -0.018em;
+    max-width: 15em;
   }
 
   .pdesc__section {
+    grid-column: 2;
     display: grid;
     gap: var(--s-3);
   }
 
-  /* the live list "Produkt: …" (Shopify <ul><li><strong>) */
+  .pdesc__section p {
+    max-width: var(--measure);
+    color: var(--ink-2);
+  }
+
+  /* the live list "Produkt: …" (Shopify <ul><li><strong>) as lines of the label */
   .pdesc__rows {
     display: grid;
-    gap: var(--s-2);
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
+  .pdesc__rows li {
+    padding-block: 0.6875rem;
+    padding-left: 10rem;
+    text-indent: -10rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .pdesc__rows li:last-child {
+    border-bottom: 1px solid var(--rule);
+  }
+
   /* :global, as the strong of the Shopify blocks comes from DescriptionInline */
   .pdesc__rows :global(strong) {
+    display: inline-block;
+    width: 10rem;
+    text-indent: 0;
+    font-size: 0.8125rem;
     font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 63.99rem) {
+    .pdesc {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pdesc > :global(.lead) {
+      grid-row: auto;
+      position: static;
+    }
+
+    .pdesc__section {
+      grid-column: 1;
+    }
+  }
+
+  @media (max-width: 47.99rem) {
+    .pdesc__rows li {
+      padding-left: 0;
+      text-indent: 0;
+    }
+
+    .pdesc__rows :global(strong) {
+      display: block;
+      width: auto;
+    }
   }
 </style>

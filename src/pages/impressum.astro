@@ -4,20 +4,24 @@
 // Legal review by the responsible party is required before launch (docs/PRODUCT-TRUTH.md).
 import Base from '@/layouts/Base.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import RedThread from '@/components/RedThread.astro';
 import { site } from '@/config/site';
 ---
 
 <Base title="Impressum · Royal Spices, Hamburg" description="Impressum von Royal Spices, Sajad Akrami, Hammerdeich 10, 20537 Hamburg.">
-  <section class="page-head">
+  <section class="ruhig zone">
+    <RedThread d="M2.2 0C1.8 24 2.6 52 2.2 100" m="M2.6 0C2.2 24 3 52 2.6 100" />
     <div class="wrap">
-      <Breadcrumbs
-        items={[
-          { name: 'Start', path: '/' },
-          { name: 'Impressum', path: '/impressum/' },
-        ]}
-      />
-      <h1 class="display-l">Impressum</h1>
-      <div class="longform">
+      <div class="kopf kopf--seite">
+        <Breadcrumbs
+          items={[
+            { name: 'Start', path: '/' },
+            { name: 'Impressum', path: '/impressum/' },
+          ]}
+        />
+      </div>
+      <h1 class="chapter chapter--recht ruhig__titel">Impressum</h1>
+      <div class="longform ruhig__text">
         <p><strong>Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)</strong></p>
 
         <h2>Betreiber</h2>
@@ -62,17 +66,8 @@ import { site } from '@/config/site';
 </Base>
 
 <style>
-  .page-head {
-    padding-bottom: var(--section-pad);
-  }
-
-  /* Breadcrumbs above the h1: the same gap as the .opener grid on the other pages (SEO-C). */
-  .page-head :global(.crumbs) {
-    margin-bottom: var(--s-5);
-  }
-
-  h1 {
-    margin-bottom: var(--s-5);
+  .longform > :first-child {
+    margin-top: 0;
   }
 
   .longform a {

@@ -3,12 +3,16 @@ import Picture from './Picture.astro';
 import { primaryNav, secondaryNav, announcement, shopifyAccountUrl } from '@/config/site';
 import { commerceEnabled } from '@/lib/commerce/config';
 
+interface Props {
+  world?: 'nacht' | 'tisch' | 'gold';
+}
+const { world } = Astro.props;
 const path = Astro.url.pathname;
 const isCurrent = (href: string) => path === href || (href !== '/' && path.startsWith(href));
 ---
 
 {/* Announcement (free shipping) and login (Shopify account) only make sense with the shop. */}
-<header class:list={['site-header', { 'site-header--bare': !commerceEnabled }]} data-header>
+<header class:list={['site-header', { 'site-header--bare': !commerceEnabled }]} data-header data-world={world}>
   {
     commerceEnabled && (
       <div class="announcement">
@@ -21,6 +25,8 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
     {/* Logo von royalspices.de, Hintergrund freigestellt (pipeline/images/build-stills.mjs) */}
     <a class="wordmark" href="/" aria-label="Royal Spices – Startseite">
       <Picture class="wordmark__logo" name="logo-wide" alt="" sizes="8.25rem" loading="eager" />
+      {/* Farbwelt Nacht und Tisch: lädt erst, wenn sie sichtbar wird (display: none, loading lazy) */}
+      <Picture class="wordmark__logo wordmark__logo--light" name="logo-wide-light" alt="" sizes="8.25rem" />
     </a>
 
     {
@@ -84,6 +90,7 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
     margin-bottom: calc(-1 * var(--header-h));
     color: var(--ink);
     transition:
+      color 0.25s var(--ease-out),
       background-color 0.25s var(--ease-out),
       box-shadow 0.25s var(--ease-out);
   }
@@ -136,6 +143,51 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
     display: block;
     width: auto;
     height: 2.75rem;
+  }
+
+  .wordmark :global(.wordmark__logo--light) {
+    display: none;
+  }
+
+  /* Farbwelten (src/scripts/worlds.ts schreibt data-world): Die Leiste trägt die Fläche unter ihr, die
+     Tokens ordnen sich neu, auch ganz oben auf einer dunklen ersten Fläche. Das offene Menü liegt auf Papier und bleibt darum außen vor. */
+  :global(html.js .site-header[data-world='nacht']:not(:has(.is-open))),
+  :global(html.js .site-header[data-world='tisch']:not(:has(.is-open))) {
+    --ink: var(--kerze);
+    --paper-soft: var(--nacht);
+    --saffron: var(--blatt);
+    --saffron-deep: var(--blatt);
+    --rule: rgb(244 236 220 / 0.2);
+    --rule-strong: rgb(244 236 220 / 0.32);
+    background: var(--nacht);
+    color: var(--kerze);
+  }
+
+  :global(html.js .site-header[data-world='tisch']:not(:has(.is-open))) {
+    --paper-soft: var(--tisch);
+    background: var(--tisch);
+  }
+
+  :global(html.js .site-header[data-world='gold']:not(:has(.is-open))) {
+    --saffron: var(--saffron-deep);
+    --rule: rgb(34 31 26 / 0.26);
+    --rule-strong: rgb(34 31 26 / 0.5);
+    background: var(--gold-hell);
+  }
+
+  :global(html.js .site-header[data-world='nacht']:not(:has(.is-open)) .wordmark__logo:not(.wordmark__logo--light)),
+  :global(html.js .site-header[data-world='tisch']:not(:has(.is-open)) .wordmark__logo:not(.wordmark__logo--light)) {
+    display: none;
+  }
+
+  :global(html.js .site-header[data-world='nacht']:not(:has(.is-open)) .wordmark__logo--light),
+  :global(html.js .site-header[data-world='tisch']:not(:has(.is-open)) .wordmark__logo--light) {
+    display: block;
+  }
+
+  /* Ohne JavaScript gibt es keine Farbwelt: Die Leiste bleibt auf jeder Fläche lesbar. */
+  :global(html:not(.js)) .site-header {
+    background: var(--paper);
   }
 
   .site-nav {

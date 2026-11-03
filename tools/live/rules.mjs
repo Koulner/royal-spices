@@ -91,6 +91,9 @@ export const EXCEPTIONS = [
 /** Lines that only a build with the store shows (A2: without the store no price, inquiry instead). */
 export const STORE_ONLY = [
   { page: 'index', match: /^(€12,90|8,90 €)inkl\. MwSt\.$/, reason: 'nur mit Store: Preis aus dem Katalog' },
+  { page: 'index', match: /^HERAT NEGIN SAFFRON ✧ KOSTENLOSER VERSAND IN DE AB 50 €$/, reason: 'nur mit Store: Ankündigungsleiste (T-20261031-54, Nutzer 03.11.)' },
+  { page: 'index', match: /^\[Einloggen\]\(/, reason: 'nur mit Store: Kundenkonto im Kopf (T-20261031-54, Nutzer 03.11.)' },
+  { page: 'collections_safran', match: '€', reason: 'nur mit Store: Preis der Produktkarten (A2, Nutzer 03.11.)' },
   ...['products_herat-negin-safran-1-g-grade-a', 'products_safran-herat-negin-0-5g'].map((page) => ({
     page,
     match: /^(Inkl\. Steuern\.|Anzahl|\[Knopf: In den Warenkorb legen\])$/,

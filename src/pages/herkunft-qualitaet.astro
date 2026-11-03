@@ -3,11 +3,14 @@
 // Dazu V1-Blöcke mit Fakten, die Live fehlen (T-20261016-05): Abfüllung und Verantwortlicher,
 // Pflanze (Anatomie), frisch und getrocknet, Was Negin bedeutet, Etikett und Glas, Glas/Kork/Siegel.
 // Belege: docs/PRODUCT-TRUTH.md (Grade, Abfüllung, Verpackung, Etikett). Prüfpunkte PRODUCT-TRUTH Nr. 4 und 7.
+// Kapitel Blüte und Faden (Redesign T-20261103-03): Der Faden läuft im Rand zur großen Anatomie, tritt links
+// an der Narbe ein und rechts wieder aus. Am Ende färbt der Safran, wie auf der Startseite.
 import Base from '@/layouts/Base.astro';
 import Picture from '@/components/Picture.astro';
 import Arrow from '@/components/Arrow.astro';
 import Anatomy from '@/components/Anatomy.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import RedThread from '@/components/RedThread.astro';
 import { site } from '@/config/site';
 ---
 
@@ -15,33 +18,39 @@ import { site } from '@/config/site';
   title="Herkunft & Qualität"
   description="Negin-Safran aus der Region Herat in Afghanistan: die Pflanze Crocus sativus, handverlesene ganze Fäden, Etikett, Glas mit Naturkork und Siegelstreifen."
 >
-  <section class="page-head" aria-labelledby="hq-title">
-    <div class="wrap opener">
-      <Breadcrumbs
-        items={[
-          { name: 'Start', path: '/' },
-          { name: 'Herkunft & Qualität', path: '/herkunft-qualitaet/' },
-        ]}
-      />
-      <h1 class="display-xl" id="hq-title">Herkunft &amp; Qualität</h1>
-    </div>
-  </section>
+  <div class="hq-anfang zone">
+    <RedThread d="M2.2 0C1.8 24 2.6 52 2.2 100" m="M2.2 0C1.8 24 2.6 52 2.2 100" />
+    <section class="hq-kopf" aria-labelledby="hq-title">
+      <div class="wrap">
+        <div class="kopf kopf--seite">
+          <Breadcrumbs
+            items={[
+              { name: 'Start', path: '/' },
+              { name: 'Herkunft & Qualität', path: '/herkunft-qualitaet/' },
+            ]}
+          />
+          <p class="kapitel">Blüte</p>
+        </div>
+        <h1 class="chapter chapter--akzent hq-title" id="hq-title">Herkunft <em>&amp; Qualität</em></h1>
+      </div>
+    </section>
 
-  <section class="section--tight" aria-labelledby="hq-ursprung">
-    <div class="wrap split">
-      <div class="split__a opener">
-        <p class="eyebrow">HERAT, AFGHANISTAN</p>
-        <h2 class="display-l" id="hq-ursprung">Wo unsere Geschichte beginnt</h2>
+    <section class="hq-ursprung" aria-labelledby="hq-ursprung">
+      <div class="wrap">
+        <p class="hq-ort">HERAT, AFGHANISTAN</p>
+        <div class="split">
+          <h2 class="display-l split__a" id="hq-ursprung">Wo unsere Geschichte beginnt</h2>
+          <div class="split__b">
+            <p class="lead">Der Safran von Royal Spices hat seinen Ursprung in der Region Herat in Afghanistan. Dort wird Crocus sativus L. angebaut – eine Pflanze, deren Blüten die begehrten Safranfäden tragen.</p>
+            <dl class="facts">
+              <div><dt>Abfüllung</dt><dd>Deutschland</dd></div>
+              <div><dt>Verantwortlich</dt><dd>{site.name} · {site.owner}, {site.address.street}, {site.address.postalCode} {site.address.city}</dd></div>
+            </dl>
+          </div>
+        </div>
       </div>
-      <div class="split__b">
-        <p class="lead">Der Safran von Royal Spices hat seinen Ursprung in der Region Herat in Afghanistan. Dort wird Crocus sativus L. angebaut – eine Pflanze, deren Blüten die begehrten Safranfäden tragen.</p>
-        <dl class="facts">
-          <div><dt>Abfüllung</dt><dd>Deutschland</dd></div>
-          <div><dt>Verantwortlich</dt><dd>{site.name} · {site.owner}, {site.address.street}, {site.address.postalCode} {site.address.city}</dd></div>
-        </dl>
-      </div>
-    </div>
-  </section>
+    </section>
+  </div>
 
   {/* Mountain photograph of the former royalspices.de (T-20261022-40). CC BY 2.0: author, title, source,
       licence and the change stay beside the picture. It shows the Wakhan corridor, not Herat. */}
@@ -60,45 +69,53 @@ import { site } from '@/config/site';
     </figcaption>
   </figure>
 
-  <section class="section band-deep" aria-labelledby="hq-pflanze">
-    <div class="wrap grid plant">
-      <div class="plant__head opener">
-        <p class="eyebrow">Die Pflanze</p>
-        <h2 class="display-l" id="hq-pflanze"><em>Crocus sativus</em></h2>
-        <p class="lead">Eine violette Blüte mit sechs Blütenhüllblättern, drei gelben Staubbeuteln und einem hellen Griffel, der sich in drei rote Narbenäste teilt.</p>
-        <p>Diese drei Äste sind der Safran. Mehr trägt eine Blüte nicht. Alles andere – Blütenblätter, Staubbeutel, der helle Griffel – gehört nicht in das Gewürz.</p>
+  <section class="hq-pflanze" aria-labelledby="hq-pflanze">
+    <div class="hq-pflanze__kopf zone">
+      <RedThread d="M2.2 0C2.6 30 1.8 64 2.2 100" />
+      <div class="wrap">
+        <div class="kopf">
+          <p class="eyebrow">Die Pflanze</p>
+        </div>
+        <h2 class="chapter chapter--akzent" id="hq-pflanze"><em>Crocus sativus</em></h2>
+        <div class="hq-pflanze__text">
+          <p class="lead">Eine violette Blüte mit sechs Blütenhüllblättern, drei gelben Staubbeuteln und einem hellen Griffel, der sich in drei rote Narbenäste teilt.</p>
+          <p>Diese drei Äste sind der Safran. Mehr trägt eine Blüte nicht. Alles andere – Blütenblätter, Staubbeutel, der helle Griffel – gehört nicht in das Gewürz.</p>
+        </div>
       </div>
-      <Anatomy class="plant__figure" sizes="(min-width: 64rem) 56vw, 92vw" note />
     </div>
+    <Anatomy class="anatomy--gross" sizes="100vw" note>
+      <RedThread d="M2.2 0C2.2 7 1.5 14 0 18.4M100 91.8C99.2 94.4 97.5 96.8 97.5 100" />
+    </Anatomy>
   </section>
 
-  <section class="section" aria-labelledby="hq-faden">
+  <section class="hq-faden zone" aria-labelledby="hq-faden">
+    <RedThread d="M97.5 0C97.9 30 97.1 60 97.5 100" m="M96.8 0C97.2 30 96.5 60 96.8 100" />
     <div class="wrap">
-      <div class="opener thread-head">
+      <div class="kopf">
         <p class="eyebrow">Vom Narbenast zum Faden</p>
-        <h2 class="display-l" id="hq-faden">Frisch und getrocknet<br />sind nicht dasselbe.</h2>
+        <p class="kapitel">Faden</p>
       </div>
+      <h2 class="chapter chapter--s chapter--akzent" id="hq-faden">Frisch und getrocknet<br /><em>sind nicht dasselbe.</em></h2>
       <div class="pair">
         <figure class="figure">
-          <Picture name="stigma" alt="Frischer roter Narbenast an der Blüte, an der Spitze trichterförmig geweitet." sizes="(min-width: 48rem) 46vw, 92vw" />
+          <Picture name="stigma" alt="Frischer roter Narbenast an der Blüte, an der Spitze trichterförmig geweitet." sizes="(min-width: 48rem) 58vw, 100vw" />
           <figcaption><b>Frisch.</b> Die Narbe sitzt an der Blüte: glatt, kräftig rot, zur Spitze hin geweitet.</figcaption>
         </figure>
         <figure class="figure">
-          <Picture name="saffron" alt="Getrocknete Safranfäden: dunkelrot, gedreht und faltig, mit verbreiterten Enden." sizes="(min-width: 48rem) 46vw, 92vw" />
+          <Picture name="saffron" alt="Getrocknete Safranfäden: dunkelrot, gedreht und faltig, mit verbreiterten Enden." sizes="(min-width: 48rem) 30vw, 72vw" />
           <figcaption><b>Getrocknet.</b> Das Gewebe fällt zusammen und dreht sich. Die Fäden werden dunkler, die geweitete Spitze bleibt erkennbar.</figcaption>
         </figure>
       </div>
     </div>
   </section>
 
-  <section class="section band-deep" aria-labelledby="hq-negin">
-    <div class="wrap split">
-      <div class="split__a opener">
-        <h2 class="display-l" id="hq-negin">Handverlesene Negin-Fäden</h2>
-      </div>
-      <div class="split__b">
+  <section class="hq-negin zone" aria-labelledby="hq-negin">
+    <RedThread d="M97.5 0C97.1 40 97.9 70 97.5 100" m="M96.8 0C96.5 40 97.1 70 96.8 100" />
+    <div class="wrap">
+      <h2 class="chapter chapter--s chapter--akzent" id="hq-negin">Handverlesene <em>Negin-Fäden</em></h2>
+      <div class="hq-negin__body">
         <p class="lead">Für unsere Negin-Qualität werden die roten Narben sorgfältig ausgewählt. Das Ergebnis ist Safran in ganzen Fäden mit dem charakteristischen Duft und der intensiven goldgelben Färbekraft, für die dieses Gewürz geschätzt wird.</p>
-        <div class="hq-sub">
+        <div class="label hq-sub">
           <h3 class="display-m">Was Negin bedeutet</h3>
           <div class="prose">
             <p>Negin nennt der Handel ganze, rote Fäden. Auf unserem Etikett steht: Negin · Grade 1.</p>
@@ -109,14 +126,18 @@ import { site } from '@/config/site';
     </div>
   </section>
 
-  <section class="section band-slate" aria-labelledby="hq-transparenz">
-    <div class="wrap split">
-      <div class="split__a opener">
-        <h2 class="display-l" id="hq-transparenz">Qualität transparent machen</h2>
-      </div>
-      <div class="split__b">
-        <div class="prose">
-          <p>Bei der Auswahl unserer Ware berücksichtigen wir Herkunft, Sortierung und verfügbare Qualitätsanalysen. Informationen und Laborunterlagen zu konkreten Chargen können auf Anfrage bereitgestellt werden.</p>
+  <section class="hq-transparenz world-nacht zone" aria-labelledby="hq-transparenz" data-world="nacht">
+    <RedThread class="thread--glut" glow d="M97.5 0C97.9 30 97.1 60 97.5 100" m="M96.8 0C97.2 30 96.5 60 96.8 100" />
+    <div class="wrap">
+      <h2 class="display-xl" id="hq-transparenz">Qualität transparent machen</h2>
+      <div class="hq-transparenz__body">
+        <div class="hq-transparenz__text">
+          <div class="prose">
+            <p>Bei der Auswahl unserer Ware berücksichtigen wir Herkunft, Sortierung und verfügbare Qualitätsanalysen. Informationen und Laborunterlagen zu konkreten Chargen können auf Anfrage bereitgestellt werden.</p>
+          </div>
+          <div class="actions">
+            <a class="btn" href="/kontakt/?anliegen=handel#anfrage">Unterlagen anfragen <Arrow /></a>
+          </div>
         </div>
         <ol class="steps">
           <li>
@@ -128,26 +149,22 @@ import { site } from '@/config/site';
             <p>Mindesthaltbarkeitsdatum und Los.</p>
           </li>
         </ol>
-        <div class="actions">
-          <a class="btn" href="/kontakt/?anliegen=handel#anfrage">Unterlagen anfragen <Arrow /></a>
-        </div>
       </div>
     </div>
   </section>
 
-  <section class="section" aria-labelledby="hq-glas">
-    <div class="wrap split">
-      <div class="split__a">
-        <figure class="figure jars">
-          <Picture name="jars-photo" alt="Reihen abgefüllter Royal-Spices-Gläser mit Korken, Siegelstreifen und Etikett." sizes="(min-width: 64rem) 38vw, 92vw" />
-          <figcaption>Originalaufnahme aus der Abfüllung. Abgebildet ist die 0,5-g-Ausführung.</figcaption>
-        </figure>
-      </div>
-      <div class="split__b hq-text">
-        <div class="opener">
+  <section class="hq-glas zone" aria-labelledby="hq-glas">
+    <RedThread d="M2.2 0C1.8 30 2.6 60 2.2 100" />
+    <div class="wrap hq-glas__grid">
+      <figure class="figure jars">
+        <Picture name="jars-photo" alt="Reihen abgefüllter Royal-Spices-Gläser mit Korken, Siegelstreifen und Etikett." sizes="(min-width: 64rem) 38vw, 100vw" />
+        <figcaption>Originalaufnahme aus der Abfüllung. Abgebildet ist die 0,5-g-Ausführung.</figcaption>
+      </figure>
+      <div class="hq-text">
+        <div class="kopf">
           <p class="eyebrow">Verpackung</p>
-          <h2 class="display-l" id="hq-glas">Glas, Kork, Siegel.</h2>
         </div>
+        <h2 class="chapter chapter--s chapter--akzent" id="hq-glas">Glas, Kork, <em>Siegel.</em></h2>
         <ul class="rows">
           <li>
             <h3 class="display-s">Glas</h3>
@@ -162,13 +179,12 @@ import { site } from '@/config/site';
     </div>
   </section>
 
-  <section class="section band-slate" aria-labelledby="hq-aroma">
-    <div class="wrap split">
-      <div class="split__a opener">
-        <h2 class="display-l" id="hq-aroma">So bewahrst du das Aroma</h2>
-      </div>
-      <div class="split__b prose">
-        <p>Safran trocken, lichtgeschützt und gut verschlossen lagern. Für die Zubereitung einige Fäden kurz in warmem Wasser ziehen lassen und den Aufguss zum Gericht geben.</p>
+  <section class="hq-aroma world-gold zone" aria-labelledby="hq-aroma" data-world="gold">
+    <RedThread class="thread--tief" d="M2.2 0C2.6 30 1.8 60 2.2 100" />
+    <div class="wrap">
+      <h2 class="chapter chapter--s" id="hq-aroma">So bewahrst du <em>das Aroma</em></h2>
+      <div class="hq-aroma__text">
+        <p class="lead">Safran trocken, lichtgeschützt und gut verschlossen lagern. Für die Zubereitung einige Fäden kurz in warmem Wasser ziehen lassen und den Aufguss zum Gericht geben.</p>
         <div class="actions">
           <a class="btn" href="/produkte/">Safran entdecken <Arrow /></a>
         </div>
@@ -178,8 +194,32 @@ import { site } from '@/config/site';
 </Base>
 
 <style>
+  /* Kopf und Ursprung */
+  .hq-title {
+    margin-top: clamp(1.5rem, 3vw, 3rem);
+    font-size: min(var(--chapter), 17.5vw);
+  }
+
+  .hq-title em {
+    display: block;
+    margin-left: 0.34em;
+  }
+
+  .hq-ursprung {
+    padding-block: clamp(4rem, 8vw, 8rem) clamp(3rem, 6vw, 6rem);
+  }
+
+  .hq-ort {
+    margin-bottom: clamp(2.5rem, 5vw, 5rem);
+    font-family: var(--font-display), Georgia, serif;
+    font-size: var(--koordinate);
+    line-height: 1;
+    letter-spacing: 0.01em;
+    color: var(--bronze);
+  }
+
   .landscape {
-    margin: 0 0 var(--s-7);
+    margin: 0;
   }
 
   .landscape__frame {
@@ -234,34 +274,38 @@ import { site } from '@/config/site';
     color: inherit;
   }
 
-  @media (max-width: 47.99rem) {
-    .landscape__frame :global(img) {
-      aspect-ratio: 4 / 3;
-    }
+  /* Pflanze: Text nach rechts versetzt, darunter die Blüte über die ganze Breite */
+  .hq-pflanze__kopf {
+    padding-top: clamp(4.5rem, 9vw, 9rem);
+    padding-bottom: clamp(2.5rem, 5vw, 5rem);
   }
 
-  .plant__head {
-    grid-column: 1 / span 5;
-    align-content: start;
+  .hq-pflanze__text {
+    display: grid;
+    gap: var(--s-4);
+    width: min(100%, 36rem);
+    margin: clamp(2rem, 4vw, 4rem) 0 0 auto;
   }
 
-  .plant__head p:last-child {
+  .hq-pflanze__text p:last-child {
     color: var(--ink-2);
-    max-width: var(--measure);
   }
 
-  .plant :global(.plant__figure) {
-    grid-column: 6 / span 7;
-  }
-
-  .thread-head {
-    margin-bottom: var(--s-7);
+  /* Frisch und getrocknet: großes Bild, das zweite als versetzter Einschub */
+  .hq-faden {
+    padding-block: clamp(5rem, 10vw, 10rem) clamp(3.5rem, 7vw, 7rem);
   }
 
   .pair {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--s-6) clamp(1rem, 2.4vw, 2.5rem);
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: clamp(2rem, 6vw, 6rem);
+    margin-top: clamp(2.5rem, 5vw, 5rem);
+    align-items: start;
+  }
+
+  .pair .figure:last-child {
+    margin-top: clamp(4rem, 14vw, 13rem);
   }
 
   .pair :global(img) {
@@ -278,11 +322,65 @@ import { site } from '@/config/site';
     color: var(--ink);
   }
 
+  /* Negin */
+  .hq-negin {
+    padding-block: clamp(3rem, 6vw, 6rem) clamp(5rem, 10vw, 10rem);
+  }
+
+  .hq-negin__body {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+    column-gap: clamp(2rem, 6vw, 6rem);
+    row-gap: var(--s-6);
+    margin-top: clamp(2.5rem, 5vw, 4.5rem);
+    align-items: start;
+  }
+
   .hq-sub {
     display: grid;
     gap: var(--s-4);
-    padding-top: var(--s-5);
-    border-top: 1px solid var(--rule);
+  }
+
+  .hq-sub .prose {
+    display: grid;
+    gap: var(--s-3);
+  }
+
+  /* Transparenz: die Nacht als Siegelstreifen zwischen den Papierflächen */
+  .hq-transparenz {
+    padding-block: clamp(4.5rem, 9vw, 9rem);
+  }
+
+  .hq-transparenz__body {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(2.5rem, 7vw, 7rem);
+    row-gap: var(--s-6);
+    margin-top: clamp(2.5rem, 5vw, 5rem);
+  }
+
+  .hq-transparenz__text {
+    display: grid;
+    gap: var(--s-5);
+    justify-items: start;
+    align-content: start;
+  }
+
+  .hq-transparenz .steps > li::before {
+    color: var(--blatt);
+  }
+
+  /* Glas: hohes Foto, daneben die Überschrift mit den Zeilen */
+  .hq-glas {
+    padding-block: clamp(4.5rem, 9vw, 9rem);
+  }
+
+  .hq-glas__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(2.5rem, 6vw, 6rem);
+    row-gap: var(--s-6);
+    align-items: center;
   }
 
   .jars :global(img) {
@@ -292,19 +390,48 @@ import { site } from '@/config/site';
   }
 
   .hq-text {
-    align-content: center;
+    display: grid;
+    gap: var(--s-5);
+  }
+
+  /* Aroma: Gold, von hier geht es in den warmen Fuß */
+  .hq-aroma {
+    padding-block: clamp(4rem, 8vw, 8rem);
+  }
+
+  .hq-aroma__text {
+    display: grid;
+    gap: var(--s-5);
+    justify-items: start;
+    width: min(100%, 36rem);
+    margin: clamp(2rem, 4vw, 4rem) 0 0 auto;
   }
 
   @media (max-width: 63.99rem) {
-    .plant__head,
-    .plant :global(.plant__figure) {
-      grid-column: 1 / -1;
+    .hq-negin__body,
+    .hq-transparenz__body,
+    .hq-glas__grid {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 
   @media (max-width: 47.99rem) {
+    .hq-title em {
+      margin-left: 0;
+    }
+
+    .landscape__frame :global(img) {
+      aspect-ratio: 4 / 3;
+    }
+
     .pair {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: var(--s-6);
+    }
+
+    .pair .figure:last-child {
+      width: 78%;
+      margin: 0 0 0 auto;
     }
   }
 </style>

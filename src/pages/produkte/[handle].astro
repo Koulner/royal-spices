@@ -1,6 +1,7 @@
 ---
 // Product page per Shopify handle. With a store the pages come from the Storefront API at build time;
 // without one from the handles in src/data/product.ts (no price, inquiry path).
+// Kapitel Glas (Redesign T-20261103-03): the jar as a lit picture on night, the buy box beside it in reach.
 import Base from '@/layouts/Base.astro';
 import BuyBox from '@/components/BuyBox.astro';
 import ProductImage from '@/components/product/ProductImage.astro';
@@ -8,6 +9,7 @@ import ProductDescription from '@/components/product/ProductDescription.astro';
 import ProductMore from '@/components/product/ProductMore.astro';
 import LargerQuantities from '@/components/product/LargerQuantities.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import RedThread from '@/components/RedThread.astro';
 import { getCatalog, productOgImage, productPlainText, productSchemaInput, type CatalogProduct } from '@/lib/commerce/catalog';
 import { buildProduct } from '@/lib/seo/schema';
 
@@ -33,35 +35,41 @@ const hasMedia = Boolean(product.image || product.facts);
 
 <Base
   title={product.title}
+  headerWorld="nacht"
   description={metaDescription}
   ogType="product"
   ogImage={productOgImage(product) ?? undefined}
   schema={[buildProduct(productSchemaInput(product, Astro.site ?? Astro.url.origin))]}
 >
-  <section class="pdp-head">
+  <section class="pdp-head world-nacht zone" data-world="nacht">
+    <RedThread class="thread--glut" glow d="M97.5 0C97.9 24 97.1 52 97.5 100" m="M96.8 0C97.2 30 96.4 60 96.8 100" />
     <div class="wrap grid">
       {
         hasMedia && (
-          <figure class="pdp-head__figure figure">
-            <ProductImage product={product} sizes="(min-width: 64rem) 54vw, 100vw" loading="eager" fetchpriority="high" />
+          <figure class="pdp-head__figure figure lichtbild">
+            <ProductImage product={product} sizes="(min-width: 64rem) 52vw, 100vw" loading="eager" fetchpriority="high" />
           </figure>
         )
       }
       <div class:list={['pdp-head__body', { 'pdp-head__body--solo': !hasMedia }]}>
-        <Breadcrumbs
-          items={[
-            { name: 'Start', path: '/' },
-            { name: 'Safran', path: '/produkte/' },
-            { name: product.title, path: `/produkte/${product.handle}/` },
-          ]}
-        />
-        <h1 class="display-l">{product.title}</h1>
+        <div class="kopf">
+          <Breadcrumbs
+            items={[
+              { name: 'Start', path: '/' },
+              { name: 'Safran', path: '/produkte/' },
+              { name: product.title, path: `/produkte/${product.handle}/` },
+            ]}
+          />
+          <p class="kapitel">Glas</p>
+        </div>
+        <h1 class="pdp-head__title">{product.title}</h1>
         <BuyBox product={product} inquiryHref={inquiryHref} />
       </div>
     </div>
   </section>
 
-  <section class="section" aria-label="Produktbeschreibung">
+  <section class="pdp-text zone" aria-label="Produktbeschreibung">
+    <RedThread d="M97.5 0C97.1 30 97.9 62 97.5 100" m="M96.8 0C96.5 34 97.1 66 96.8 100" />
     <div class="wrap">
       <ProductDescription product={product} />
     </div>
@@ -79,54 +87,75 @@ const hasMedia = Boolean(product.image || product.facts);
 
 <style>
   .pdp-head {
-    padding-top: var(--header-h);
+    padding-top: calc(var(--header-h) + clamp(1.5rem, 3vw, 2.75rem));
+    padding-bottom: clamp(4rem, 7vw, 7rem);
   }
 
   .pdp-head .grid {
-    align-items: center;
+    align-items: start;
     row-gap: var(--s-6);
   }
 
   .pdp-head__figure {
     grid-column: 1 / span 7;
-    margin-left: calc(var(--gutter) * -1);
   }
 
   .pdp-head__figure :global(img) {
-    border-radius: 0 0.375rem 0.375rem 0;
     aspect-ratio: 1 / 1;
-    max-height: calc(100svh - var(--header-h));
+    max-height: calc(100svh - var(--header-h) - 5rem);
     object-fit: cover;
+    object-position: 50% 62%;
   }
 
   .pdp-head__body {
     grid-column: 8 / span 5;
     display: grid;
     gap: var(--s-5);
-    padding-block: var(--s-6);
+    padding-inline-start: clamp(0rem, 2vw, 2rem);
   }
 
   .pdp-head__body--solo {
     grid-column: 1 / span 8;
   }
 
+  .pdp-head__title {
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(2.75rem, 4.3vw, 4.25rem);
+    line-height: 1;
+    letter-spacing: -0.016em;
+  }
+
+  .pdp-text {
+    padding-block: clamp(4.5rem, 9vw, 9rem);
+  }
+
   @media (max-width: 63.99rem) {
     .pdp-head__figure,
     .pdp-head__body {
       grid-column: 1 / -1;
+      padding-inline-start: 0;
     }
 
     .pdp-head__figure {
-      margin-right: calc(var(--gutter) * -1);
+      width: min(100%, 36rem);
+      justify-self: center;
+    }
+  }
+
+  @media (max-width: 47.99rem) {
+    .pdp-head {
+      padding-top: var(--header-h);
+    }
+
+    .pdp-head__figure {
+      width: auto;
+      justify-self: stretch;
+      margin-inline: calc(var(--gutter) * -1);
     }
 
     .pdp-head__figure :global(img) {
-      border-radius: 0;
       aspect-ratio: 4 / 3;
-    }
-
-    .pdp-head__body {
-      padding-top: 0;
     }
   }
 </style>

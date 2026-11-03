@@ -1,21 +1,25 @@
 ---
 // One product in the list /produkte/ (live collection card): image, title, price and unit price from Shopify.
+// `large`: the first product of the list, a lit picture in a gold frame (Kapitel Glas, T-20261103-03).
 import ProductImage from './ProductImage.astro';
 import { formatPrice, unitPriceLabel, type CatalogProduct } from '@/lib/commerce/catalog';
 
 interface Props {
   product: CatalogProduct;
+  sizes: string;
+  large?: boolean;
   loading?: 'lazy' | 'eager';
+  fetchpriority?: 'high' | 'low' | 'auto';
 }
-const { product, loading = 'lazy' } = Astro.props;
+const { product, sizes, large = false, loading = 'lazy', fetchpriority } = Astro.props;
 const href = `/produkte/${product.handle}/`;
 ---
 
 <article class="pcard">
-  <div class="pcard__media figure">
-    <ProductImage product={product} sizes="(min-width: 48rem) 44vw, 92vw" loading={loading} />
+  <div class:list={['pcard__media figure', { lichtbild: large }]}>
+    <ProductImage product={product} sizes={sizes} loading={loading} fetchpriority={fetchpriority} />
   </div>
-  <h3 class="display-m pcard__title"><a href={href}>{product.title}</a></h3>
+  <h3 class:list={[large ? 'display-l pcard__title pcard__title--large' : 'display-s pcard__title']}><a href={href}>{product.title}</a></h3>
   {
     product.price && (
       <p class="pcard__price">
@@ -30,13 +34,21 @@ const href = `/produkte/${product.handle}/`;
   .pcard {
     position: relative;
     display: grid;
-    gap: var(--s-3);
+    gap: var(--s-2);
     align-content: start;
   }
 
   .pcard__media :global(img) {
     aspect-ratio: 1 / 1;
     object-fit: cover;
+  }
+
+  .pcard__media.lichtbild {
+    margin-bottom: var(--s-5);
+  }
+
+  .pcard__title--large {
+    max-width: 18em;
   }
 
   /* the title link covers the whole card: one link, one tab stop */
@@ -57,5 +69,12 @@ const href = `/produkte/${product.handle}/`;
 
   .pcard__price {
     font-weight: 600;
+  }
+
+  @media (max-width: 47.99rem) {
+    .pcard__media.lichtbild {
+      margin-inline: calc(var(--gutter) * -1);
+      margin-bottom: var(--s-3);
+    }
   }
 </style>

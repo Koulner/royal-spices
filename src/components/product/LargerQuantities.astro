@@ -1,26 +1,32 @@
 ---
 // "Größere Mengen": the V1 trade formats (display, loose goods) that lead to the inquiry.
 // Not Shopify products; data in src/data/product.ts (formats), as on the V1 product page.
+// Kapitel Tisch (Redesign T-20261103-03): a scale that grows with the quantity, as on the home page.
 import Arrow from '@/components/Arrow.astro';
+import RedThread from '@/components/RedThread.astro';
 import { formats } from '@/data/product';
 
 const rows = formats.filter((f) => f.id !== 'glas');
 ---
 
-<section class="section--tight more" aria-labelledby="mehr-title">
+<section class="mengen world-tisch zone" aria-labelledby="mehr-title" data-world="tisch">
+  <RedThread class="thread--glut" d="M97.5 0C97.8 40 97.2 70 97.5 100" m="M96.8 0C97.1 40 96.5 70 96.8 100" />
   <div class="wrap">
-    <h2 class="eyebrow" id="mehr-title">Größere Mengen</h2>
-    <ul class="rows">
+    <div class="kopf">
+      <h2 class="eyebrow" id="mehr-title">Größere Mengen</h2>
+      <p class="kapitel">Tisch</p>
+    </div>
+    <ul class="mengen__reihe">
       {
         rows.map((f) => (
-          <li class="more__row">
-            <div>
-              <h3 class="display-m">{f.title}</h3>
+          <li>
+            <h3>{f.title}</h3>
+            <div class="mengen__spec">
               <p>{f.spec}</p>
+              <a class="link" href={f.action.href}>
+                {f.action.label} <Arrow />
+              </a>
             </div>
-            <a class="link" href={f.action.href}>
-              {f.action.label} <Arrow />
-            </a>
           </li>
         ))
       }
@@ -29,23 +35,66 @@ const rows = formats.filter((f) => f.id !== 'glas');
 </section>
 
 <style>
-  .more .eyebrow {
-    margin-bottom: var(--s-4);
+  .mengen {
+    padding-block: clamp(3rem, 6vw, 5.5rem) clamp(3rem, 5vw, 4.5rem);
   }
 
-  .more__row {
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    column-gap: var(--s-5);
+  .mengen .kapitel {
+    color: var(--blatt);
   }
 
-  .section--tight.more {
-    padding-bottom: var(--section-pad);
+  .mengen__reihe {
+    margin: clamp(2rem, 4vw, 3.5rem) 0 0;
+    padding: 0;
+    list-style: none;
   }
 
-  @media (max-width: 63.99rem) {
-    .more__row {
-      grid-template-columns: 1fr;
+  .mengen__reihe li {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: clamp(2rem, 6vw, 6rem);
+    row-gap: var(--s-4);
+    align-items: end;
+    padding-block: var(--s-5) var(--s-6);
+    border-top: 1px solid var(--rule);
+  }
+
+  .mengen__reihe li::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    width: 52%;
+    height: 3px;
+    background: var(--blatt);
+  }
+
+  .mengen__reihe li:last-child::before {
+    width: 100%;
+  }
+
+  .mengen__reihe h3 {
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(2.25rem, 3.3vw + 0.8rem, 4rem);
+    line-height: 1.05;
+    letter-spacing: -0.012em;
+  }
+
+  .mengen__reihe li:last-child h3 {
+    font-size: clamp(3rem, 6vw + 0.6rem, 6.5rem);
+  }
+
+  .mengen__spec {
+    display: grid;
+    gap: var(--s-2);
+    justify-items: start;
+  }
+
+  @media (max-width: 47.99rem) {
+    .mengen__reihe li {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 </style>

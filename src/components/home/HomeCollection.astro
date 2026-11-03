@@ -1,5 +1,7 @@
 ---
-// Live S5 "Die Kollektion": theme text word for word, quality as on the label: Grade 1 (D3/D4).
+// Live S5 "Die Kollektion" als Kapitel Glas (Redesign T-20261103-02): theme text word for word,
+// quality as on the label: Grade 1 (D3/D4). The 1-g jar dominates as a lit picture in a gold frame,
+// 0,5 g and the gift box rank below it, no three equal cards.
 // Prices and product images come only from the catalog (src/lib/commerce/catalog.ts, T-20261016-03).
 // Without a store the catalog has no price: the price line is left out, the link to the product stays.
 // Gift box (D7): not a Shopify product yet, so the card says "In Vorbereitung" and shows no price.
@@ -8,6 +10,7 @@
 // A unit price (Grundpreis) appears under a price only when Shopify has one (unit-price.ts).
 import Arrow from '@/components/Arrow.astro';
 import Picture from '@/components/Picture.astro';
+import RedThread from '@/components/RedThread.astro';
 import { getCatalog, formatPrice, unitPriceLabel } from '@/lib/commerce/catalog';
 import { HANDLES, productPath } from '@/config/handles.mjs';
 
@@ -40,153 +43,274 @@ const cards = [
     stillAlt: 'Reihen abgefüllter Royal-Spices-Gläser mit Korken, grauem Siegelstreifen und Etikett auf einem Tisch.',
   },
 ];
-const SIZES = '(min-width: 64rem) 30vw, (min-width: 40rem) 46vw, 92vw';
+const [first] = cards;
+const SIZES_VITRINE = '(min-width: 64rem) 52vw, (min-width: 48rem) 58vw, 100vw';
+const SIZES_SMALL = '(min-width: 48rem) 8.25rem, 6.5rem';
 ---
 
-<section class="section collection" id="kollektion" aria-labelledby="kollektion-title">
+<section class="glas world-nacht" id="kollektion" aria-labelledby="kollektion-title" data-world="nacht">
+  <RedThread
+    class="thread--glut"
+    glow
+    d="M97.5 0C97.9 12 97.1 24 97.5 40C97.7 46 97.2 49 97.2 56C97.2 63 97.6 65 97.5 72S97.9 90 97.5 100"
+    m="M96.8 0C97.2 30 96.4 60 96.8 100"
+  />
   <div class="wrap">
-    <div class="collection__head opener">
+    <div class="kopf">
       <p class="eyebrow">DIE KOLLEKTION</p>
-      <h2 class="display-l" id="kollektion-title">Kleine Menge.<br />Große Wirkung.</h2>
-      <p class="lead">Entdecke die Welt von Royal Spices – von der täglichen Genussküche bis zum besonderen Geschenk.</p>
+      <p class="kapitel">Glas</p>
     </div>
+    <h2 class="chapter" id="kollektion-title">Kleine Menge.<br /><em>Große Wirkung.</em></h2>
 
-    <ul class="collection__cards">
-      {
-        cards.map((c) => (
-          <li class="card">
-            <div class="card__visual">
-              {c.product?.image ? (
-                <img
-                  src={c.product.image.url}
-                  alt={c.product.image.altText ?? c.imageAlt}
-                  width={c.product.image.width}
-                  height={c.product.image.height}
-                  loading="lazy"
-                  decoding="async"
-                />
-              ) : (
-                <Picture name={c.still} alt={c.stillAlt} sizes={SIZES} />
-              )}
-              <p class="card__badge">{c.badge}</p>
+    <div class="glas__grid">
+      {/* The picture has no alpha channel, so it stays light and becomes the lit surface of the dark chapter. */}
+      <figure class="vitrine" data-vitrine>
+        {
+          first.product?.image ? (
+            <img
+              src={first.product.image.url}
+              alt={first.product.image.altText ?? first.imageAlt}
+              width={first.product.image.width}
+              height={first.product.image.height}
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <Picture name={first.still} alt={first.stillAlt} sizes={SIZES_VITRINE} />
+          )
+        }
+      </figure>
+
+      <div class="glas__liste">
+        <p class="lead">Entdecke die Welt von Royal Spices – von der täglichen Genussküche bis zum besonderen Geschenk.</p>
+
+        <ul class="collection__cards">
+          {
+            cards.map((c, i) => (
+              <li class="card">
+                {i > 0 && (
+                  <div class="card__visual">
+                    {c.product?.image ? (
+                      <img
+                        src={c.product.image.url}
+                        alt={c.product.image.altText ?? c.imageAlt}
+                        width={c.product.image.width}
+                        height={c.product.image.height}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <Picture name={c.still} alt={c.stillAlt} sizes={SIZES_SMALL} />
+                    )}
+                  </div>
+                )}
+                <div class="card__info">
+                  <p class="eyebrow card__badge">{c.badge}</p>
+                  <h3 class="card__title">{c.title}</h3>
+                  <p class="eyebrow">{c.eyebrow}</p>
+                  <p class="card__text">{c.text}</p>
+                  {c.product?.price && (
+                    <p class="card__price">
+                      <span class="card__amount">{formatPrice(c.product.price)}</span>
+                      <span class="small">inkl. MwSt.</span>
+                    </p>
+                  )}{c.product?.price && c.product.unitPrice && <p class="small">{unitPriceLabel(c.product.unitPrice)}</p>}
+                  <a class:list={[i === 0 ? 'btn' : 'link']} href={c.href}>
+                    Produkt ansehen <Arrow />
+                  </a>
+                </div>
+              </li>
+            ))
+          }
+
+          <li class="card card--gift">
+            <div class="card__visual card__visual--gift">
+              <div class="gift">
+                <p class="gift__wordmark">ROYAL<br />SPICES</p>
+                <p class="gift__line">THE SAFFRON COLLECTION</p>
+              </div>
             </div>
             <div class="card__info">
-              <p class="eyebrow">{c.eyebrow}</p>
-              <h3 class="display-s">{c.title}</h3>
-              <p class="card__text">{c.text}</p>
-              {c.product?.price && (
-                <p class="card__price">
-                  <span class="card__amount">{formatPrice(c.product.price)}</span>
-                  <span class="small">inkl. MwSt.</span>
-                </p>
-              )}{c.product?.price && c.product.unitPrice && <p class="small">{unitPriceLabel(c.product.unitPrice)}</p>}
-              <a class="link" href={c.href}>
-                Produkt ansehen <Arrow />
-              </a>
+              {!gift && <p class="eyebrow card__badge">COMING SOON</p>}
+              {
+                gift ? (
+                  <>
+                    <h3 class="card__title">{gift.title}</h3>
+                    <p class="eyebrow">THE ROYAL GIFT</p>
+                    {gift.price && (
+                      <p class="card__price">
+                        <span class="card__amount">{formatPrice(gift.price)}</span>
+                        <span class="small">inkl. MwSt.</span>
+                      </p>
+                    )}{gift.price && gift.unitPrice && <p class="small">{unitPriceLabel(gift.unitPrice)}</p>}
+                    <a class="link" href={`/produkte/${gift.handle}/`}>
+                      Produkt ansehen <Arrow />
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    <h3 class="card__title">Safran Geschenkbox – 5 g</h3>
+                    <p class="eyebrow">THE ROYAL GIFT</p>
+                    <p class="card__text">Ein besonderes Geschenk in Vorbereitung.</p>
+                    <p class="card__status">In Vorbereitung</p>
+                  </>
+                )
+              }
             </div>
           </li>
-        ))
-      }
-
-      <li class="card card--gift">
-        <div class="card__visual card__visual--gift">
-          {!gift && <p class="card__badge">COMING SOON</p>}
-          <div class="gift">
-            <p class="gift__wordmark">ROYAL<br />SPICES</p>
-            <p class="gift__line">THE SAFFRON COLLECTION</p>
-            <span class="gift__reflection" aria-hidden="true"></span>
-          </div>
-        </div>
-        <div class="card__info">
-          <p class="eyebrow">THE ROYAL GIFT</p>
-          {
-            gift ? (
-              <>
-                <h3 class="display-s">{gift.title}</h3>
-                {gift.price && (
-                  <p class="card__price">
-                    <span class="card__amount">{formatPrice(gift.price)}</span>
-                    <span class="small">inkl. MwSt.</span>
-                  </p>
-                )}{gift.price && gift.unitPrice && <p class="small">{unitPriceLabel(gift.unitPrice)}</p>}
-                <a class="link" href={`/produkte/${gift.handle}/`}>
-                  Produkt ansehen <Arrow />
-                </a>
-              </>
-            ) : (
-              <>
-                <h3 class="display-s">Safran Geschenkbox – 5 g</h3>
-                <p class="card__text">Ein besonderes Geschenk in Vorbereitung.</p>
-                <p class="card__status">In Vorbereitung</p>
-              </>
-            )
-          }
-        </div>
-      </li>
-    </ul>
+        </ul>
+      </div>
+    </div>
   </div>
 </section>
 
 <style>
-  .collection__head {
-    max-width: 40rem;
+  /* overflow-x: clip, sonst läuft der Lichtaustritt der Vitrine auf dem Telefon quer über */
+  .glas {
+    position: relative;
+    overflow-x: clip;
+    padding-block: clamp(2rem, 4vw, 3.5rem) clamp(9rem, 16vw, 15rem);
+  }
+
+  .glas :global(.kopf .eyebrow),
+  .glas :global(.kapitel),
+  .glas :global(.chapter em) {
+    color: var(--blatt);
+  }
+
+  .glas :global(.chapter em) {
+    display: inline-block;
+    margin-left: 0.34em;
+  }
+
+  .glas__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(2.5rem, 5.5vw, 5.5rem);
+    margin-top: clamp(3rem, 6vw, 6rem);
+    align-items: start;
+  }
+
+  .vitrine {
+    position: relative;
+    grid-column: 2;
+    grid-row: 1;
+    isolation: isolate;
+  }
+
+  /* Lichtaustritt und Dimmer: --lit kommt aus dem Scrollen, ohne Bewegung steht das Licht ganz da */
+  .vitrine::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -16% -14% -22%;
+    background: radial-gradient(closest-side, rgb(236 196 132 / 0.26), rgb(236 196 132 / 0.09) 62%, transparent);
+    opacity: var(--lit, 1);
+    pointer-events: none;
+  }
+
+  .vitrine::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--nacht);
+    opacity: calc((1 - var(--lit, 1)) * 0.82);
+    pointer-events: none;
+  }
+
+  .vitrine img,
+  .vitrine :global(img) {
+    width: 100%;
+    aspect-ratio: 8 / 9;
+    object-fit: cover;
+    object-position: 50% 60%;
+    outline: 1px solid rgb(217 180 106 / 0.55);
+    outline-offset: 0.625rem;
+  }
+
+  .glas__liste {
+    grid-column: 1;
+    grid-row: 1;
+    display: grid;
+    gap: clamp(2.5rem, 3.6vw, 3.5rem);
   }
 
   .collection__cards {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--s-6) clamp(1rem, 2.4vw, 2.5rem);
-    margin: var(--s-7) 0 0;
-    padding: 0;
-    list-style: none;
   }
 
-  .card {
+  /* 1 g: groß und ohne eigenes Bild, es steht in der Vitrine */
+  .card:first-child {
+    margin-bottom: clamp(2rem, 3vw, 3rem);
+  }
+
+  .card:first-child .card__title {
+    font-size: clamp(2.5rem, 3.4vw, 3.0625rem);
+    line-height: 1;
+    letter-spacing: -0.012em;
+    margin-bottom: var(--s-2);
+  }
+
+  .card:first-child .card__text {
+    font-size: 1.0625rem;
+    margin-top: var(--s-2);
+    margin-bottom: var(--s-3);
+  }
+
+  .card:first-child .card__info {
+    gap: var(--s-2);
+  }
+
+  .card:not(:first-child) {
     display: grid;
-    grid-template-rows: auto 1fr;
-    gap: var(--s-5);
+    grid-template-columns: 8.25rem minmax(0, 1fr);
+    gap: 1.25rem;
+    padding-block: var(--s-5);
+    border-top: 1px solid var(--rule-strong);
   }
 
   .card__visual {
-    position: relative;
     aspect-ratio: 4 / 5;
     overflow: hidden;
-    background: var(--paper-deep);
+    background: #1a1612;
   }
 
+  .card__visual img,
   .card__visual :global(img) {
     width: 100%;
     height: 100%;
     object-fit: cover;
-  }
-
-  .card__badge {
-    position: absolute;
-    top: var(--s-4);
-    left: var(--s-4);
-    padding: 0.375rem 0.625rem;
-    background: var(--paper-soft);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    color: var(--ink);
+    object-position: 50% 78%;
   }
 
   .card__info {
     display: grid;
-    gap: var(--s-3);
+    gap: var(--s-1);
     align-content: start;
     justify-items: start;
   }
 
+  .card__badge {
+    color: var(--blatt);
+  }
+
+  .card__title {
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 500;
+    font-size: 1.75rem;
+    line-height: 1.1;
+  }
+
   .card__text {
-    color: var(--ink-2);
+    font-size: 0.9375rem;
+    margin-top: var(--s-1);
   }
 
   .card__price {
     display: flex;
     align-items: baseline;
-    gap: 0.5rem;
+    gap: var(--s-2);
+    margin-top: var(--s-1);
   }
 
   .card__amount {
@@ -194,65 +318,123 @@ const SIZES = '(min-width: 64rem) 30vw, (min-width: 40rem) 46vw, 92vw';
     font-weight: 600;
   }
 
+  .card:first-child .card__amount {
+    font-size: 1.5rem;
+  }
+
   .card__status {
+    margin-top: var(--s-2);
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--bronze);
+    color: var(--kerze-2);
   }
 
   /* the gift box is drawn in CSS: no picture of it exists yet */
   .card__visual--gift {
     display: grid;
     place-items: center;
-    background: var(--slate);
   }
 
   .gift {
-    position: relative;
     display: grid;
-    gap: var(--s-3);
-    justify-items: center;
-    width: 62%;
-    aspect-ratio: 1;
+    gap: var(--s-2);
     place-content: center;
-    background: var(--saffron-deep);
-    border: 1px solid color-mix(in srgb, var(--cork) 70%, transparent);
-    box-shadow: 0 1.5rem 3rem rgb(0 0 0 / 0.35);
+    width: 86%;
+    aspect-ratio: 1;
+    padding: var(--s-1);
+    background: #7c1a13;
+    box-shadow: inset 0 0 0 1px rgb(179 141 98 / 0.7);
     text-align: center;
     color: #e4cf9e;
   }
 
   .gift__wordmark {
     font-family: var(--font-display), Georgia, serif;
-    font-size: clamp(1.25rem, 2vw, 1.75rem);
+    font-size: 1.0625rem;
     line-height: 1.05;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
   }
 
   .gift__line {
-    font-size: 0.5625rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.2em;
+    line-height: 1.15;
+    letter-spacing: 0.02em;
   }
 
-  .gift__reflection {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgb(255 255 255 / 0.14), transparent 45%);
-    pointer-events: none;
-  }
-
+  /* Tablet: Die Vitrine steht oben, 0,5 g und Geschenkbox nebeneinander darunter */
   @media (max-width: 63.99rem) {
+    .glas__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .vitrine {
+      grid-column: 1;
+      grid-row: 1;
+      width: min(100%, 36rem);
+      justify-self: center;
+    }
+
+    .glas__liste {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
     .collection__cards {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: clamp(1rem, 2.4vw, 2.5rem);
+    }
+
+    .card:first-child {
+      grid-column: 1 / -1;
     }
   }
 
-  @media (max-width: 39.99rem) {
+  @media (max-width: 47.99rem) {
+    .glas :global(.chapter em) {
+      margin-left: 0;
+    }
+
+    .glas__grid {
+      margin-top: 2.5rem;
+    }
+
+    .vitrine {
+      width: auto;
+      justify-self: stretch;
+      margin-inline: calc(var(--gutter) * -1);
+    }
+
+    .vitrine img,
+    .vitrine :global(img) {
+      aspect-ratio: 1;
+      object-position: 50% 50%;
+      outline: 0;
+    }
+
     .collection__cards {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .card:not(:first-child) {
+      grid-template-columns: 6.5rem minmax(0, 1fr);
+      gap: var(--s-4);
+    }
+
+    .card:first-child .card__title {
+      font-size: 10.4vw;
+    }
+
+    .gift {
+      width: 100%;
+      height: 100%;
+      aspect-ratio: auto;
+    }
+
+    .gift__wordmark {
+      font-size: 0.875rem;
     }
   }
 </style>

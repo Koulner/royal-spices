@@ -4,28 +4,31 @@
 // passen; bei jeder Tarifänderung in Shopify hier mit anpassen.
 import Base from '@/layouts/Base.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import RedThread from '@/components/RedThread.astro';
 ---
 
 <Base
   title="Versand & Lieferung"
   description="Wir möchten, dass dein Royal-Spices-Paket sicher bei dir ankommt. Maßgeblich sind die im Checkout angezeigten Lieferoptionen und Kosten."
 >
-  <section class="page-head">
-    <div class="wrap opener">
-      <Breadcrumbs
-        items={[
-          { name: 'Start', path: '/' },
-          { name: 'Versand & Lieferung', path: '/versand-lieferung/' },
-        ]}
-      />
-      <h1 class="display-xl">Versand &amp; Lieferung</h1>
-    </div>
-  </section>
+  <div class="ruhig zone">
+    <RedThread d="M2.2 0C1.8 24 2.6 52 2.2 100" m="M2.6 0C2.2 24 3 52 2.6 100" />
+    <section class="wrap">
+      <div class="kopf kopf--seite">
+        <Breadcrumbs
+          items={[
+            { name: 'Start', path: '/' },
+            { name: 'Versand & Lieferung', path: '/versand-lieferung/' },
+          ]}
+        />
+      </div>
+      <h1 class="chapter chapter--s chapter--akzent ruhig__titel">Versand &amp; <em>Lieferung</em></h1>
+    </section>
 
-  <section class="section--tight ship-section" aria-labelledby="ship-title">
+  <section class="ship-section" aria-labelledby="ship-title">
     <div class="wrap split">
       <div class="split__a opener">
-        <h2 class="display-l" id="ship-title">Versand &amp; Lieferung</h2>
+        <h2 class="eyebrow" id="ship-title">Versand &amp; Lieferung</h2>
         <p class="lead">Wir möchten, dass dein Royal-Spices-Paket sicher bei dir ankommt. Die aktuell im Shop hinterlegten Versandtarife lauten:</p>
       </div>
       <div class="split__b">
@@ -51,14 +54,20 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro';
       </div>
     </div>
   </section>
+  </div>
 </Base>
 
 <style>
   .ship-section {
-    padding-bottom: clamp(4rem, 8vw, 7rem);
+    margin-top: clamp(2.5rem, 5vw, 4.5rem);
   }
 
+  /* Die Tarife tragen die Zeile, in der Etikettschrift */
   .rows strong {
+    font-family: var(--font-display), Georgia, serif;
+    font-size: 1.5em;
+    font-weight: 500;
+    line-height: 1;
     color: var(--ink);
   }
 </style>

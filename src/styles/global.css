@@ -660,3 +660,274 @@ em,
   border-radius: 0.25rem;
   font-weight: 600;
 }
+
+/* ---------------------------------------------------------------- Der rote Faden (Redesign T-20261103-02)
+   Nur Ergänzungen: Der Hero nutzt die Klassen oben unverändert. Die Farbwelten ordnen die Tokens neu zu,
+   damit Text, Regeln, Knöpfe, Links und der Fokus auf jeder Fläche von selbst lesbar bleiben. */
+
+:root {
+  --nacht: #0c0a08;
+  --kerze: #f4ecdc;
+  --kerze-2: #c9bd9c;
+  --blatt: #d9b46a;
+  --glut: #e0431f;
+  --gold-hell: #eeb845;
+  --gold: #e3a32a;
+  --tisch: #1f1610;
+  --chapter: clamp(4.75rem, 14.45vw, 13rem);
+  --koordinate: clamp(2.6rem, 10.6vw, 9.5rem);
+}
+
+.world-nacht,
+.world-tisch {
+  --ink: var(--kerze);
+  --ink-2: var(--kerze-2);
+  --ink-3: var(--kerze-2);
+  --bronze: var(--kerze-2);
+  --paper-soft: var(--nacht);
+  --saffron: var(--blatt);
+  --saffron-deep: var(--blatt);
+  --rule: rgb(244 236 220 / 0.2);
+  --rule-strong: rgb(244 236 220 / 0.32);
+  background: var(--nacht);
+  color: var(--ink);
+}
+
+.world-tisch {
+  --paper-soft: var(--tisch);
+  background: var(--tisch);
+}
+
+.world-gold {
+  --ink-2: var(--ink);
+  --ink-3: var(--ink);
+  --bronze: var(--ink);
+  --saffron: var(--saffron-deep);
+  --rule: rgb(34 31 26 / 0.26);
+  --rule-strong: rgb(34 31 26 / 0.5);
+  background: var(--gold);
+  color: var(--ink);
+}
+
+/* Kapitelgröße: Zeilenhöhe und Laufweite aus der Stilprobe */
+.chapter {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 500;
+  font-size: var(--chapter);
+  line-height: 0.9;
+  letter-spacing: -0.022em;
+}
+
+.chapter em {
+  letter-spacing: -0.03em;
+}
+
+/* Kopf eines Kapitels: Etikettzeile links, Kapitelwort rechts */
+.kopf {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+
+.kopf .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.kopf .eyebrow::before {
+  content: '';
+  flex: none;
+  width: 2.5rem;
+  height: 1px;
+  background: currentColor;
+}
+
+.kapitel {
+  font-family: var(--font-display), Georgia, serif;
+  font-style: italic;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.koordinate {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: var(--koordinate);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-align: center;
+  color: var(--bronze);
+}
+
+/* Der Faden: Die Zone streckt die SVG, die Strichstärke bleibt. Nie durch Text, darum Rand und textfreie Zonen. */
+.thread {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.thread path {
+  fill: none;
+  stroke: var(--saffron);
+  stroke-width: 1.6px;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.thread--glut path {
+  stroke: var(--glut);
+}
+
+.thread--tief path {
+  stroke: #7c1a13;
+}
+
+.thread .glow {
+  stroke-width: 7px;
+  opacity: 0.16;
+}
+
+.thread .m {
+  display: none;
+}
+
+@media (max-width: 47.99rem) {
+  .thread .d {
+    display: none;
+  }
+
+  .thread .m {
+    display: inline;
+  }
+
+  .thread .glow {
+    stroke-width: 5px;
+  }
+}
+
+/* Aufdecken über clip-path statt stroke-dashoffset: kein Neuzeichnen des Pfads */
+@media screen and (prefers-reduced-motion: no-preference) {
+  html.js .thread {
+    clip-path: inset(0 0 calc(100% - var(--r, 0) * 100%) -20%);
+  }
+}
+
+/* ---------------------------------------------------------------- Unterseiten (Redesign T-20261103-03) */
+
+:root {
+  --chapter-s: clamp(3.4rem, 11vw, 10rem);
+}
+
+/* für längere Überschriften: „Handverlesene“ passt damit auch bei 360 px in die Zeile */
+.chapter--s {
+  font-size: var(--chapter-s);
+  line-height: 0.94;
+}
+
+.chapter--s em {
+  display: inline-block;
+}
+
+.chapter--akzent em {
+  color: var(--saffron-deep);
+}
+
+.kopf--seite {
+  padding-top: calc(var(--header-h) + clamp(0.5rem, 2vw, 1.75rem));
+}
+
+.kopf--seite .kapitel {
+  color: var(--saffron-deep);
+}
+
+.zone {
+  position: relative;
+}
+
+.world-nacht {
+  overflow-x: clip;
+}
+
+.world-nacht .kopf .eyebrow,
+.world-nacht .kapitel {
+  color: var(--blatt);
+}
+
+.world-nacht .label,
+.world-tisch .label {
+  background: rgb(244 236 220 / 0.06);
+}
+
+/* Beleuchtete Fläche: Das Glasbild hat keinen Alphakanal, es bleibt hell und bekommt Goldrahmen und Lichtaustritt. */
+.lichtbild {
+  position: relative;
+  isolation: isolate;
+}
+
+.lichtbild::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -16% -14% -22%;
+  background: radial-gradient(closest-side, rgb(236 196 132 / 0.26), rgb(236 196 132 / 0.09) 62%, transparent);
+  pointer-events: none;
+}
+
+.lichtbild img {
+  border-radius: 0;
+  outline: 1px solid rgb(217 180 106 / 0.55);
+  outline-offset: 0.625rem;
+}
+
+@media (max-width: 47.99rem) {
+  .lichtbild img {
+    outline: 0;
+  }
+}
+
+/* ---------------------------------------------------------------- übrige Seiten (Redesign T-20261103-04) */
+
+:root {
+  --chapter-m: clamp(2.875rem, 8.4vw, 7.5rem);
+}
+
+/* für ganze Sätze und lange Wörter wie „Zusammenarbeit“ */
+.chapter--m {
+  font-size: var(--chapter-m);
+  line-height: 0.98;
+}
+
+.chapter--m em {
+  display: inline-block;
+}
+
+/* Rechtstexte: „Datenschutzhinweise“ muss bei 360 px in die Zeile passen */
+.chapter--recht {
+  font-size: min(var(--chapter-m), 10.4vw);
+  line-height: 1;
+}
+
+/* FAQ, Versand, Rechtstexte: ruhig auf Papier, der Text rückt nach rechts, der Faden bleibt im Rand */
+.ruhig {
+  padding-bottom: var(--section-pad);
+}
+
+.ruhig__titel {
+  margin-top: clamp(1rem, 2vw, 2rem);
+}
+
+.ruhig__text {
+  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+@media (min-width: 64rem) {
+  .ruhig__text {
+    margin-left: 33.34%;
+  }
+}

@@ -3,11 +3,14 @@
 // Preisorientierung ist Live-Text (Prüfpunkt, siehe _agent/staging/T-20261015-05/ERGEBNIS.md).
 // Dazu aus V1 (T-20261016-05): Katalog und Pakete aus @/data/catering (bisheriger Webauftritt, ohne Preise;
 // PRODUCT-TRUTH: Catering-Katalog bestätigt 05.10.2026). Anrede an Live angepasst (du).
+// Kapitel Teller (Redesign T-20261103-04): Gold mit dem Foto im Ganzen (Nutzer 03.11.: nicht zuschneiden),
+// die Gerichte als Menükarte, die Pakete als Maßreihe, die Anfrage am Tisch.
 import Base from '@/layouts/Base.astro';
 import Picture from '@/components/Picture.astro';
 import InquiryForm from '@/components/InquiryForm.astro';
 import Arrow from '@/components/Arrow.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import RedThread from '@/components/RedThread.astro';
 import { categories, packages } from '@/data/catering';
 import stills from '@/data/stills.json';
 import { buildService } from '@/lib/seo/schema';
@@ -21,6 +24,7 @@ const serviceImage = stills['catering-photo'].webp.reduce((a, b) => (b.width > a
 <Base
   title="Royal Spices Catering & Live Cooking"
   description={description}
+  headerWorld="gold"
   schema={[
     buildService({
       origin: Astro.site ?? Astro.url.origin,
@@ -32,190 +36,236 @@ const serviceImage = stills['catering-photo'].webp.reduce((a, b) => (b.width > a
     }),
   ]}
 >
-  <section class="page-head cat-head" aria-labelledby="cat-title">
-    <div class="wrap grid">
-      <div class="cat-head__body opener">
-        <Breadcrumbs
-          items={[
-            { name: 'Start', path: '/' },
-            { name: 'Catering & Live Cooking', path: '/catering/' },
-          ]}
-        />
-        <h1 class="display-xl" id="cat-title">Royal Spices Catering &amp; Live Cooking</h1>
+  <div class="cat-teller world-gold zone" data-world="gold">
+    <RedThread class="thread--tief" d="M2.2 0C1.6 22 2.8 44 2.2 62S1.6 88 2.2 100" m="M2.6 0C2 22 3.2 44 2.6 62S2 88 2.6 100" />
+
+    <section class="cat-kopf" aria-labelledby="cat-title">
+      <div class="wrap">
+        <div class="kopf kopf--seite">
+          <Breadcrumbs
+            items={[
+              { name: 'Start', path: '/' },
+              { name: 'Catering & Live Cooking', path: '/catering/' },
+            ]}
+          />
+          <p class="kapitel">Teller</p>
+        </div>
+        <h1 class="chapter chapter--m" id="cat-title">Royal Spices Catering <em>&amp; Live Cooking</em></h1>
       </div>
-      <figure class="cat-head__figure figure">
-        <Picture name="catering-photo" alt="Royal-Spices-Catering bei einem Business-Event: Menükarte als Aufsteller, dahinter eine Theke mit angerichteten Löffelgerichten." sizes="(min-width: 64rem) 34vw, 92vw" loading="eager" fetchpriority="high" />
+    </section>
+
+    <div class="wrap cat-tafel">
+      <figure class="cat-foto">
+        <Picture name="catering-photo" alt="Royal-Spices-Catering bei einem Business-Event: Menükarte als Aufsteller, dahinter eine Theke mit angerichteten Löffelgerichten." sizes="(min-width: 64rem) 38vw, 92vw" loading="eager" fetchpriority="high" />
       </figure>
-    </div>
-  </section>
-
-  <section class="section--tight" aria-labelledby="cat-kulinarik">
-    <div class="wrap split">
-      <div class="split__a opener">
-        <p class="eyebrow">Royal Spices · Culinary Experiences</p>
-        <h2 class="display-l" id="cat-kulinarik">Exklusive Kulinarik für besondere Momente.</h2>
-      </div>
-      <div class="split__b">
-        <p class="lead">Von eleganten Canapés über Flying Buffets bis zu individuell komponierten Menüs: Royal Spices verbindet präzises Handwerk mit modernen europäischen, afghanischen und persischen Aromen. Persönlich konzipiert und auf Wunsch vor Ort vollendet.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section band-deep" aria-labelledby="cat-formate">
-    <div class="wrap split">
-      <div class="split__a opener">
-        <h2 class="display-l" id="cat-formate">Unsere Formate</h2>
-      </div>
-      <div class="split__b">
-        <ul class="rows">
-          <li>
-            <h3 class="display-s">Flying Buffet &amp; Canapés</h3>
-            <p>Feine Fingerfood-Kreationen, saisonale Mini-Löffelgerichte und raffinierte Desserts – für Empfänge, Markenveranstaltungen und private Feste.</p>
-            <p><strong>Beispiele:</strong> Tuna Tatar · Avocado · Crispy Chili · Sesam / Burrata · Erbsenpesto · Safran-Zitrone / Geschmorte Rinderschulter · Trüffel-Kartoffelpüree / Rotgarnele · Basilikum-Hummus · Safran-Aioli.</p>
-          </li>
-          <li>
-            <h3 class="display-s">Business Lunch &amp; Office Catering</h3>
-            <p>Frühstück, Tagungsversorgung, individuell abgestimmte Lunchmenüs und kleine wie große Firmenveranstaltungen.</p>
-          </li>
-          <li>
-            <h3 class="display-s">Live Cooking by Chef Sajad</h3>
-            <p>Persönlich zubereitete Menüs und kulinarisches Erlebnis vor Ort – klassisches Handwerk trifft auf kreative Neuinterpretationen.</p>
-          </li>
-        </ul>
+      <div class="cat-tafel__text">
+        <section class="cat-kulinarik" aria-labelledby="cat-kulinarik">
+          <p class="eyebrow">Royal Spices · Culinary Experiences</p>
+          <h2 class="display-l" id="cat-kulinarik">Exklusive Kulinarik für besondere Momente.</h2>
+          <p class="lead">Von eleganten Canapés über Flying Buffets bis zu individuell komponierten Menüs: Royal Spices verbindet präzises Handwerk mit modernen europäischen, afghanischen und persischen Aromen. Persönlich konzipiert und auf Wunsch vor Ort vollendet.</p>
+          <div class="actions">
+            <a class="btn" href="#anfrage">CATERING ANFRAGEN <Arrow dir="down" /></a>
+          </div>
+        </section>
+        <section class="cat-formate" aria-labelledby="cat-formate">
+          <h2 class="chapter chapter--m chapter--akzent" id="cat-formate">Unsere <em>Formate</em></h2>
+          <ul class="rows">
+            <li>
+              <h3 class="display-s">Flying Buffet &amp; Canapés</h3>
+              <p>Feine Fingerfood-Kreationen, saisonale Mini-Löffelgerichte und raffinierte Desserts – für Empfänge, Markenveranstaltungen und private Feste.</p>
+              <p><strong>Beispiele:</strong> Tuna Tatar · Avocado · Crispy Chili · Sesam / Burrata · Erbsenpesto · Safran-Zitrone / Geschmorte Rinderschulter · Trüffel-Kartoffelpüree / Rotgarnele · Basilikum-Hummus · Safran-Aioli.</p>
+            </li>
+            <li>
+              <h3 class="display-s">Business Lunch &amp; Office Catering</h3>
+              <p>Frühstück, Tagungsversorgung, individuell abgestimmte Lunchmenüs und kleine wie große Firmenveranstaltungen.</p>
+            </li>
+            <li>
+              <h3 class="display-s">Live Cooking by Chef Sajad</h3>
+              <p>Persönlich zubereitete Menüs und kulinarisches Erlebnis vor Ort – klassisches Handwerk trifft auf kreative Neuinterpretationen.</p>
+            </li>
+          </ul>
+        </section>
       </div>
     </div>
-  </section>
 
-  <section class="section" aria-labelledby="cat-katalog">
-    <div class="wrap split split--wide">
-      <div class="split__a opener">
+    <section class="cat-katalog wrap" aria-labelledby="cat-katalog">
+      <div class="karte">
         <p class="eyebrow">Aus dem Katalog</p>
         <h2 class="display-l" id="cat-katalog">Eine Auswahl für deinen Anlass.</h2>
+        <div class="menu">
+          {
+            categories.map((category, index) => (
+              <details class="menu__category" open={index === 0}>
+                <summary>
+                  <span class="menu__title">
+                    <span class="display-m">{category.title}</span>
+                    <span class="small">{category.dishes.length} Gerichte</span>
+                  </span>
+                  <span class="menu__icon" aria-hidden="true" />
+                </summary>
+                <div class="menu__body">
+                  <p class="small">{category.intro}</p>
+                  <ul>
+                    {category.dishes.map((dish) => (
+                      <li>
+                        <span class="menu__dish">{dish.name}</span>
+                        <span class="menu__detail">{dish.detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </details>
+            ))
+          }
+        </div>
       </div>
-      <div class="split__b menu">
-        {
-          categories.map((category, index) => (
-            <details class="menu__category" open={index === 0}>
-              <summary>
-                <span class="display-m">{category.title}</span>
-                <span class="menu__count small">{category.dishes.length} Gerichte</span>
-                <span class="menu__icon" aria-hidden="true" />
-              </summary>
-              <div class="menu__body">
-                <p class="small">{category.intro}</p>
-                <ul>
-                  {category.dishes.map((dish) => (
-                    <li>
-                      <span class="menu__dish">{dish.name}</span>
-                      <span class="menu__detail">{dish.detail}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </details>
-          ))
-        }
-      </div>
-    </div>
-  </section>
+    </section>
+  </div>
 
-  <section class="section band-deep" aria-labelledby="cat-pakete">
-    <div class="wrap split">
-      <div class="split__a opener">
+  <div class="cat-papier zone">
+    <RedThread d="M2.2 0C1.8 24 2.6 52 2.2 100" m="M2.6 0C2.2 24 3 52 2.6 100" />
+    <section class="cat-pakete wrap" aria-labelledby="cat-pakete">
+      <div class="opener">
         <p class="eyebrow">Pakete</p>
         <h2 class="display-l" id="cat-pakete">Zwei Vorschläge zum Einstieg.</h2>
       </div>
-      <div class="split__b packs">
-        {
-          packages.map((p) => (
-            <div class="label pack">
-              <p class="eyebrow">{p.size}</p>
-              <h3 class="display-m">{p.title}</h3>
-              <ul>{p.parts.map((part) => <li>{part}</li>)}</ul>
-            </div>
-          ))
-        }
-        <p class="small packs__note">Angaben zu Allergenen erhältst du zur gewählten Menüauswahl.</p>
+      <div class="packs">
+        <ul class="packs__reihe">
+          {
+            packages.map((p) => (
+              <li>
+                <div>
+                  <p class="eyebrow">{p.size}</p>
+                  <h3>{p.title}</h3>
+                </div>
+                <ul>{p.parts.map((part) => <li>{part}</li>)}</ul>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="small">Angaben zu Allergenen erhältst du zur gewählten Menüauswahl.</p>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="section" aria-labelledby="cat-preise">
-    <div class="wrap split">
-      <div class="split__a opener">
-        <h2 class="display-l" id="cat-preise">Preisorientierung</h2>
-      </div>
-      <div class="split__b prose">
+    <div class="wrap cat-preise">
+      <section class="label" aria-labelledby="cat-preise">
+        <h2 class="display-m" id="cat-preise">Preisorientierung</h2>
         <p>Canapés ab 3,90 € · Mini-Löffelgerichte ab 4,20 € · Mini-Desserts ab 4,20 €, jeweils inklusive gesetzlicher Mehrwertsteuer. Verfügbarkeit, Mindestmengen, Personalkosten, Transport und Aufbau werden individuell angeboten.</p>
-      </div>
+      </section>
     </div>
-  </section>
+  </div>
 
-  <section class="section band-slate" aria-labelledby="cat-hamburg">
-    <div class="wrap split">
-      <div class="split__a opener">
-        <h2 class="display-l" id="cat-hamburg">Für Hamburg und Umgebung</h2>
-      </div>
-      <div class="split__b prose">
-        <p>Du planst ein Event, einen Empfang oder eine Firmenveranstaltung? Wir freuen uns über eine unverbindliche Anfrage mit Datum, Veranstaltungsort, Gästezahl und deinen Wünschen.</p>
+  <div class="cat-tisch world-tisch zone" data-world="tisch">
+    <RedThread class="thread--glut" glow d="M97.5 0C97.9 30 97.1 60 97.5 100" m="M96.8 0C97.2 30 96.4 60 96.8 100" />
+    <section class="cat-hamburg wrap" aria-labelledby="cat-hamburg">
+      <h2 class="chapter chapter--m chapter--akzent" id="cat-hamburg">Für Hamburg <em>und Umgebung</em></h2>
+      <div class="cat-hamburg__text">
+        <p class="lead">Du planst ein Event, einen Empfang oder eine Firmenveranstaltung? Wir freuen uns über eine unverbindliche Anfrage mit Datum, Veranstaltungsort, Gästezahl und deinen Wünschen.</p>
         <div class="actions">
           <a class="btn" href="#anfrage">CATERING ANFRAGEN <Arrow dir="down" /></a>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <div class="section band-deep">
-    <div class="wrap">
+    <div class="wrap cat-anfrage">
       <InquiryForm topic="catering" heading="Catering-Anfrage" />
     </div>
   </div>
 </Base>
 
 <style>
-  .cat-head {
-    padding-bottom: var(--s-7);
+  .cat-teller {
+    padding-bottom: clamp(4rem, 8vw, 7rem);
   }
 
-  .cat-head .grid {
-    align-items: end;
+  .cat-kopf .chapter {
+    margin-top: clamp(1rem, 2vw, 2rem);
   }
 
-  .cat-head__body {
-    grid-column: 1 / span 7;
+  .cat-kopf .chapter em {
+    display: block;
+    margin-left: 0.62em;
   }
 
-  .cat-head__figure {
-    grid-column: 9 / span 4;
+  .cat-tafel {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2.4vw, 2.5rem);
+    row-gap: var(--s-7);
+    margin-top: clamp(2.5rem, 5vw, 4.5rem);
+    align-items: start;
   }
 
-  .cat-head__figure :global(img) {
-    aspect-ratio: 4 / 5;
-    object-fit: cover;
-    object-position: 50% 40%;
+  /* Das Foto im Ganzen (Nutzer 03.11., T-20261103-04); es bleibt stehen, während die Formate vorbeilaufen. */
+  .cat-foto {
+    grid-column: 1 / span 5;
+    margin: 0;
+    position: sticky;
+    top: calc(var(--header-h) + var(--s-5));
+  }
+
+  .cat-foto :global(img) {
+    width: 100%;
+    height: auto;
+  }
+
+  .cat-tafel__text {
+    grid-column: 7 / span 6;
+    display: grid;
+    gap: clamp(3rem, 6vw, 5rem);
+  }
+
+  .cat-kulinarik {
+    display: grid;
+    gap: var(--s-5);
+  }
+
+  .cat-kulinarik .actions {
+    margin-top: var(--s-3);
+  }
+
+  .cat-formate {
+    display: grid;
+    gap: var(--s-5);
   }
 
   .rows strong {
     color: var(--ink);
   }
 
+  /* Die Gerichte als Menükarte im Satzbild, auf Papier wie das Etikett (wie auf der Startseite) */
+  .karte {
+    --ink-2: #4d483e;
+    --bronze: #6b6146;
+    max-width: 64rem;
+    margin: clamp(4rem, 8vw, 7rem) auto 0;
+    padding: clamp(2.25rem, 4.4vw, 4rem) clamp(1.25rem, 4vw, 4rem);
+    background: var(--paper-soft);
+    box-shadow: inset 0 0 0 1px var(--paper-soft), inset 0 0 0 2px rgb(107 97 70 / 0.5);
+    text-align: center;
+  }
+
+  .karte > .display-l {
+    margin-top: var(--s-4);
+  }
+
   .menu {
-    gap: 0;
+    margin-top: clamp(2.75rem, 4vw, 3.25rem);
   }
 
   .menu__category {
-    border-top: 1px solid var(--rule-strong);
+    border-top: 1px solid var(--rule);
   }
 
   .menu__category:last-child {
-    border-bottom: 1px solid var(--rule-strong);
+    border-bottom: 1px solid var(--rule);
   }
 
   .menu__category summary {
     display: grid;
-    grid-template-columns: 1fr auto 1.5rem;
+    grid-template-columns: 1.5rem 1fr 1.5rem;
     align-items: center;
-    gap: var(--s-4);
+    gap: var(--s-3);
     min-height: 4.5rem;
     padding-block: var(--s-4);
     cursor: pointer;
@@ -226,8 +276,15 @@ const serviceImage = stills['catering-photo'].webp.reduce((a, b) => (b.width > a
     display: none;
   }
 
+  .menu__title {
+    grid-column: 2;
+    display: grid;
+    gap: 0.125rem;
+  }
+
   .menu__icon {
     position: relative;
+    grid-column: 3;
     width: 1rem;
     height: 1rem;
     justify-self: end;
@@ -252,12 +309,15 @@ const serviceImage = stills['catering-photo'].webp.reduce((a, b) => (b.width > a
   }
 
   .menu__body {
-    padding: 0 0 var(--s-6);
     display: grid;
-    gap: var(--s-4);
+    gap: var(--s-5);
+    padding-bottom: var(--s-6);
   }
 
   .menu__body ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.625rem clamp(1.5rem, 4vw, 3.5rem);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -265,69 +325,165 @@ const serviceImage = stills['catering-photo'].webp.reduce((a, b) => (b.width > a
 
   .menu__body li {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-    gap: var(--s-2) var(--s-5);
-    padding-block: var(--s-3);
-    border-top: 1px solid var(--rule);
+    align-content: start;
+    gap: 0.125rem;
   }
 
   .menu__dish {
-    font-weight: 600;
+    font-family: var(--font-display), Georgia, serif;
+    font-size: clamp(1.5rem, 2vw, 1.875rem);
+    line-height: 1.1;
   }
 
   .menu__detail {
+    font-size: 0.9375rem;
     color: var(--ink-2);
   }
 
+  /* Pakete als Maßreihe: Marke und Schrift wachsen mit der Zahl der Happen */
+  .cat-pakete {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(2rem, 6vw, 6rem);
+    row-gap: var(--s-6);
+    padding-block: clamp(4.5rem, 8vw, 7.5rem) clamp(3rem, 5vw, 4.5rem);
+  }
+
+  .cat-pakete > .opener {
+    align-self: start;
+  }
+
   .packs {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: grid;
     gap: var(--s-5);
   }
 
-  .pack {
-    display: grid;
-    gap: var(--s-3);
-    align-content: start;
-  }
-
-  .pack ul {
-    margin: var(--s-2) 0 0;
+  .packs__reihe {
+    margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  .pack li {
+  .packs__reihe > li {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: var(--s-6);
+    row-gap: var(--s-4);
+    align-items: end;
+    padding-block: var(--s-5) var(--s-6);
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .packs__reihe > li::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    width: 52%;
+    height: 3px;
+    background: var(--saffron);
+  }
+
+  .packs__reihe > li:last-child::before {
+    width: 100%;
+  }
+
+  .packs__reihe h3 {
+    margin-top: var(--s-2);
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(2.5rem, 3.6vw + 0.8rem, 4.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.012em;
+  }
+
+  .packs__reihe > li:last-child h3 {
+    font-size: clamp(3.25rem, 6vw + 0.6rem, 6.5rem);
+  }
+
+  .packs__reihe ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .packs__reihe ul li {
     padding-block: 0.5rem;
     border-top: 1px solid var(--rule);
   }
 
-  .packs__note {
+  .cat-preise {
+    padding-bottom: clamp(4.5rem, 8vw, 7.5rem);
+  }
+
+  .cat-preise .label {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(2rem, 6vw, 6rem);
+    row-gap: var(--s-4);
+    align-items: baseline;
+    padding: clamp(1.75rem, 3.4vw, 3rem);
+  }
+
+  .cat-preise p {
+    max-width: 44rem;
+  }
+
+  .cat-hamburg {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2.4vw, 2.5rem);
+    row-gap: var(--s-6);
+    padding-block: clamp(5rem, 9vw, 8rem) clamp(3rem, 6vw, 5.5rem);
+  }
+
+  .cat-hamburg .chapter {
     grid-column: 1 / -1;
   }
 
+  .cat-hamburg .chapter em {
+    display: block;
+    margin-left: 0.62em;
+  }
+
+  .cat-hamburg__text {
+    grid-column: 6 / span 7;
+    display: grid;
+    gap: var(--s-5);
+    justify-items: start;
+  }
+
+  .cat-anfrage {
+    padding-bottom: clamp(4rem, 8vw, 7rem);
+  }
+
   @media (max-width: 63.99rem) {
-    .cat-head__body,
-    .cat-head__figure {
+    .cat-foto,
+    .cat-tafel__text,
+    .cat-hamburg__text {
       grid-column: 1 / -1;
     }
 
-    .cat-head__figure {
-      max-width: 26rem;
+    .cat-foto {
+      position: static;
+    }
+
+    .cat-pakete {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 47.99rem) {
+    .menu__body ul,
+    .cat-preise .label {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 
   @media (max-width: 35.99rem) {
-    .menu__category summary {
-      grid-template-columns: 1fr 1.5rem;
-    }
-
-    .menu__count {
-      display: none;
-    }
-
-    .menu__body li,
-    .packs {
-      grid-template-columns: 1fr;
+    .packs__reihe > li {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 </style>

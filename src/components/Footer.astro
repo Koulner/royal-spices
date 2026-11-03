@@ -3,7 +3,7 @@ import Picture from './Picture.astro';
 import { site, footerExploreNav, footerInfoNav } from '@/config/site';
 ---
 
-<footer class="site-footer band-slate">
+<footer class="site-footer world-tisch" data-world="tisch">
   <div class="wrap site-footer__grid">
     <div class="site-footer__brand">
       {/* Logo von royalspices.de, freigestellt, Schrift hell für den dunklen Fuß */}
@@ -86,6 +86,7 @@ import { site, footerExploreNav, footerInfoNav } from '@/config/site';
 
   .site-footer__claim {
     margin-top: var(--s-3);
+    color: var(--blatt);
   }
 
   .site-footer__brand .small {
@@ -139,9 +140,10 @@ import { site, footerExploreNav, footerInfoNav } from '@/config/site';
   .site-footer__journal-title {
     margin-top: var(--s-3);
     font-family: var(--font-display), Georgia, serif;
-    font-size: clamp(1.375rem, 2.4vw, 1.75rem);
+    font-size: clamp(2.5rem, 5.6vw, 5rem);
     font-weight: 500;
-    line-height: 1.2;
+    line-height: 1;
+    letter-spacing: -0.012em;
   }
 
   .site-footer__journal .small {
