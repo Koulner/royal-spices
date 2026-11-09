@@ -4,7 +4,10 @@
 // document into motion (html.journey-on). Native scrolling stays untouched: no wheel handlers,
 // no scroll locking. The scroll position is read, eased like a motion-control head, and drawn.
 
-import { chooseFrames, createFlow, limitsFor, stridesFor } from './journey-flow';
+import { chooseFrames, limitsFor, stridesFor } from './journey-flow';
+import { deferStart, loadPlan, moveFrames, refineFits, startWindow, videoWanted, wholeCover, windowCovered } from './journey-load';
+// the video path is fetched only where it can run (see video below)
+import type * as Video from './journey-video';
 
 /**
  * `frames` lists the positions that exist as [first, last, stride] runs on a grid of `count` positions.
@@ -43,8 +46,9 @@ function start(root: HTMLElement) {
   // ---------------------------------------------------------------- device tier
   // Only the device decides what is drawn. The browser's network estimate is deliberately ignored:
   // it misreports under load (measured during development) and would hand a fast machine soft frames.
-  // Slow links are covered by the loading order instead: coarse first, at low priority, refining over
-  // time, and the finer levels only as far as the measured download rate carries them (loadSet).
+  // Slow links are covered by the loading order instead: the start first, then coarse, at low priority,
+  // refining over time, and the finer levels only as far as the measured download rate carries them
+  // (loadSet, journey-load.ts).
   // People who ask for less data (Save-Data) get the static hero and never reach this file.
   const nav = navigator as Navigator & { deviceMemory?: number };
   const tier: Tier = (() => {
@@ -206,32 +210,16 @@ function start(root: HTMLElement) {
     sharp.classList.remove('is-active');
   }
 
-  /**
-   * Coarse-to-fine order: the move is scrubbable after a handful of frames and sharpens as the rest
-   * arrive. Each stage completes a stride: after the stage of stride s, every frame on that grid is in.
-   */
-  function loadStages(list: number[], count: number) {
-    const wanted = new Set(list);
-    const stages: { stride: number; frames: number[] }[] = [];
-    const take = (stride: number, indices: number[]) => {
-      const frames = indices.filter((i) => wanted.delete(i));
-      if (frames.length) stages.push({ stride, frames });
-    };
-    take(16 * fine, [0, count - 1]);
-    for (let stride = 16 * fine; stride >= 1; stride = Math.floor(stride / 2)) {
-      const indices: number[] = [];
-      for (let i = 0; i < count; i += stride) indices.push(i);
-      take(stride, indices);
-    }
-    if (wanted.size) stages.push({ stride: 1, frames: [...wanted] });
-    return stages;
-  }
-
+  // Loading order (journey-load.ts): the stretch from the camera to the next stop first, densely,
+  // then the whole move coarse-to-fine, so that it is scrubbable everywhere soon and
+  // sharpens as the rest arrive. Each stage of the move completes a stride: after the move stage of
+  // stride s, every frame on that grid is in.
   // Slow links. The base frames always load. A finer level (half the stride) is only started when,
-  // at the rate the frames so far came in, it would be complete within REFINE_SECONDS. Otherwise the
-  // move stays at the level it has: complete and evenly spaced, rather than half filled for minutes.
-  // Measured on the frames themselves, not taken from the browser's network estimate (see tier).
-  const REFINE_SECONDS = 8;
+  // at the rate the frames so far came in, it would be complete within REFINE_SECONDS (refineFits).
+  // Otherwise the move stays at the level it has: complete and evenly spaced, rather than half filled
+  // for minutes. The start only loads ahead in a finer level the whole move can follow to; else its
+  // frames wait in the move's stage of that level (deferStart). Measured on the frames themselves, not
+  // taken from the browser's network estimate (see tier).
 
   async function loadSet() {
     const chosen = chooseSets();
@@ -244,6 +232,7 @@ function start(root: HTMLElement) {
     info = sets[name];
     cacheLimit = Math.min(80, Math.max(12, Math.floor((cacheBudget * 1048576) / (info.width * info.height * 4))));
     const mine = ++generation;
+    dropVideo();
     blobs = new Array(info.count);
     for (const bitmap of bitmaps.values()) bitmap.close();
     bitmaps.clear();
@@ -260,16 +249,43 @@ function start(root: HTMLElement) {
     requestDraw();
 
     const set = info;
+    // The video is built alongside, without a wait (startVideo), when its stream has frames for the start window; else
+    // once the WebP frames of the start window are in. Where its stream covers the whole move, no WebP motion frames are
+    // loaded, only the sharp frames of the stops; else they load as before.
+    const wanted = videoAllowed && !videoOff;
+    const full = wanted && wholeCover(videoManifest!.sets, set.variant);
+    const span = Math.max(1, set.count - 1);
+    const [first, end] = startWindow(set.count, stops, shown);
+    const alongside = wanted && windowCovered(videoManifest!.sets, set.variant, [first / span, end / span]);
+    if (alongside) void startVideo(set, mine);
+    if (full) {
+      // the places the "weiter" control stops at sharpen without a wait
+      for (const stop of stops) void loadSharp(nearestFrame(stop * (sets[name].count - 1)));
+    } else await loadMotion(set, name, mine, wanted && !alongside ? () => void startVideo(set, mine) : null);
+  }
+
+  /** The WebP motion frames of the set in the loading order above, then the sharp frames of the stops. afterStart runs once the start window is in. */
+  async function loadMotion(set: SetInfo, name: string, mine: number, afterStart: (() => void) | null = null) {
+    motionFor = mine;
+    const startDone = () => {
+      const run = afterStart;
+      afterStart = null;
+      if (run && mine === generation) run();
+    };
     const started = performance.now();
-    let received = 0;
     let arrived = 0;
-    for (const stage of loadStages(levels[0], set.count)) {
-      // the move is scrubbable on the coarsest stage: only then the warp's data, behind the frames
-      if (stage.stride < 16 * fine) flow?.load(set.variant, set.count, shown);
+    let stages = loadPlan(levels[0], set.count, fine, startWindow(set.count, stops, shown));
+    for (let s = 0; s < stages.length; s++) {
+      const stage = stages[s];
+      if (!stage.start) startDone();
       if (stage.stride < fine && arrived) {
-        const rate = received / Math.max(0.001, (performance.now() - started) / 1000);
-        const seconds = (stage.frames.length * (received / arrived)) / rate;
-        if (seconds > REFINE_SECONDS) {
+        const elapsed = (performance.now() - started) / 1000;
+        if (stage.start && !refineFits(moveFrames(stages, stage.stride), arrived, elapsed)) {
+          // the move could not follow to this level: the start's finer frames wait in the move's stages
+          stages = deferStart(stages, s--);
+          continue;
+        }
+        if (!stage.start && !refineFits(stage.frames.length, arrived, elapsed)) {
           // stay at the stride that is complete: twice the one this stage would have filled in
           buildLevels(set, stage.stride * 2);
           root.dataset.detail = String(usable[0]);
@@ -287,7 +303,6 @@ function start(root: HTMLElement) {
             const blob = await response.blob();
             if (mine !== generation) return;
             blobs[index] = blob;
-            received += blob.size;
             arrived++;
             requestDraw();
           } catch {
@@ -299,7 +314,7 @@ function start(root: HTMLElement) {
       await Promise.all(workers);
       if (mine !== generation || degraded) return;
     }
-    if (mine === generation && !degraded) flow?.load(set.variant, set.count, shown);
+    startDone();
     // the places the "weiter" control stops at sharpen without a wait
     if (mine === generation && !degraded) for (const stop of stops) void loadSharp(nearestFrame(stop * (sets[name].count - 1)));
   }
@@ -308,7 +323,7 @@ function start(root: HTMLElement) {
   function degrade() {
     degraded = true;
     soften();
-    flow?.hide();
+    dropVideo();
     film.classList.remove('is-live');
     root.dataset.tier = 'fallback';
     requestDraw();
@@ -367,9 +382,124 @@ function start(root: HTMLElement) {
   const layers: Layer[] = [...film.querySelectorAll<HTMLCanvasElement>('[data-journey-layer]')].map((el) => ({ el, context: el.getContext('2d', { alpha: false }), index: -1 }));
   let dissolve = '';
   let hasFrame = false;
-  // In-betweens moved into the camera of the position shown, over the two layers (journey-flow.ts).
-  // Null with ?flow=off and on the low tier; wherever it cannot warp, the layers dissolve as before.
-  const flow = createFlow({ film, template: layers[1].el, base, tier, search: location.search });
+
+  // ---------------------------------------------------------------- video
+  // Where its H.264 stream covers the move (src/data/hero-video.json), the camera is drawn from dense real frames
+  // through WebGL (journey-video.ts), in a canvas over the two layers and under the rest layer. Everywhere else, and
+  // while the frame for the position is not decoded yet, the layers dissolve as before. The canvas only steps aside
+  // once they show a picture, so the stage is never empty. The module is fetched once and only where it can run
+  // (videoWanted, then videoUsable); after a failure the video stays off for the rest of the page view.
+  const videoManifest = ((): Video.VideoManifest | null => {
+    try {
+      const value = JSON.parse(root.dataset.video || 'null') as Video.VideoManifest | null;
+      return value?.format === 'rs-video-manifest-1' && value.sets ? value : null;
+    } catch {
+      return null;
+    }
+  })();
+  const videoAllowed = !!videoManifest && videoWanted(location.search, tier, typeof VideoDecoder === 'function');
+  let videoModule: Promise<typeof Video | null> | null = null;
+  let videoMod: typeof Video | null = null;
+  let video: Video.VideoPlayer | null = null;
+  let videoSet: Video.VideoSet | null = null;
+  let videoShown = false;
+  // no video for the rest of this page view: the player reported an error, or its setup failed
+  let videoOff = false;
+  // the video covers the position but has no frame for it yet: keep drawing until it has
+  let videoPending = false;
+  // the generation whose WebP motion frames are loading (loadMotion)
+  let motionFor = -1;
+
+  /** The crop point of the layers (object-position: var(--focal-x) var(--focal-y)), for the video's crop. */
+  function focal(): [number, number] {
+    const style = getComputedStyle(root);
+    const read = (name: string) => {
+      const value = parseFloat(style.getPropertyValue(name));
+      return Number.isFinite(value) ? Math.min(1, Math.max(0, value / 100)) : 0.5;
+    };
+    return [read('--focal-x'), read('--focal-y')];
+  }
+
+  /** The module, fetched once; null where the browser cannot decode the stream. */
+  function loadVideoModule() {
+    if (!videoModule)
+      videoModule = import('./journey-video')
+        .then(async (mod) => ((await mod.videoUsable(location.search)) ? mod : null))
+        .catch(() => null);
+    return videoModule;
+  }
+
+  /** Builds the player for the set of generation `mine`. Refused anywhere: on without video. */
+  async function startVideo(set: SetInfo, mine: number) {
+    const mod = await loadVideoModule();
+    const chosen = mod && videoManifest ? mod.pickSet(videoManifest, set.variant) : null;
+    let player: Video.VideoPlayer | null = null;
+    if (mod && videoManifest && chosen && mine === generation && !videoOff && !degraded) {
+      const last = Math.max(1, set.count - 1);
+      const [from, to] = startWindow(set.count, stops, shown);
+      try {
+        player = await mod.createVideo({
+          host: film,
+          base: videoManifest.base,
+          set: chosen,
+          search: location.search,
+          memBytes: set.variant === 'desktop' ? 300e6 : 200e6,
+          window: [from / last, to / last],
+          focal,
+          onError: videoError,
+        });
+      } catch {
+        player = null;
+      }
+    }
+    if (player && mine === generation && !videoOff && !degraded) {
+      // hidden until it has drawn a frame: the layers or the poster stay in view meanwhile
+      player.canvas.style.visibility = 'hidden';
+      videoMod = mod;
+      video = player;
+      videoSet = chosen;
+      videoShown = false;
+      requestDraw();
+      return;
+    }
+    player?.destroy();
+    if (mine !== generation) return; // a newer set builds its own
+    videoOff = true;
+    if (motionFor !== mine && info && !degraded) void loadMotion(info, setName, mine);
+    requestDraw();
+  }
+
+  /**
+   * The player failed (it calls this once and then stays silent): no more video draws, and no new player in this
+   * page view. Its canvas keeps the last picture until the layers show one (draw); the WebP motion frames load now
+   * if they were left out.
+   */
+  function videoError() {
+    videoOff = true;
+    videoPending = false;
+    if (motionFor !== generation && info && !degraded) void loadMotion(info, setName, generation);
+    requestDraw();
+  }
+
+  function dropVideo() {
+    video?.destroy();
+    video = null;
+    videoSet = null;
+    videoShown = false;
+    videoPending = false;
+  }
+
+  function showVideo(on: boolean) {
+    if (!video || videoShown === on) return;
+    videoShown = on;
+    video.canvas.style.visibility = on ? 'visible' : 'hidden';
+  }
+
+  /** The layers show a picture: the video canvas steps aside, and a player that failed goes now. */
+  function faded() {
+    showVideo(false);
+    if (videoOff) dropVideo();
+  }
 
   /** Copies a frame into a canvas at its own size. */
   function fill(el: HTMLCanvasElement, context: CanvasRenderingContext2D | null, bitmap: ImageBitmap) {
@@ -408,27 +538,47 @@ function start(root: HTMLElement) {
   }
 
   // Where the content shown last lay (see chooseFrames), and what the stage shows, for measurements:
-  // data-journey-frame = "<position> <a> <b> <warp|fade|whole>", written only when it changes.
+  // data-journey-frame = "<position> <a> <b> <video|fade|whole>", written only when it changes.
   let content: number | null = null;
   let frameNote = '';
   const ready = (index: number) => bitmaps.has(index);
 
-  function note(position: number, a: number, b: number, mode: 'warp' | 'fade' | 'whole') {
+  function note(position: number, a: number, b: number, mode: 'video' | 'fade' | 'whole') {
     const value = `${position.toFixed(2)} ${a} ${b} ${mode}`;
     if (value !== frameNote) film.dataset.journeyFrame = frameNote = value;
   }
 
-  function draw(time: number) {
+  function draw() {
     if (!info || degraded) return;
     const position = shown;
     const { list, k, b } = around(position, level);
 
     // keep the frames ahead of the camera decoded, in the direction of travel. Where whole frames are
     // shown, from where the camera will be at the next frame: the ones it passes before are not shown.
-    const ahead = target >= current ? 1 : -1;
-    const from = usable[level] > limits.span ? around(position + ahead * pace, level).k : k;
-    for (const offset of [0, 1, 2, 3, 4, -1]) decode(list[Math.min(list.length - 1, Math.max(0, from + offset * ahead))]);
-    decode(b);
+    const predecode = () => {
+      const ahead = target >= current ? 1 : -1;
+      const from = usable[level] > limits.span ? around(position + ahead * pace, level).k : k;
+      for (const offset of [0, 1, 2, 3, 4, -1]) decode(list[Math.min(list.length - 1, Math.max(0, from + offset * ahead))]);
+      decode(b);
+    };
+
+    // the video, wherever it has the frame. The WebP frames are only decoded where its stream ends within
+    // reach, so that the seam to the dissolve is ready.
+    videoPending = false;
+    if (video && videoMod && videoSet && !videoOff) {
+      const p = position / Math.max(1, info.count - 1);
+      if (video.draw(p, heading)) {
+        showVideo(true);
+        hasFrame = true;
+        content = position;
+        const near = around(position, 0);
+        note(position, near.a, near.b, 'video');
+        if (!videoMod.covers(videoSet, p - 0.02) || !videoMod.covers(videoSet, p + 0.02)) predecode();
+        return;
+      }
+      videoPending = videoMod.covers(videoSet, p);
+    }
+    predecode();
 
     // pairs no wider than limits.span, from the level the pace asks for; beyond it whole frames (E1 a)
     const pairs: [number, number][] = [];
@@ -438,29 +588,27 @@ function start(root: HTMLElement) {
     }
     const choice = chooseFrames({ position, pairs, ready, frames: bitmaps.keys(), last: content, heading, limits });
     if (choice.mode === 'pair') {
-      // neighbouring frames are cross-dissolved: between pictures this close it reads as movement.
-      // The layers always hold the dissolve, so the warp above them can drop out at any frame.
+      // neighbouring frames are cross-dissolved: between pictures this close it reads as movement
       const { a, b: c, mix } = choice;
       const frameA = bitmaps.get(a)!;
       const frameB = bitmaps.get(c)!;
       present(a, frameA, c, frameB, mix);
-      const warped = flow?.draw(info.variant, position, a, frameA, c, frameB, mix, time) ?? false;
+      faded();
       content = position;
       if (mix <= 0 || mix >= 1) note(position, mix <= 0 ? a : c, mix <= 0 ? a : c, 'whole');
-      else note(position, a, c, warped ? 'warp' : 'fade');
+      else note(position, a, c, 'fade');
       return;
     }
     // no pair: while the frames are still coming in, the nearest one that arrived gets decoded
     const near = nearestLoaded(Math.round(position));
     if (near >= 0 && !bitmaps.has(near)) decode(near);
     if (choice.mode === 'hold') {
-      // nothing fits: the picture stays as it is
-      flow?.pause();
+      // nothing fits: the picture stays as it is, the video's last frame included
       return;
     }
-    flow?.hide();
     const whole = bitmaps.get(choice.a)!;
     present(choice.a, whole, choice.a, whole, 0);
+    faded();
     content = choice.a;
     note(position, choice.a, choice.a, 'whole');
   }
@@ -564,11 +712,11 @@ function start(root: HTMLElement) {
     level = 0;
     if (!resting) while (level < usable.length - 1 && pace > usable[level]) level++;
     updateInterface();
-    draw(time);
+    draw();
     // settled between the two ends (which have their own full-resolution stills): sharpen
     if (resting && shown === goal && current >= 0.004 && current <= 0.992) sharpen(goal);
     else soften();
-    if (current !== target || decoding.size || shown !== goal || !resting) requestDraw();
+    if (current !== target || decoding.size || shown !== goal || !resting || videoPending) requestDraw();
     else lastTime = 0;
   }
 
@@ -633,13 +781,18 @@ function start(root: HTMLElement) {
   nextButton.addEventListener('click', () => {
     const next = stops.find((stop) => stop > target + 0.02);
     if (next === undefined) document.getElementById('herkunft')?.scrollIntoView({ behavior: 'smooth' });
-    else scrollToProgress(next);
+    else {
+      // the video starts loading at the stop now, not once the camera gets there
+      video?.load(next);
+      scrollToProgress(next);
+    }
   });
 
   // Keyboard: a focused control must be on screen. The opening lives at the start, the product at the end.
   // The jump is immediate (no eased camera travel), so focus never rests on something still out of sight.
   function jumpTo(p: number) {
     scrollToProgress(p, false);
+    video?.load(p);
     readScroll();
     current = target;
     velocity = 0;

@@ -35,6 +35,10 @@ const STATE = `(() => {
   const d = x.getImageData(0, 0, 16, 16).data;
   let hash = 0;
   for (let i = 0; i < d.length; i += 4) hash = (Math.imul(hash, 31) + (d[i] >> 3) * 1024 + (d[i + 1] >> 3) * 32 + (d[i + 2] >> 3)) >>> 0;
+  // in front of the layers the video canvas (journey-video.ts): its buffer cannot be read back here and the layers behind it
+  // keep an older frame, so the note says what it draws
+  const note = (c.dataset.journeyFrame || '').split(' ');
+  if (note[3] === 'video') hash = Number(note[1]) * 4096 + Number(note[2]);
   const on = (s) => j.querySelector(s).classList.contains('is-active');
   return {
     tier: j.dataset.tier, live: c.classList.contains('is-live'), hash,
@@ -55,6 +59,8 @@ const check = (ok, text) => {
 };
 
 const page = await launch();
+// headless browsers report reduce where the system has animations off; the page would then show the static hero
+await page.media({ 'prefers-reduced-motion': 'no-preference' });
 try {
   // several hundred frame files: the default resource buffer of 250 entries would cut the count short
   await page.send('Page.addScriptToEvaluateOnNewDocument', { source: BUFFER });
@@ -149,7 +155,8 @@ try {
     await page.viewport(vp.width, vp.height, { dpr: vp.dpr ?? 1, mobile: vp.mobile ?? false });
     await page.send('Network.setCacheDisabled', { cacheDisabled: true });
     await page.throttle({ network: { latency: 40, down: (3e6 / 8) | 0, up: (1e6 / 8) | 0 } });
-    await page.goto(base + '/', { settle: 2500 });
+    // the refining belongs to the WebP frames: the video stays out, else its segments change the measured rate
+    await page.goto(base + '/?video=off', { settle: 2500 });
     const LOADED = `(() => {
       const j = document.querySelector('[data-journey]');
       const set = j.dataset.set;
@@ -178,6 +185,23 @@ try {
       seen[p] = await page.eval(STATE);
     }
     check(Object.values(seen).every((s) => s.live) && new Set(Object.values(seen).map((s) => s.hash)).size === 3, 'the move still plays on the slow link');
+    // the same link with the video on
+    await page.goto(base + '/', { settle: 2500 });
+    const HERO = `performance.getEntriesByType('resource').filter((e) => e.name.includes('/hero/')).length`;
+    let count = await page.eval(HERO);
+    for (let quiet = 0, t = 0; quiet < 8 && t < 120; t++) {
+      await page.wait(1000);
+      const now = await page.eval(HERO);
+      quiet = now === count ? quiet + 1 : 0;
+      count = now;
+    }
+    const video = {};
+    for (const p of [0.22, 0.4, 0.76]) {
+      await page.eval(goTo(p));
+      await page.wait(SETTLE);
+      video[p] = await page.eval(STATE);
+    }
+    check(Object.values(video).every((s) => s.live) && new Set(Object.values(video).map((s) => s.hash)).size === 3, `the move plays with the video on as well (${count} hero files)`);
     await page.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
     await page.send('Network.setCacheDisabled', { cacheDisabled: false });
   }

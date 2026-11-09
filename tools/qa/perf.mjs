@@ -32,6 +32,8 @@ const OBSERVERS = `
 `;
 
 const page = await launch();
+// headless browsers report reduce where the system has animations off; the page would then show the static hero
+await page.media({ 'prefers-reduced-motion': 'no-preference' });
 const results = [];
 try {
   await page.send('Page.addScriptToEvaluateOnNewDocument', { source: OBSERVERS });

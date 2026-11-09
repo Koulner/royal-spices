@@ -17,6 +17,7 @@ import Picture from '@/components/Picture.astro';
 import Arrow from '@/components/Arrow.astro';
 import stills from '@/data/stills.json';
 import manifest from '@/data/hero-manifest.json';
+import video from '@/data/hero-video.json';
 import { chapters, stops, slow } from '@/data/journey';
 import { HANDLES, productPath } from '@/config/handles.mjs';
 
@@ -41,6 +42,7 @@ const arrivalAlt =
   data-fine={manifest.fine}
   data-stops={JSON.stringify(stops)}
   data-slow={JSON.stringify(slow)}
+  data-video={JSON.stringify(video)}
   aria-labelledby="journey-title"
 >
   <div class="journey__stage" data-journey-stage>
